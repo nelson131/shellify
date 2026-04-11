@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static size_t window_cols = 0;
-static size_t window_rows = 0;
+extern size_t window_cols;
+extern size_t window_rows;
 
 static char* actual_buffer = NULL;
 static char* old_buffer = NULL;

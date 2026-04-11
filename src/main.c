@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "shellify.h"
 
 int main() {
+    shellify_init();
     while (shellify_is_running) {
-        shellify_draw();
         shellify_handle_input();
+        shellify_draw();
+        usleep(10000);
     }
 
     shellify_destroy();

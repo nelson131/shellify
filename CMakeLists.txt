@@ -6,5 +6,6 @@ add_executable(shellify
     src/main.c
     src/shellify.c
     src/buffer.c
+    src/input.c
 )
 

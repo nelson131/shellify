@@ -5,8 +5,9 @@
 #include <termios.h>
 
 #include "buffer.h"
+#include "input.h"
 
-static int shellify_is_running = 1;
+extern int shellify_is_running;
 
 void shellify_init();
 void shellify_destroy();

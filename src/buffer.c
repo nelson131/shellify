@@ -2,6 +2,9 @@
 
 #include <stdio.h>
 
+size_t window_cols = 0;
+size_t window_rows = 0;
+
 void buffer_init(size_t w_cols, size_t w_rows) {
     window_cols = w_cols;
     window_rows = w_rows;
