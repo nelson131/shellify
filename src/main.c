@@ -1,4 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main() { return 0; }
+#include "shellify.h"
+
+int main() {
+    while (shellify_is_running) {
+        shellify_draw();
+        shellify_handle_input();
+    }
+
+    shellify_destroy();
+
+    return 0;
+}
