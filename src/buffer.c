@@ -71,6 +71,17 @@ void buffer_set_char(size_t x, size_t y, char ch) {
     actual_buffer[to_index(x, y)] = ch;
 }
 
+void buffer_append_line(size_t x, size_t y, const char* line) {
+    if (!line || x >= window_cols || y >= window_rows) return;
+
+    size_t len = strlen(line);
+    if (x + len >= window_cols) return;
+
+    for (size_t i = 0; i < len; i++) {
+        actual_buffer[to_index(i + x, y)] = line[i];
+    }
+}
+
 size_t buffer_get_cols() { return window_cols; }
 
 size_t buffer_get_rows() { return window_rows; }

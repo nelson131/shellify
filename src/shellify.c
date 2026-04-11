@@ -48,5 +48,6 @@ void shellify_handle_input() {
 
     if (key == KEY_ARROW_UP) {
         buffer_set_char(10, 10, '^');
+        buffer_append_line(10, 12, "kids are doing WHAAT?");
     }
 }
