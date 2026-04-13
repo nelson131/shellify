@@ -7,7 +7,9 @@
 int shellify_is_running = 1;
 
 void shellify_init() {
-    config_load();
+    if (!config_load()) {
+        raise_error(ERR_CONFIG_LOAD, "something went wrong in config saving");
+    }
 
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
@@ -29,7 +31,9 @@ void shellify_init() {
 }
 
 void shellify_destroy() {
-    config_save();
+    if (!config_save()) {
+        raise_error(ERR_CONFIG_SAVE, "something went wrong in config saving");
+    }
 
     buffer_destroy();
 

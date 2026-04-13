@@ -2,18 +2,18 @@
 
 Config config;
 
-void config_load() {
+int config_load() {
     FILE* file = get_config_file("r");
     if (!file) {
         raise_error(ERR_NULL_OBJECT, "config:config_load:file");
-        return;
+        return 0;
     }
 
     char* line = malloc(CONFIG_LINE_SIZE * sizeof(char));
     if (!line) {
         fclose(file);
         raise_error(ERR_MALLOC_NULL, "config:config_load:file");
-        return;
+        return 0;
     }
 
     int   has_object = 0;
@@ -22,7 +22,7 @@ void config_load() {
         free(line);
         fclose(file);
         raise_error(ERR_MALLOC_NULL, "config:config_load:value");
-        return;
+        return 0;
     }
 
     while (fgets(line, CONFIG_LINE_SIZE, file) != NULL) {
@@ -47,13 +47,14 @@ void config_load() {
     free(value);
     free(line);
     fclose(file);
+    return 1;
 }
 
-void config_save() {
+int config_save() {
     FILE* file = get_config_file("w");
     if (!file) {
         raise_error(ERR_NULL_OBJECT, "config:config_save:file");
-        return;
+        return 0;
     }
 
     char* header = get_config_header();
@@ -70,6 +71,7 @@ void config_save() {
             config.keys.select);
 
     fclose(file);
+    return 1;
 }
 
 char* get_config_path() {
@@ -103,17 +105,17 @@ FILE* get_config_file(const char* mode) {
 }
 
 char* get_config_header() {
-#define HEADER_SIZE 64 * sizeof(char)
     time_t    t = time(NULL);
     struct tm tm = *localtime(&t);
 
-    char* str = malloc(HEADER_SIZE);
+#define STR_SIZE 128 * sizeof(char)
+    char* str = malloc(STR_SIZE);
     if (!str) {
         raise_error(ERR_MALLOC_NULL, "config:get_config_header:str");
         return NULL;
     }
 
-    snprintf(str, HEADER_SIZE, "# Config last time saving %d-%d-%d %d:%d:%d\n",
+    snprintf(str, STR_SIZE, "# Config last time saving %d-%d-%d %d:%d:%d\n",
              tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min,
              tm.tm_sec);
 
