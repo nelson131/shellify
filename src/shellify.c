@@ -7,6 +7,8 @@
 int shellify_is_running = 1;
 
 void shellify_init() {
+    config_load();
+
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
     buffer_init(winsize.ws_col, winsize.ws_row);
@@ -27,6 +29,8 @@ void shellify_init() {
 }
 
 void shellify_destroy() {
+    config_save();
+
     buffer_destroy();
 
     struct termios term;
