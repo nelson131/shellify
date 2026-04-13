@@ -1,22 +1,16 @@
 #include "config.h"
 
-#include <stdio.h>
-
 Config config;
 
 void config_load() {
-    char* config_path = get_config_path();
-
-    FILE* file = fopen(config_path, "r");
+    FILE* file = get_config_file("r");
     if (!file) {
-        free(config_path);
-        raise_error(ERR_FILE_OPENING, "config:config_load:file");
+        raise_error(ERR_NULL_OBJECT, "config:config_load:file");
         return;
     }
 
     char* line = malloc(CONFIG_LINE_SIZE * sizeof(char));
     if (!line) {
-        free(config_path);
         fclose(file);
         raise_error(ERR_MALLOC_NULL, "config:config_load:file");
         return;
@@ -25,7 +19,6 @@ void config_load() {
     int   has_object = 0;
     char* value = malloc(64 * sizeof(char));
     if (!value) {
-        free(config_path);
         free(line);
         fclose(file);
         raise_error(ERR_MALLOC_NULL, "config:config_load:value");
@@ -53,11 +46,31 @@ void config_load() {
 
     free(value);
     free(line);
-    free(config_path);
     fclose(file);
 }
 
-void config_save() {}
+void config_save() {
+    FILE* file = get_config_file("w");
+    if (!file) {
+        raise_error(ERR_NULL_OBJECT, "config:config_save:file");
+        return;
+    }
+
+    char* header = get_config_header();
+    fputs(header, file);
+    free(header);
+
+    fprintf(file, "[general]\nname=%s\nversion=%s\n\n", CONFIG_APP_NAME,
+            CONFIG_APP_VERSION);
+
+    fprintf(file, "[player]\nvolume=%zu\nshuffle=%zu\n\n", config.player.volume,
+            config.player.shuffle);
+    fprintf(file, "[keys]\nquit=%c\nup=%c\ndown=%c\nselect=%c\n",
+            config.keys.quit, config.keys.up, config.keys.down,
+            config.keys.select);
+
+    fclose(file);
+}
 
 char* get_config_path() {
     const char* home = getenv("HOME");
@@ -70,4 +83,39 @@ char* get_config_path() {
 
     snprintf(path, CONFIG_PATH_SIZE, CONFIG_PATH, home);
     return path;
+}
+
+FILE* get_config_file(const char* mode) {
+    char* config_path = get_config_path();
+    if (!config_path) {
+        raise_error(ERR_MALLOC_NULL, "config:get_config_file:file");
+        return NULL;
+    }
+
+    FILE* file = fopen(config_path, mode);
+    if (!file) {
+        raise_error(ERR_FILE_OPENING, "config:get_config:file:file");
+        return NULL;
+    }
+    free(config_path);
+
+    return file;
+}
+
+char* get_config_header() {
+#define HEADER_SIZE 64 * sizeof(char)
+    time_t    t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    char* str = malloc(HEADER_SIZE);
+    if (!str) {
+        raise_error(ERR_MALLOC_NULL, "config:get_config_header:str");
+        return NULL;
+    }
+
+    snprintf(str, HEADER_SIZE, "# Config last time saving %d-%d-%d %d:%d:%d\n",
+             tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min,
+             tm.tm_sec);
+
+    return str;
 }
