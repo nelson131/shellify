@@ -1,9 +1,12 @@
 #include "tui.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "buffer.h"
+
+char* separator = NULL;
+char* line_now_playing = NULL;
+char* song_name = NULL;
 
 void tui_init() {
     if (!separator) {
@@ -19,6 +22,23 @@ void tui_init() {
 
         temp[window_cols + 1] = '\0';
         separator = temp;
+    }
+
+#define PREFIX_SIZE strlen(PREFIX_PLAYING)
+    if (!line_now_playing) {
+        size_t str_size = ((window_cols - PREFIX_SIZE) + 1) * sizeof(char);
+        char*  temp = malloc(str_size);
+        if (!temp) {
+            raise_error(ERR_MALLOC_NULL, "tui:init_tui:now_playing");
+            return;
+        }
+
+        if (!song_name) {
+            song_name = "";
+        }
+
+        snprintf(temp, str_size, " %s%s\n", PREFIX_PLAYING, song_name);
+        line_now_playing = temp;
     }
 }
 
@@ -44,5 +64,6 @@ void create_header() {
     free(headline);
 
     buffer_append_line(0, 2, separator);
-    buffer_append_line(0, window_rows - 2, separator);
+    buffer_append_line(0, window_rows - 3, separator);
+    buffer_append_line(0, window_rows - 2, line_now_playing);
 }

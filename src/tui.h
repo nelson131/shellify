@@ -2,11 +2,16 @@
 #define TUI_H
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
 #include "error_handler.h"
 
-static char* separator = NULL;
+#define PREFIX_PLAYING " Now playing: "
+
+extern char* separator;
+extern char* line_now_playing;
+extern char* song_name;
 
 void tui_init();
 void tui_clear();
