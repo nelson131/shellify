@@ -25,13 +25,15 @@ int config_load() {
         return 0;
     }
 
+    strcpy(config.general.name, CONFIG_APP_NAME);
+    strcpy(config.general.version, CONFIG_APP_VERSION);
     while (fgets(line, CONFIG_LINE_SIZE, file) != NULL) {
-        if (sscanf(line, "name=%s", value) == 1) {
-            strcpy(config.general.name, value);
-            continue;
-        }
-        if (sscanf(line, "version=%s", value) == 1) {
-            strcpy(config.general.version, value);
+        if (strncmp(line, "desc=", 5) == 0) {
+            char* ptr = line + 5;
+            ptr[strcspn(ptr, "\r\n")] = 0;
+
+            strncpy(config.general.desc, ptr, sizeof(config.general.desc) - 1);
+            config.general.desc[sizeof(config.general.desc) - 1] = '\0';
             continue;
         }
 
@@ -61,8 +63,7 @@ int config_save() {
     fputs(header, file);
     free(header);
 
-    fprintf(file, "[general]\nname=%s\nversion=%s\n\n", CONFIG_APP_NAME,
-            CONFIG_APP_VERSION);
+    fprintf(file, "[general]\ndesc=%s\n\n", config.general.desc);
 
     fprintf(file, "[player]\nvolume=%zu\nshuffle=%zu\n\n", config.player.volume,
             config.player.shuffle);
