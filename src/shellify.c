@@ -13,7 +13,9 @@ void shellify_init() {
 
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
+
     buffer_init(winsize.ws_col, winsize.ws_row);
+    tui_init();
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -26,6 +28,8 @@ void shellify_init() {
 
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
+    create_header();
+
     printf("\033[2J");
     printf("\033[H");
 }
@@ -36,6 +40,7 @@ void shellify_destroy() {
     }
 
     buffer_destroy();
+    tui_clear();
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);

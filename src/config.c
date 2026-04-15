@@ -97,6 +97,7 @@ FILE* get_config_file(const char* mode) {
     FILE* file = fopen(config_path, mode);
     if (!file) {
         raise_error(ERR_FILE_OPENING, "config:get_config:file:file");
+        free(config_path);
         return NULL;
     }
     free(config_path);
@@ -116,7 +117,7 @@ char* get_config_header() {
     }
 
     snprintf(str, STR_SIZE, "# Config last time saving %d-%d-%d %d:%d:%d\n",
-             tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min,
+             tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min,
              tm.tm_sec);
 
     return str;

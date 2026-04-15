@@ -5,6 +5,9 @@
 size_t window_cols = 0;
 size_t window_rows = 0;
 
+char* actual_buffer = NULL;
+char* old_buffer = NULL;
+
 void buffer_init(size_t w_cols, size_t w_rows) {
     window_cols = w_cols;
     window_rows = w_rows;
@@ -75,7 +78,7 @@ void buffer_append_line(size_t x, size_t y, const char* line) {
     if (!line || x >= window_cols || y >= window_rows) return;
 
     size_t len = strlen(line);
-    if (x + len >= window_cols) return;
+    if (x + len > window_cols) return;
 
     for (size_t i = 0; i < len; i++) {
         actual_buffer[to_index(i + x, y)] = line[i];

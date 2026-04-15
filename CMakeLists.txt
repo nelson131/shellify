@@ -7,5 +7,8 @@ add_executable(shellify
     src/shellify.c
     src/buffer.c
     src/input.c
+    src/config.c
+    src/error_handler.c
+    src/tui.c
 )
 

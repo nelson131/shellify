@@ -7,8 +7,8 @@
 extern size_t window_cols;
 extern size_t window_rows;
 
-static char* actual_buffer = NULL;
-static char* old_buffer = NULL;
+extern char* actual_buffer;
+extern char* old_buffer;
 
 static inline size_t to_index(size_t x, size_t y) {
     return y * window_cols + x;

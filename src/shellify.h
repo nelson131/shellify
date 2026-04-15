@@ -7,6 +7,7 @@
 #include "buffer.h"
 #include "config.h"
 #include "input.h"
+#include "tui.h"
 
 extern int shellify_is_running;
 
