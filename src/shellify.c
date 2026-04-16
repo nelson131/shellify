@@ -4,7 +4,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int shellify_is_running = 1;
+#include "storage.h"
+
+int      shellify_is_running = 1;
+sqlite3* db = NULL;
 
 void shellify_init() {
     if (!config_load()) {
@@ -14,8 +17,11 @@ void shellify_init() {
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
 
-    if (buffer_init(winsize.ws_col, winsize.ws_row)) shellify_stop();
+    if (!buffer_init(winsize.ws_col, winsize.ws_row)) shellify_stop();
     if (!tui_init()) shellify_stop();
+
+    db = storage_init();
+    if (!db) shellify_stop();
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -41,6 +47,7 @@ void shellify_destroy() {
 
     buffer_destroy();
     tui_clear();
+    if (!storage_close(&db)) raise_error(FAILED, "shellify:destroy:storage");
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);

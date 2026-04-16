@@ -13,7 +13,9 @@
 sqlite3* db_init();
 int      db_close(sqlite3* db);
 
-int   db_execute(sqlite3* db, const char* query);
+int           db_execute(sqlite3* db, const char* query);
+sqlite3_stmt* db_prepare(sqlite3* db, const char* query);
+
 char* get_db_file_path();
 
 #endif

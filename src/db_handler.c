@@ -28,8 +28,13 @@ int db_close(sqlite3* db) {
 }
 
 int db_execute(sqlite3* db, const char* query) {
+    if (!db) {
+        raise_error(ERR_NULL_OBJECT, "db_handler:execute:db");
+        return 0;
+    }
+
     if (!query) {
-        raise_error(ERR_EMPTY_OBJECT, "db_hander:execute:query");
+        raise_error(ERR_EMPTY_OBJECT, "db_handler:execute:query");
         return 0;
     }
 
@@ -42,6 +47,26 @@ int db_execute(sqlite3* db, const char* query) {
     }
 
     return 1;
+}
+
+sqlite3_stmt* db_prepare(sqlite3* db, const char* query) {
+    if (!db) {
+        raise_error(ERR_NULL_OBJECT, "db_handler:prepare:db");
+        return NULL;
+    }
+
+    if (!query) {
+        raise_error(ERR_EMPTY_OBJECT, "db_handler:prepare:query");
+        return NULL;
+    }
+
+    sqlite3_stmt* stmt = NULL;
+    if (sqlite3_prepare16_v2(db, query, -1, &stmt, NULL) != SQLITE_OK) {
+        raise_error(ERR_SQLITE_FAILED, "db_handler:prepare:sqlite");
+        return NULL;
+    }
+
+    return stmt;
 }
 
 char* get_db_file_path() {

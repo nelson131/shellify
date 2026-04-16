@@ -6,11 +6,12 @@
 
 #include "buffer.h"
 #include "config.h"
-#include "db_handler.h"
 #include "input.h"
+#include "storage.h"
 #include "tui.h"
 
-extern int shellify_is_running;
+extern int      shellify_is_running;
+extern sqlite3* db;
 
 void shellify_init();
 void shellify_destroy();
