@@ -6,6 +6,7 @@
 
 #include "buffer.h"
 #include "config.h"
+#include "db_handler.h"
 #include "input.h"
 #include "tui.h"
 
@@ -16,5 +17,7 @@ void shellify_destroy();
 
 void shellify_draw();
 void shellify_handle_input();
+
+void shellify_stop();
 
 #endif

@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "error_handler.h"
+
 extern size_t window_cols;
 extern size_t window_rows;
 
@@ -14,7 +16,7 @@ static inline size_t to_index(size_t x, size_t y) {
     return y * window_cols + x;
 }
 
-void buffer_init(size_t w_cols, size_t w_rows);
+int  buffer_init(size_t w_cols, size_t w_rows);
 void buffer_clear();
 void buffer_destroy();
 

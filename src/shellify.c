@@ -14,8 +14,8 @@ void shellify_init() {
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
 
-    buffer_init(winsize.ws_col, winsize.ws_row);
-    tui_init();
+    if (buffer_init(winsize.ws_col, winsize.ws_row)) shellify_stop();
+    if (!tui_init()) shellify_stop();
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -28,7 +28,7 @@ void shellify_init() {
 
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
-    create_header();
+    if (!create_header()) shellify_stop();
 
     printf("\033[2J");
     printf("\033[H");
@@ -64,3 +64,5 @@ void shellify_handle_input() {
         buffer_append_line(10, 12, "kids are doing WHAAT?");
     }
 }
+
+void shellify_stop() { shellify_is_running = 0; }

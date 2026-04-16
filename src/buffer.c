@@ -8,7 +8,7 @@ size_t window_rows = 0;
 char* actual_buffer = NULL;
 char* old_buffer = NULL;
 
-void buffer_init(size_t w_cols, size_t w_rows) {
+int buffer_init(size_t w_cols, size_t w_rows) {
     window_cols = w_cols;
     window_rows = w_rows;
 
@@ -16,11 +16,13 @@ void buffer_init(size_t w_cols, size_t w_rows) {
     actual_buffer = malloc(size * sizeof(char));
     old_buffer = malloc(size * sizeof(char));
     if (!actual_buffer || !old_buffer) {
-        exit(1);
+        raise_error(ERR_MALLOC_NULL, "buffer:init:buffer");
+        return 0;
     }
 
     memset(actual_buffer, ' ', size);
     memset(old_buffer, ' ', size);
+    return 1;
 }
 
 void buffer_clear() { memset(actual_buffer, ' ', window_cols * window_rows); }

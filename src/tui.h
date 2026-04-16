@@ -13,9 +13,9 @@ extern char* separator;
 extern char* line_now_playing;
 extern char* song_name;
 
-void tui_init();
+int  tui_init();
 void tui_clear();
 
-void create_header();
+int create_header();
 
 #endif

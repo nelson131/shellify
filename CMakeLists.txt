@@ -12,6 +12,7 @@ add_executable(shellify
     src/config.c
     src/error_handler.c
     src/tui.c
+    src/db_handler.c
 )
 
 target_link_libraries(shellify
