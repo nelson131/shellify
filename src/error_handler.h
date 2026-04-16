@@ -7,9 +7,12 @@ typedef enum ErrorCode {
     SUCCESS,
     ERR_NULL_OBJECT,
     ERR_MALLOC_NULL,
+    ERR_EMPTY_OBJECT,
     ERR_FILE_OPENING,
     ERR_CONFIG_LOAD,
-    ERR_CONFIG_SAVE
+    ERR_CONFIG_SAVE,
+    ERR_SQLITE_OPEN,
+    ERR_SQLITE_FAILED
 } ErrorCode;
 
 void raise_error(ErrorCode code, const char* message);
