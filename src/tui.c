@@ -33,8 +33,13 @@ void tui_init() {
             return;
         }
 
+#define MAX_SONG_LEN 64
         if (!song_name) {
-            song_name = "";
+            song_name = calloc(' ', MAX_SONG_LEN * sizeof(char));
+            if (!song_name) {
+                raise_error(ERR_MALLOC_NULL, "tui:init_tui:song_name");
+                return;
+            }
         }
 
         snprintf(temp, str_size, " %s%s\n", PREFIX_PLAYING, song_name);
@@ -45,6 +50,14 @@ void tui_init() {
 void tui_clear() {
     if (separator) {
         free(separator);
+    }
+
+    if (line_now_playing) {
+        free(line_now_playing);
+    }
+
+    if (song_name) {
+        free(song_name);
     }
 }
 
