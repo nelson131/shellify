@@ -35,6 +35,7 @@ void shellify_init() {
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
     if (!create_header()) shellify_stop();
+    if (!create_welcome()) shellify_stop();
 
     printf("\033[2J");
     printf("\033[H");

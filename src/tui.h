@@ -17,5 +17,6 @@ int  tui_init();
 void tui_clear();
 
 int create_header();
+int create_welcome();
 
 #endif

@@ -84,3 +84,45 @@ int create_header() {
 
     return 1;
 }
+
+int create_welcome() {
+    size_t top_border = window_rows / 2 - 17;
+    size_t bottom_border = window_rows / 2;
+    size_t left_border = window_cols / 2 - 30;
+    size_t right_border = window_cols / 2 + 30;
+
+    size_t len_floor = right_border - left_border;
+    size_t len_wall = bottom_border - top_border;
+
+    char* floor = malloc(len_floor * sizeof(char) + 1);
+    if (!floor) {
+        raise_error(ERR_MALLOC_NULL, "tui:create_welcome:floor");
+        return 0;
+    } else {
+        for (size_t i = 0; i < len_floor; i++) {
+            floor[i] = '-';
+        }
+        floor[len_floor + 1] = '\0';
+    }
+
+    char* wall = malloc(len_wall * sizeof(char) + 1);
+    if (!wall) {
+        raise_error(ERR_MALLOC_NULL, "tui:create_welcome:wall");
+        free(floor);
+        return 0;
+    } else {
+        for (size_t i = 0; i < len_wall; i++) {
+            wall[i] = '|';
+        }
+        wall[len_wall + 1] = '\0';
+    }
+
+    buffer_append_line(left_border, top_border, floor);
+    buffer_append_line(left_border, bottom_border, floor);
+    buffer_append_vertical_line(left_border, top_border, wall);
+    buffer_append_vertical_line(right_border, top_border, wall);
+
+    free(floor);
+    free(wall);
+    return 1;
+}

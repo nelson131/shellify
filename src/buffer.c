@@ -87,6 +87,17 @@ void buffer_append_line(size_t x, size_t y, const char* line) {
     }
 }
 
+void buffer_append_vertical_line(size_t x, size_t y, const char* line) {
+    if (!line || x >= window_cols || y >= window_rows) return;
+
+    size_t len = strlen(line);
+    if (y + len > window_rows) return;
+
+    for (size_t i = 0; i < len; i++) {
+        actual_buffer[to_index(x, y + i)] = line[i];
+    }
+}
+
 size_t buffer_get_cols() { return window_cols; }
 
 size_t buffer_get_rows() { return window_rows; }
