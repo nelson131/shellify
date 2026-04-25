@@ -12,7 +12,8 @@ typedef enum KeyCode {
     KEY_ARROW_DOWN,
     KEY_ARROW_LEFT,
     KEY_ARROW_RIGHT,
-    KEY_ESC
+    KEY_ESC,
+    KEY_ENTER = 13
 } KeyCode;
 
 #endif

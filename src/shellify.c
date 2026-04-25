@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "buffer.h"
 #include "storage.h"
 
 int      shellify_is_running = 1;
@@ -34,11 +35,11 @@ void shellify_init() {
 
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
-    if (!create_header()) shellify_stop();
-    if (!create_welcome()) shellify_stop();
-
     printf("\033[2J");
     printf("\033[H");
+
+    if (!create_header()) shellify_stop();
+    if (!operate_welcome()) shellify_stop();
 }
 
 void shellify_destroy() {

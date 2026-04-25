@@ -4,12 +4,16 @@
 
 #include "buffer.h"
 
-char* separator = NULL;
-char* line_now_playing = NULL;
-char* song_name = NULL;
+TUI* tui = NULL;
 
 int tui_init() {
-    if (!separator) {
+    tui = malloc(sizeof(TUI));
+    if (!tui) {
+        raise_error(ERR_MALLOC_NULL, "tui:init_tui:tui");
+        return 0;
+    }
+
+    if (!tui->separator) {
         char* temp = malloc((window_cols + 1) * sizeof(char));
         if (!temp) {
             raise_error(ERR_MALLOC_NULL, "tui:init_tui:separator");
@@ -21,11 +25,11 @@ int tui_init() {
         }
 
         temp[window_cols + 1] = '\0';
-        separator = temp;
+        tui->separator = temp;
     }
 
 #define PREFIX_SIZE strlen(PREFIX_PLAYING)
-    if (!line_now_playing) {
+    if (!tui->line_status) {
         size_t str_size = ((window_cols - PREFIX_SIZE) + 1) * sizeof(char);
         char*  temp = malloc(str_size);
         if (!temp) {
@@ -33,33 +37,44 @@ int tui_init() {
             return 0;
         }
 
+        tui->line_status = temp;
+
 #define MAX_SONG_LEN 64
-        if (!song_name) {
-            song_name = calloc(' ', MAX_SONG_LEN * sizeof(char));
-            if (!song_name) {
+        if (!tui->song_name) {
+            char* temp = calloc(' ', MAX_SONG_LEN * sizeof(char));
+            if (!temp) {
                 raise_error(ERR_MALLOC_NULL, "tui:init_tui:song_name");
                 return 0;
             }
+
+            tui->song_name = temp;
         }
 
-        snprintf(temp, str_size, " %s%s\n", PREFIX_PLAYING, song_name);
-        line_now_playing = temp;
+        snprintf(tui->line_status, str_size, " %s%s\n", PREFIX_PLAYING,
+                 tui->song_name);
     }
+
+    tui->header_top_border = 2;
+    tui->header_bottom_border = window_rows - 3;
 
     return 1;
 }
 
 void tui_clear() {
-    if (separator) {
-        free(separator);
+    if (tui->separator) {
+        free(tui->separator);
     }
 
-    if (line_now_playing) {
-        free(line_now_playing);
+    if (tui->line_status) {
+        free(tui->line_status);
     }
 
-    if (song_name) {
-        free(song_name);
+    if (tui->song_name) {
+        free(tui->song_name);
+    }
+
+    if (tui) {
+        free(tui);
     }
 }
 
@@ -78,14 +93,14 @@ int create_header() {
     buffer_append_line(0, 0, headline);
     free(headline);
 
-    buffer_append_line(0, 2, separator);
-    buffer_append_line(0, window_rows - 3, separator);
-    buffer_append_line(0, window_rows - 2, line_now_playing);
+    buffer_append_line(0, tui->header_top_border, tui->separator);
+    buffer_append_line(0, tui->header_bottom_border, tui->separator);
+    buffer_append_line(0, tui->header_bottom_border + 1, tui->line_status);
 
     return 1;
 }
 
-int create_welcome() {
+int operate_welcome() {
     size_t top_border = window_rows / 2 - 17;
     size_t bottom_border = window_rows / 2;
     size_t left_border = window_cols / 2 - 30;
@@ -124,5 +139,23 @@ int create_welcome() {
 
     free(floor);
     free(wall);
+
+#define BUFFER_SIZE 128 * sizeof(char)
+    char* buffer = malloc(BUFFER_SIZE);
+    if (!buffer) {
+        raise_error(ERR_MALLOC_NULL, "tui:create_welcome:buffer");
+        return 0;
+    }
+
+    size_t center_sign = left_border + len_floor / 2;
+    snprintf(buffer, BUFFER_SIZE, "%s %s", config.general.name,
+             config.general.version);
+    buffer_append_line(center_sign - strlen(buffer), top_border + 1, buffer);
+
+    buffer_append_line(center_sign - strlen(config.general.desc),
+                       top_border + 3, config.general.desc);
+
+    free(buffer);
+
     return 1;
 }

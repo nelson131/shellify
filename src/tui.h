@@ -9,14 +9,21 @@
 
 #define PREFIX_PLAYING " Now playing: "
 
-extern char* separator;
-extern char* line_now_playing;
-extern char* song_name;
+typedef struct TUI {
+    size_t header_top_border;
+    size_t header_bottom_border;
+
+    char* separator;
+    char* line_status;
+    char* song_name;
+} TUI;
+
+extern TUI* tui;
 
 int  tui_init();
 void tui_clear();
 
 int create_header();
-int create_welcome();
+int operate_welcome();
 
 #endif

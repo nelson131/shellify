@@ -27,6 +27,10 @@ void buffer_set_char(size_t x, size_t y, char ch);
 void buffer_append_line(size_t x, size_t y, const char* line);
 void buffer_append_vertical_line(size_t x, size_t y, const char* line);
 
+void buffer_clear_line(size_t fx, size_t sx, size_t y);
+void buffer_clear_vertical_line(size_t fy, size_t sy, size_t x);
+void buffer_clear_square(size_t fx, size_t fy, size_t sx, size_t sy);
+
 size_t buffer_get_cols();
 size_t buffer_get_rows();
 

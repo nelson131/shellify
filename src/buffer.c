@@ -98,6 +98,36 @@ void buffer_append_vertical_line(size_t x, size_t y, const char* line) {
     }
 }
 
+void buffer_clear_line(size_t fx, size_t sx, size_t y) {
+    if (sx >= window_cols || y >= window_rows) return;
+
+    for (size_t i = fx; i <= sx; i++) {
+        size_t index = to_index(i, y);
+        if (actual_buffer[index] != ' ') {
+            actual_buffer[index] = ' ';
+        }
+    }
+}
+
+void buffer_clear_vertical_line(size_t fy, size_t sy, size_t x) {
+    if (sy >= window_rows || x >= window_cols) return;
+
+    for (size_t i = fy; i <= sy; i++) {
+        size_t index = to_index(x, i);
+        if (actual_buffer[index] != ' ') {
+            actual_buffer[index] = ' ';
+        }
+    }
+}
+
+void buffer_clear_square(size_t fx, size_t fy, size_t sx, size_t sy) {
+    if (sx >= window_cols || sy >= window_rows) return;
+
+    for (size_t y = fy; y <= sy; y++) {
+        buffer_clear_line(fx, sx, y);
+    }
+}
+
 size_t buffer_get_cols() { return window_cols; }
 
 size_t buffer_get_rows() { return window_rows; }
