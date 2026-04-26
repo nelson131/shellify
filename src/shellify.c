@@ -21,18 +21,16 @@ void shellify_init() {
     shellify->window_cols = winsize.ws_col;
     shellify->window_rows = winsize.ws_row;
 
-    printf("1\n");
     if (!config_load(&shellify->config)) shellify_stop();
-    printf("2\n");
+
     if (!buffer_init(&shellify->buffer, &shellify->window_cols,
                      &shellify->window_rows))
         shellify_stop();
-    printf("3\n");
+
     if (!tui_init(&shellify->tui, &shellify->window_cols,
                   &shellify->window_rows))
         shellify_stop();
 
-    printf("4\n");
     if (!storage_init(&shellify->db)) shellify_stop();
 
     struct termios term;
@@ -79,11 +77,7 @@ void shellify_destroy() {
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
-void shellify_draw() {
-    printf("1r\n");
-    buffer_render(shellify->buffer);
-    printf("2r\n");
-}
+void shellify_draw() { buffer_render(shellify->buffer); }
 
 void shellify_handle_input() {
     int key = input_poll();

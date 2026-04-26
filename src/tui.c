@@ -150,7 +150,7 @@ int create_welcome(TUI* tui, Buffer* buffer, Config* config) {
         (Vec){center_sign - strlen(config->general.desc), top_border + 3},
         config->general.desc);
 
-    free(buffer);
+    free(buf);
 
     return 1;
 }

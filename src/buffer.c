@@ -47,14 +47,11 @@ void buffer_destroy(Buffer* buffer) {
 }
 
 void buffer_render(Buffer* buffer) {
-    printf("a");
     for (size_t y = 0; y < buffer->window_rows; y++) {
         for (size_t x = 0; x < buffer->window_cols; x++) {
             size_t i = to_index(buffer, (Vec){x, y});
 
-            printf("s");
             if (buffer->actual[i] != buffer->old[i]) {
-                printf("d");
                 printf("\033[%zu;%zuH", y + 1, x + 1);
                 putchar(buffer->actual[i]);
                 buffer->old[i] = buffer->actual[i];
