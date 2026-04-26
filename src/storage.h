@@ -8,7 +8,7 @@
 #include "db_handler.h"
 #include "error_handler.h"
 
-sqlite3* storage_init();
-int      storage_close(sqlite3** db);
+int storage_init(sqlite3** db);
+int storage_close(sqlite3** db);
 
 #endif

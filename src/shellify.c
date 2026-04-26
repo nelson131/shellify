@@ -7,22 +7,33 @@
 #include "buffer.h"
 #include "storage.h"
 
-int      shellify_is_running = 1;
-sqlite3* db = NULL;
+Shellify* shellify = NULL;
 
 void shellify_init() {
-    if (!config_load()) {
-        raise_error(ERR_CONFIG_LOAD, "something went wrong in config saving");
-    }
+    shellify = malloc(sizeof(Shellify));
+    if (!shellify) shellify_stop();
+
+    shellify->is_running = 1;
+    shellify->db = NULL;
 
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
+    shellify->window_cols = winsize.ws_col;
+    shellify->window_rows = winsize.ws_row;
 
-    if (!buffer_init(winsize.ws_col, winsize.ws_row)) shellify_stop();
-    if (!tui_init()) shellify_stop();
+    printf("1\n");
+    if (!config_load(&shellify->config)) shellify_stop();
+    printf("2\n");
+    if (!buffer_init(&shellify->buffer, &shellify->window_cols,
+                     &shellify->window_rows))
+        shellify_stop();
+    printf("3\n");
+    if (!tui_init(&shellify->tui, &shellify->window_cols,
+                  &shellify->window_rows))
+        shellify_stop();
 
-    db = storage_init();
-    if (!db) shellify_stop();
+    printf("4\n");
+    if (!storage_init(&shellify->db)) shellify_stop();
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -38,18 +49,29 @@ void shellify_init() {
     printf("\033[2J");
     printf("\033[H");
 
-    if (!create_header()) shellify_stop();
-    if (!operate_welcome()) shellify_stop();
+    if (!create_header(shellify->tui, shellify->buffer, shellify->config))
+        shellify_stop();
+
+    if (!create_welcome(shellify->tui, shellify->buffer, shellify->config))
+        shellify_stop();
 }
 
 void shellify_destroy() {
-    if (!config_save()) {
+    if (!config_save(shellify->config)) {
         raise_error(ERR_CONFIG_SAVE, "something went wrong in config saving");
     }
+    free(shellify->config);
 
-    buffer_destroy();
-    tui_clear();
-    if (!storage_close(&db)) raise_error(FAILED, "shellify:destroy:storage");
+    buffer_destroy(shellify->buffer);
+    free(shellify->buffer);
+
+    tui_clear(shellify->tui);
+    free(shellify->tui);
+
+    if (!storage_close(&shellify->db))
+        raise_error(FAILED, "shellify:destroy:storage");
+
+    free(shellify);
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -57,7 +79,11 @@ void shellify_destroy() {
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
-void shellify_draw() { buffer_render(); }
+void shellify_draw() {
+    printf("1r\n");
+    buffer_render(shellify->buffer);
+    printf("2r\n");
+}
 
 void shellify_handle_input() {
     int key = input_poll();
@@ -65,13 +91,14 @@ void shellify_handle_input() {
     if (key == -1) return;
 
     if (key == 'q') {
-        shellify_is_running = 0;
+        shellify->is_running = 0;
     }
 
     if (key == KEY_ARROW_UP) {
-        buffer_set_char(10, 10, '^');
-        buffer_append_line(10, 12, "kids are doing WHAAT?");
+        buffer_set_char(shellify->buffer, (Vec){10, 10}, '^');
+        buffer_append_line(shellify->buffer, (Vec){10, 12},
+                           "the pain, it comes in waves");
     }
 }
 
-void shellify_stop() { shellify_is_running = 0; }
+void shellify_stop() { shellify->is_running = 0; }

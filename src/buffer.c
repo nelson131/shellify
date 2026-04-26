@@ -2,53 +2,62 @@
 
 #include <stdio.h>
 
-size_t window_cols = 0;
-size_t window_rows = 0;
+size_t to_index(Buffer* buffer, Vec v) {
+    return v.y * buffer->window_cols + v.x;
+}
 
-char* actual_buffer = NULL;
-char* old_buffer = NULL;
-
-int buffer_init(size_t w_cols, size_t w_rows) {
-    window_cols = w_cols;
-    window_rows = w_rows;
-
-    size_t size = w_cols * w_rows;
-    actual_buffer = malloc(size * sizeof(char));
-    old_buffer = malloc(size * sizeof(char));
-    if (!actual_buffer || !old_buffer) {
+int buffer_init(Buffer** buffer, size_t* window_cols, size_t* window_rows) {
+    Buffer* temp = malloc(sizeof(Buffer));
+    if (!temp) {
         raise_error(ERR_MALLOC_NULL, "buffer:init:buffer");
         return 0;
     }
+    size_t size = *window_cols * *window_rows;
+    temp->actual = malloc(size * sizeof(char));
+    temp->old = malloc(size * sizeof(char));
+    if (!temp->actual || !temp->old) {
+        raise_error(ERR_MALLOC_NULL, "buffer:init:buffer_arrays");
+        return 0;
+    }
 
-    memset(actual_buffer, ' ', size);
-    memset(old_buffer, ' ', size);
+    memset(temp->actual, ' ', size);
+    memset(temp->old, ' ', size);
+
+    temp->window_cols = *window_cols;
+    temp->window_rows = *window_rows;
+
+    *buffer = temp;
     return 1;
 }
 
-void buffer_clear() { memset(actual_buffer, ' ', window_cols * window_rows); }
+void buffer_clear(Buffer* buffer) {
+    memset(buffer->actual, ' ', buffer->window_cols * buffer->window_rows);
+}
 
-void buffer_destroy() {
-    if (actual_buffer) {
-        free(actual_buffer);
-        actual_buffer = NULL;
+void buffer_destroy(Buffer* buffer) {
+    if (buffer->actual) {
+        free(buffer->actual);
+        buffer->actual = NULL;
     }
 
-    if (old_buffer) {
-        free(old_buffer);
-        old_buffer = NULL;
+    if (buffer->old) {
+        free(buffer->old);
+        buffer->old = NULL;
     }
 }
 
-void buffer_render() {
-    for (size_t y = 0; y < window_rows; y++) {
-        for (size_t x = 0; x < window_cols; x++) {
-            size_t i = to_index(x, y);
+void buffer_render(Buffer* buffer) {
+    printf("a");
+    for (size_t y = 0; y < buffer->window_rows; y++) {
+        for (size_t x = 0; x < buffer->window_cols; x++) {
+            size_t i = to_index(buffer, (Vec){x, y});
 
-            if (actual_buffer[i] != old_buffer[i]) {
+            printf("s");
+            if (buffer->actual[i] != buffer->old[i]) {
+                printf("d");
                 printf("\033[%zu;%zuH", y + 1, x + 1);
-                putchar(actual_buffer[i]);
-
-                old_buffer[i] = actual_buffer[i];
+                putchar(buffer->actual[i]);
+                buffer->old[i] = buffer->actual[i];
             }
         }
     }
@@ -56,78 +65,76 @@ void buffer_render() {
     fflush(stdout);
 }
 
-void buffer_render_full() {
+void buffer_render_full(Buffer* buffer) {
     printf("\033[H");
 
-    for (size_t y = 0; y < window_rows; y++) {
-        for (size_t x = 0; x < window_cols; x++) {
-            size_t i = to_index(x, y);
-            putchar(actual_buffer[i]);
-            old_buffer[i] = actual_buffer[i];
+    for (size_t y = 0; y < buffer->window_rows; y++) {
+        for (size_t x = 0; x < buffer->window_cols; x++) {
+            size_t i = to_index(buffer, (Vec){x, y});
+            putchar(buffer->actual[i]);
+            buffer->old[i] = buffer->actual[i];
         }
     }
 
     fflush(stdout);
 }
 
-void buffer_set_char(size_t x, size_t y, char ch) {
-    if (x >= window_cols || y >= window_rows) return;
+void buffer_set_char(Buffer* buffer, Vec v, char ch) {
+    if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
 
-    actual_buffer[to_index(x, y)] = ch;
+    buffer->actual[to_index(buffer, v)] = ch;
 }
 
-void buffer_append_line(size_t x, size_t y, const char* line) {
-    if (!line || x >= window_cols || y >= window_rows) return;
+void buffer_append_line(Buffer* buffer, Vec v, const char* line) {
+    if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
+        return;
 
     size_t len = strlen(line);
-    if (x + len > window_cols) return;
+    if (v.x + len > buffer->window_cols) return;
 
     for (size_t i = 0; i < len; i++) {
-        actual_buffer[to_index(i + x, y)] = line[i];
+        buffer->actual[to_index(buffer, (Vec){i + v.x, v.y})] = line[i];
     }
 }
 
-void buffer_append_vertical_line(size_t x, size_t y, const char* line) {
-    if (!line || x >= window_cols || y >= window_rows) return;
+void buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line) {
+    if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
+        return;
 
     size_t len = strlen(line);
-    if (y + len > window_rows) return;
+    if (v.y + len > buffer->window_rows) return;
 
     for (size_t i = 0; i < len; i++) {
-        actual_buffer[to_index(x, y + i)] = line[i];
+        buffer->actual[to_index(buffer, (Vec){v.x, v.y + i})] = line[i];
     }
 }
 
-void buffer_clear_line(size_t fx, size_t sx, size_t y) {
-    if (sx >= window_cols || y >= window_rows) return;
+void buffer_clear_line(Buffer* buffer, Vec range, size_t y) {
+    if (range.y >= buffer->window_cols || y >= buffer->window_rows) return;
 
-    for (size_t i = fx; i <= sx; i++) {
-        size_t index = to_index(i, y);
-        if (actual_buffer[index] != ' ') {
-            actual_buffer[index] = ' ';
+    for (size_t i = range.x; i <= range.y; i++) {
+        size_t index = to_index(buffer, (Vec){i, y});
+        if (buffer->actual[index] != ' ') {
+            buffer->actual[index] = ' ';
         }
     }
 }
 
-void buffer_clear_vertical_line(size_t fy, size_t sy, size_t x) {
-    if (sy >= window_rows || x >= window_cols) return;
+void buffer_clear_vertical_line(Buffer* buffer, Vec range, size_t x) {
+    if (range.y >= buffer->window_rows || x >= buffer->window_cols) return;
 
-    for (size_t i = fy; i <= sy; i++) {
-        size_t index = to_index(x, i);
-        if (actual_buffer[index] != ' ') {
-            actual_buffer[index] = ' ';
+    for (size_t i = range.x; i <= range.y; i++) {
+        size_t index = to_index(buffer, (Vec){x, i});
+        if (buffer->actual[index] != ' ') {
+            buffer->actual[index] = ' ';
         }
     }
 }
 
-void buffer_clear_square(size_t fx, size_t fy, size_t sx, size_t sy) {
-    if (sx >= window_cols || sy >= window_rows) return;
+void buffer_clear_square(Buffer* buffer, Vec v1, Vec v2) {
+    if (v2.x >= buffer->window_cols || v2.y >= buffer->window_rows) return;
 
-    for (size_t y = fy; y <= sy; y++) {
-        buffer_clear_line(fx, sx, y);
+    for (size_t y = v1.y; y <= v2.y; y++) {
+        buffer_clear_line(buffer, (Vec){v1.x, v2.y}, y);
     }
 }
-
-size_t buffer_get_cols() { return window_cols; }
-
-size_t buffer_get_rows() { return window_rows; }

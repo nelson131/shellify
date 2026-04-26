@@ -6,7 +6,7 @@
 
 int main() {
     shellify_init();
-    while (shellify_is_running) {
+    while (shellify->is_running) {
         shellify_handle_input();
         shellify_draw();
         usleep(10000);

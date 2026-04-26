@@ -2,9 +2,16 @@
 
 Config config;
 
-int config_load() {
+int config_load(Config** config) {
+    Config* temp = malloc(sizeof(Config));
+    if (!temp) {
+        raise_error(ERR_MALLOC_NULL, "config:config_load:temp");
+        return 0;
+    }
+
     FILE* file = get_config_file("r");
     if (!file) {
+        free(temp);
         raise_error(ERR_NULL_OBJECT, "config:config_load:file");
         return 0;
     }
@@ -12,47 +19,40 @@ int config_load() {
     char* line = malloc(CONFIG_LINE_SIZE * sizeof(char));
     if (!line) {
         fclose(file);
+        free(temp);
         raise_error(ERR_MALLOC_NULL, "config:config_load:file");
         return 0;
     }
 
-    int   has_object = 0;
-    char* value = malloc(64 * sizeof(char));
-    if (!value) {
-        free(line);
-        fclose(file);
-        raise_error(ERR_MALLOC_NULL, "config:config_load:value");
-        return 0;
-    }
-
-    strcpy(config.general.name, CONFIG_APP_NAME);
-    strcpy(config.general.version, CONFIG_APP_VERSION);
+    int has_object = 0;
+    strcpy(temp->general.name, CONFIG_APP_NAME);
+    strcpy(temp->general.version, CONFIG_APP_VERSION);
     while (fgets(line, CONFIG_LINE_SIZE, file) != NULL) {
         if (strncmp(line, "desc=", 5) == 0) {
             char* ptr = line + 5;
             ptr[strcspn(ptr, "\r\n")] = 0;
 
-            strncpy(config.general.desc, ptr, sizeof(config.general.desc) - 1);
-            config.general.desc[sizeof(config.general.desc) - 1] = '\0';
+            strncpy(temp->general.desc, ptr, sizeof(temp->general.desc) - 1);
+            temp->general.desc[sizeof(temp->general.desc) - 1] = '\0';
             continue;
         }
 
-        if (sscanf(line, "volume=%zu", &config.player.volume) == 1) continue;
-        if (sscanf(line, "shuffle=%zu", &config.player.shuffle) == 1) continue;
+        if (sscanf(line, "volume=%zu", &temp->player.volume) == 1) continue;
+        if (sscanf(line, "shuffle=%zu", &temp->player.shuffle) == 1) continue;
 
-        if (sscanf(line, "quit=%c", &config.keys.quit) == 1) continue;
-        if (sscanf(line, "up=%c", &config.keys.up) == 1) continue;
-        if (sscanf(line, "down=%c", &config.keys.down) == 1) continue;
-        if (sscanf(line, "select=%c", &config.keys.select) == 1) continue;
+        if (sscanf(line, "quit=%c", &temp->keys.quit) == 1) continue;
+        if (sscanf(line, "up=%c", &temp->keys.up) == 1) continue;
+        if (sscanf(line, "down=%c", &temp->keys.down) == 1) continue;
+        if (sscanf(line, "select=%c", &temp->keys.select) == 1) continue;
     }
 
-    free(value);
     free(line);
     fclose(file);
+    *config = temp;
     return 1;
 }
 
-int config_save() {
+int config_save(Config* config) {
     FILE* file = get_config_file("w");
     if (!file) {
         raise_error(ERR_NULL_OBJECT, "config:config_save:file");
@@ -63,13 +63,13 @@ int config_save() {
     fputs(header, file);
     free(header);
 
-    fprintf(file, "[general]\ndesc=%s\n\n", config.general.desc);
+    fprintf(file, "[general]\ndesc=%s\n\n", config->general.desc);
 
-    fprintf(file, "[player]\nvolume=%zu\nshuffle=%zu\n\n", config.player.volume,
-            config.player.shuffle);
+    fprintf(file, "[player]\nvolume=%zu\nshuffle=%zu\n\n",
+            config->player.volume, config->player.shuffle);
     fprintf(file, "[keys]\nquit=%c\nup=%c\ndown=%c\nselect=%c\n",
-            config.keys.quit, config.keys.up, config.keys.down,
-            config.keys.select);
+            config->keys.quit, config->keys.up, config->keys.down,
+            config->keys.select);
 
     fclose(file);
     return 1;

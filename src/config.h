@@ -14,7 +14,7 @@
 #define CONFIG_LINE_SIZE 128
 
 #define CONFIG_APP_NAME "shellify"
-#define CONFIG_APP_VERSION "v0.2.1"
+#define CONFIG_APP_VERSION "v0.3.0"
 
 typedef struct cfg_general {
     char name[CONFIG_GENERAL_SIZE];
@@ -40,10 +40,8 @@ typedef struct Config {
     cfg_keys    keys;
 } Config;
 
-extern Config config;
-
-int config_load();
-int config_save();
+int config_load(Config** config);
+int config_save(Config* config);
 
 char* get_config_path();
 FILE* get_config_file(const char* mode);

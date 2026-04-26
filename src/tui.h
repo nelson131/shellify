@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "buffer.h"
 #include "config.h"
 #include "error_handler.h"
 
@@ -18,12 +19,10 @@ typedef struct TUI {
     char* song_name;
 } TUI;
 
-extern TUI* tui;
+int  tui_init(TUI** tui, size_t* window_cols, size_t* window_rows);
+void tui_clear(TUI* tui);
 
-int  tui_init();
-void tui_clear();
-
-int create_header();
-int operate_welcome();
+int create_header(TUI* tui, Buffer* buffer, Config* config);
+int create_welcome(TUI* tui, Buffer* buffer, Config* config);
 
 #endif

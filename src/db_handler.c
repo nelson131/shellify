@@ -14,6 +14,7 @@ sqlite3* db_init() {
         return NULL;
     }
 
+    free(file_path);
     return db;
 }
 

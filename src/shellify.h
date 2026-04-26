@@ -10,8 +10,28 @@
 #include "storage.h"
 #include "tui.h"
 
-extern int      shellify_is_running;
-extern sqlite3* db;
+typedef enum ShellifyState {
+    SHELLIFY_STATE_WELCOME,
+    SHELLIFY_STATE_PLAYER
+} ShellifyState;
+
+typedef struct Shellify {
+    int           is_running;
+    ShellifyState state;
+
+    size_t window_cols;
+    size_t window_rows;
+
+    Config* config;
+
+    Buffer* buffer;
+
+    TUI* tui;
+
+    sqlite3* db;
+} Shellify;
+
+extern Shellify* shellify;
 
 void shellify_init();
 void shellify_destroy();

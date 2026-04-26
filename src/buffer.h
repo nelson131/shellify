@@ -5,33 +5,31 @@
 #include <string.h>
 
 #include "error_handler.h"
+#include "vec.h"
 
-extern size_t window_cols;
-extern size_t window_rows;
+typedef struct Buffer {
+    char* actual;
+    char* old;
 
-extern char* actual_buffer;
-extern char* old_buffer;
+    size_t window_cols;
+    size_t window_rows;
+} Buffer;
 
-static inline size_t to_index(size_t x, size_t y) {
-    return y * window_cols + x;
-}
+static size_t to_index(Buffer* buffer, Vec v);
 
-int  buffer_init(size_t w_cols, size_t w_rows);
-void buffer_clear();
-void buffer_destroy();
+int  buffer_init(Buffer** buffer, size_t* window_cols, size_t* window_rows);
+void buffer_clear(Buffer* buffer);
+void buffer_destroy(Buffer* buffer);
 
-void buffer_render();
-void buffer_render_full();
+void buffer_render(Buffer* buffer);
+void buffer_render_full(Buffer* buffer);
 
-void buffer_set_char(size_t x, size_t y, char ch);
-void buffer_append_line(size_t x, size_t y, const char* line);
-void buffer_append_vertical_line(size_t x, size_t y, const char* line);
+void buffer_set_char(Buffer* buffer, Vec v, char ch);
+void buffer_append_line(Buffer* buffer, Vec v, const char* line);
+void buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line);
 
-void buffer_clear_line(size_t fx, size_t sx, size_t y);
-void buffer_clear_vertical_line(size_t fy, size_t sy, size_t x);
-void buffer_clear_square(size_t fx, size_t fy, size_t sx, size_t sy);
-
-size_t buffer_get_cols();
-size_t buffer_get_rows();
+void buffer_clear_line(Buffer* buffer, Vec range, size_t y);
+void buffer_clear_vertical_line(Buffer* buffer, Vec range, size_t x);
+void buffer_clear_square(Buffer* buffer, Vec v1, Vec v2);
 
 #endif
