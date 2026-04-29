@@ -15,6 +15,7 @@ void shellify_init() {
 
     shellify->is_running = 1;
     shellify->db = NULL;
+    shellify->state = SHELLIFY_STATE_WELCOME;
 
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
@@ -81,17 +82,28 @@ void shellify_draw() { buffer_render(shellify->buffer); }
 
 void shellify_handle_input() {
     int key = input_poll();
-
     if (key == -1) return;
 
-    if (key == 'q') {
+    if (key == shellify->config->keys.quit) {
         shellify->is_running = 0;
     }
 
-    if (key == KEY_ARROW_UP) {
-        buffer_set_char(shellify->buffer, (Vec){10, 10}, '^');
-        buffer_append_line(shellify->buffer, (Vec){10, 12},
-                           "the pain, it comes in waves");
+    if (shellify->state == SHELLIFY_STATE_WELCOME) {
+        if (key == KEY_ENTER) {
+            shellify->state = SHELLIFY_STATE_PLAYER;
+            buffer_clear(shellify->buffer);
+            create_header(shellify->tui, shellify->buffer, shellify->config);
+            return;
+        }
+    }
+
+    if (shellify->state == SHELLIFY_STATE_PLAYER) {
+        if (key == KEY_ARROW_UP) {
+            buffer_set_char(shellify->buffer, (Vec){10, 10}, '^');
+            buffer_append_line(shellify->buffer, (Vec){10, 12},
+                               "the pain, it comes in waves");
+            return;
+        }
     }
 }
 

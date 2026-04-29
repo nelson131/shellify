@@ -12,7 +12,8 @@ typedef enum ErrorCode {
     ERR_CONFIG_LOAD,
     ERR_CONFIG_SAVE,
     ERR_SQLITE_OPEN,
-    ERR_SQLITE_FAILED
+    ERR_SQLITE_FAILED,
+    ERR_SONG_NOT_FOUND
 } ErrorCode;
 
 void raise_error(ErrorCode code, const char* message);

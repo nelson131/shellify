@@ -62,7 +62,7 @@ sqlite3_stmt* db_prepare(sqlite3* db, const char* query) {
     }
 
     sqlite3_stmt* stmt = NULL;
-    if (sqlite3_prepare16_v2(db, query, -1, &stmt, NULL) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db, query, -1, &stmt, NULL) != SQLITE_OK) {
         raise_error(ERR_SQLITE_FAILED, "db_handler:prepare:sqlite");
         return NULL;
     }
@@ -82,4 +82,16 @@ char* get_db_file_path() {
 
     snprintf(path, MAX_PATH_LEN, DB_FILE_PATH, home_path);
     return path;
+}
+
+void bind_int(sqlite3_stmt* stmt, int index, int value) {
+    sqlite3_bind_int(stmt, index, value);
+}
+
+void bind_str(sqlite3_stmt* stmt, int index, const char* value) {
+    sqlite3_bind_text(stmt, index, value, -1, SQLITE_TRANSIENT);
+}
+
+void bind_time(sqlite3_stmt* stmt, int index, time_t time) {
+    sqlite3_bind_int64(stmt, index, time);
 }

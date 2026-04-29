@@ -29,6 +29,7 @@ typedef struct Shellify {
     TUI* tui;
 
     sqlite3* db;
+    Library* library;
 } Shellify;
 
 extern Shellify* shellify;
