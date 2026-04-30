@@ -44,10 +44,14 @@ int storage_load(sqlite3* db, Library** library);
 
 Song* find_song_by_id(Library* library, size_t id);
 
-int storage_create_song(Library* library, size_t id, const char* path,
-                        const char* title, const char* artist,
-                        const char* album, size_t duration, time_t time);
-int storage_create_playlist(Library* library, size_t id, const char* name);
+Song* storage_create_song(Library* library, size_t id, const char* path,
+                          const char* title, const char* artist,
+                          const char* album, size_t duration, time_t time);
+int   storage_add_song(sqlite3* db, Library* library, Song* song);
+
+Playlist* storage_create_playlist(Library* library, size_t id,
+                                  const char* name);
+int storage_add_playlist(sqlite3* db, Library* library, Playlist* playlist);
 
 void library_clear(Library* library);
 void playlist_clear(Playlist* playlist);

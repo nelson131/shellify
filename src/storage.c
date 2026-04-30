@@ -170,17 +170,17 @@ Song* find_song_by_id(Library* library, size_t id) {
     return NULL;
 }
 
-int storage_create_song(Library* library, size_t id, const char* path,
-                        const char* title, const char* artist,
-                        const char* album, size_t duration, time_t time) {
+Song* storage_create_song(Library* library, size_t id, const char* path,
+                          const char* title, const char* artist,
+                          const char* album, size_t duration, time_t time) {
     if (!library) {
         raise_error(ERR_NULL_OBJECT, "storage:create_song:library");
-        return 0;
+        return NULL;
     }
 
     if (!path || !title || !artist || !album) {
         raise_error(ERR_NULL_OBJECT, "storage:create_song:args");
-        return 0;
+        return NULL;
     }
 
     if (library->song_count + 1 >= library->songs_capacity) {
@@ -189,7 +189,7 @@ int storage_create_song(Library* library, size_t id, const char* path,
             realloc(library->songs, library->songs_capacity * sizeof(Song));
         if (!temp) {
             raise_error(ERR_MALLOC_NULL, "storage:create_song:temp:realloc");
-            return 0;
+            return NULL;
         }
 
         library->songs = temp;
@@ -206,18 +206,56 @@ int storage_create_song(Library* library, size_t id, const char* path,
 
     library->song_count++;
 
+    return song;
+}
+
+int storage_add_song(sqlite3* db, Library* library, Song* song) {
+    if (!db) {
+        raise_error(ERR_NULL_OBJECT, "storage:add_song:db");
+        return 0;
+    }
+    if (!library) {
+        raise_error(ERR_NULL_OBJECT, "storage:add_song:library");
+        return 0;
+    }
+
+    if (!song) {
+        raise_error(ERR_NULL_OBJECT, "storage:add_song:song");
+        return 0;
+    }
+
+    const char* query =
+        "SELECT INTO songs (path, title, artist, album, duration, mtime) "
+        "VALUES (?, ?, ?, ?, ?, ?)";
+    sqlite3_stmt* stmt = db_prepare(db, query);
+
+    bind_str(stmt, 1, song->path);
+    bind_str(stmt, 2, song->title);
+    bind_str(stmt, 3, song->artist);
+    bind_str(stmt, 4, song->album);
+    bind_int(stmt, 5, song->duration);
+    bind_time(stmt, 6, song->time);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        raise_error(ERR_SQLITE_FAILED, "storage:add_song:failed_to_add");
+        return 0;
+    }
+
+    sqlite3_finalize(stmt);
     return 1;
 }
 
-int storage_create_playlist(Library* library, size_t id, const char* name) {
+Playlist* storage_create_playlist(Library* library, size_t id,
+                                  const char* name) {
     if (!library) {
         raise_error(ERR_NULL_OBJECT, "storage:create_playlist:library");
-        return 0;
+        return NULL;
     }
 
     if (!name) {
         raise_error(ERR_NULL_OBJECT, "storage:create_playlist:name");
-        return 0;
+        return NULL;
     }
 
     if (library->playlists_capacity + 1 >= library->playlist_count) {
@@ -227,7 +265,7 @@ int storage_create_playlist(Library* library, size_t id, const char* name) {
         if (!temp) {
             raise_error(ERR_MALLOC_NULL,
                         "storage:create_playlist:temp:realloc");
-            return 0;
+            return NULL;
         }
 
         library->playlists = temp;
@@ -241,6 +279,37 @@ int storage_create_playlist(Library* library, size_t id, const char* name) {
 
     library->playlist_count++;
 
+    return playlist;
+}
+
+int storage_add_playlist(sqlite3* db, Library* library, Playlist* playlist) {
+    if (!db) {
+        raise_error(ERR_NULL_OBJECT, "storage:add_playlist:db");
+        return 0;
+    }
+
+    if (!library) {
+        raise_error(ERR_NULL_OBJECT, "storage:add_playlist:library");
+        return 0;
+    }
+
+    if (!playlist) {
+        raise_error(ERR_NULL_OBJECT, "storage:add_playlistt:playlist");
+        return 0;
+    }
+
+    const char*   query = "INSERT INTO playlists (name) VALUES ?";
+    sqlite3_stmt* stmt = db_prepare(db, query);
+
+    bind_str(stmt, 1, playlist->name);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        raise_error(ERR_SQLITE_FAILED, "storage:add_playlist:stmt");
+        return 0;
+    }
+
+    sqlite3_finalize(stmt);
     return 1;
 }
 
