@@ -30,20 +30,24 @@ typedef struct Playlist {
 typedef struct Library {
     Song*  songs;
     size_t song_count;
+    size_t songs_capacity;
 
     Playlist* playlists;
     size_t    playlist_count;
+    size_t    playlists_capacity;
 } Library;
 
 int storage_init(sqlite3** db);
-int storage_close(sqlite3** db);
+int storage_close(sqlite3** db, Library** library);
 
 int storage_load(sqlite3* db, Library** library);
 
 Song* find_song_by_id(Library* library, size_t id);
 
-int storage_add_song(Library* library, const char* path, const char* title,
-                     const char* artist, const char* album, size_t duration);
+int storage_create_song(Library* library, size_t id, const char* path,
+                        const char* title, const char* artist,
+                        const char* album, size_t duration, time_t time);
+int storage_create_playlist(Library* library, size_t id, const char* name);
 
 void library_clear(Library* library);
 void playlist_clear(Playlist* playlist);

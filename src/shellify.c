@@ -67,7 +67,7 @@ void shellify_destroy() {
     tui_clear(shellify->tui);
     free(shellify->tui);
 
-    if (!storage_close(&shellify->db))
+    if (!storage_close(&shellify->db, &shellify->library))
         raise_error(FAILED, "shellify:destroy:storage");
 
     free(shellify);
@@ -93,6 +93,13 @@ void shellify_handle_input() {
             shellify->state = SHELLIFY_STATE_PLAYER;
             buffer_clear(shellify->buffer);
             create_header(shellify->tui, shellify->buffer, shellify->config);
+
+            if (!storage_load(shellify->db, &shellify->library)) {
+                raise_error(FAILED, "shellify:storage_load");
+                shellify_stop();
+                return;
+            }
+
             return;
         }
     }
