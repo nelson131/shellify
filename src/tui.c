@@ -103,65 +103,39 @@ int create_header(TUI* tui, Buffer* buffer, Config* config) {
 }
 
 int create_welcome(TUI* tui, Buffer* buffer, Config* config) {
-    size_t top_border = buffer->window_rows / 2 - 17;
-    size_t bottom_border = buffer->window_rows / 2;
-    size_t left_border = buffer->window_cols / 2 - 30;
-    size_t right_border = buffer->window_cols / 2 + 30;
-
-    size_t len_floor = right_border - left_border;
-    size_t len_wall = bottom_border - top_border;
-
-    char* floor = malloc(len_floor * sizeof(char) + 1);
-    if (!floor) {
-        raise_error(ERR_MALLOC_NULL, "tui:create_welcome:floor");
-        return 0;
-    } else {
-        for (size_t i = 0; i < len_floor; i++) {
-            floor[i] = '-';
-        }
-        floor[len_floor] = '\0';
+    Rect rect = {(Vec){0, 0}, 60, 20};
+    if (buffer->window_cols > rect.w) {
+        rect.vec.x = (buffer->window_cols - rect.w) / 2;
+    }
+    if (buffer->window_rows > rect.h) {
+        rect.vec.y = (buffer->window_rows - rect.h) / 2;
     }
 
-    char* wall = malloc(len_wall * sizeof(char) + 1);
-    if (!wall) {
-        raise_error(ERR_MALLOC_NULL, "tui:create_welcome:wall");
-        free(floor);
-        return 0;
-    } else {
-        for (size_t i = 0; i < len_wall; i++) {
-            wall[i] = '|';
-        }
-        wall[len_wall] = '\0';
-    }
+    draw_rect(buffer, rect);
 
-    buffer_append_line(buffer, (Vec){left_border, top_border}, floor);
-    buffer_append_line(buffer, (Vec){left_border, bottom_border}, floor);
-    buffer_append_vertical_line(buffer, (Vec){left_border, top_border}, wall);
-    buffer_append_vertical_line(buffer, (Vec){right_border, top_border}, wall);
-
-    free(floor);
-    free(wall);
-
-#define BUFFER_SIZE 128 * sizeof(char)
-    char* buf = malloc(BUFFER_SIZE);
+#define BUFFER_BASE_SIZE 128 * sizeof(char)
+    char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) {
-        raise_error(ERR_MALLOC_NULL, "tui:create_welcome:buffer");
+        raise_error(ERR_MALLOC_NULL, "tui:create_welcome:buf");
         return 0;
     }
-
-    size_t center_sign = left_border + len_floor / 2;
-    snprintf(buf, BUFFER_SIZE, "%s %s", config->general.name,
+    snprintf(buf, BUFFER_BASE_SIZE, "%s %s", config->general.name,
              config->general.version);
-    buffer_append_line(buffer, (Vec){center_sign - strlen(buf), top_border + 1},
-                       buf);
 
-    buffer_append_line(
-        buffer,
-        (Vec){center_sign - strlen(config->general.desc), top_border + 3},
-        config->general.desc);
+    size_t text_x = rect.vec.x + (rect.w - strlen(buf)) / 2;
+    size_t desc_x = rect.vec.x + (rect.w - strlen(config->general.desc)) / 2;
+
+    buffer_append_line(buffer, (Vec){text_x, rect.vec.y + 3}, buf);
+    buffer_append_line(buffer, (Vec){desc_x, rect.vec.y + 5},
+                       config->general.desc);
+
+    snprintf(buf, BUFFER_BASE_SIZE,
+             "Press SELECT-BUTTON (%c) to start shellify", config->keys.select);
+    size_t msg_x = rect.vec.x + (rect.w - strlen(buf)) / 2;
+
+    buffer_append_line(buffer, (Vec){msg_x, rect.vec.y + 16}, buf);
 
     free(buf);
-
     return 1;
 }
 
@@ -170,7 +144,7 @@ int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
         buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
         (Vec){tui->playlist_wall, tui->header_top_border - 1}, '|');
 
-    char* buf = malloc(BUFFER_SIZE);
+    char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) {
         raise_error(ERR_MALLOC_NULL, "tui:create_player:buf");
         return 0;
@@ -178,7 +152,7 @@ int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
 
     // rendering playlists
     for (size_t i = 0; i < library->playlist_count; i++) {
-        snprintf(buf, BUFFER_SIZE, "%zu. %s", i + 1,
+        snprintf(buf, BUFFER_BASE_SIZE, "%zu. %s", i + 1,
                  library->playlists[i].name);
         buffer_append_line(buffer,
                            (Vec){tui->x_playlists, tui->y_playlists + i}, buf);
@@ -186,3 +160,6 @@ int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
 
     return 1;
 }
+
+int create_add_menu(TUI* tui, Library* library, Buffer* buffer,
+                    Config* config) {}

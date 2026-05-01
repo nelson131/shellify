@@ -12,7 +12,9 @@
 
 typedef enum ShellifyState {
     SHELLIFY_STATE_WELCOME,
-    SHELLIFY_STATE_PLAYER
+    SHELLIFY_STATE_PLAYER,
+    SHELLIFY_STATE_ADD_SELECT,
+    SHELLIFY_STATE_ADD
 } ShellifyState;
 
 typedef struct Shellify {
@@ -37,6 +39,7 @@ extern Shellify* shellify;
 void shellify_init();
 void shellify_destroy();
 
+void shellify_update();
 void shellify_draw();
 void shellify_handle_input();
 

@@ -79,6 +79,8 @@ void shellify_destroy() {
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
+void shellify_update() {}
+
 void shellify_draw() { buffer_render(shellify->buffer); }
 
 void shellify_handle_input() {
@@ -91,7 +93,7 @@ void shellify_handle_input() {
     }
 
     if (shellify->state == SHELLIFY_STATE_WELCOME) {
-        if (key == KEY_ENTER) {
+        if (key == shellify->config->keys.select) {
             shellify->state = SHELLIFY_STATE_PLAYER;
             buffer_clear(shellify->buffer);
             create_header(shellify->tui, shellify->buffer, shellify->config);
@@ -114,6 +116,12 @@ void shellify_handle_input() {
             buffer_set_char(shellify->buffer, (Vec){10, 10}, '^');
             buffer_append_line(shellify->buffer, (Vec){10, 12},
                                "the pain, it comes in waves");
+            return;
+        }
+
+        if (key == shellify->config->keys.add) {
+            buffer_clear(shellify->buffer);
+            create_header(shellify->tui, shellify->buffer, shellify->config);
             return;
         }
     }

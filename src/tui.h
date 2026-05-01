@@ -7,6 +7,7 @@
 #include "buffer.h"
 #include "config.h"
 #include "error_handler.h"
+#include "rect.h"
 #include "storage.h"
 
 #define PREFIX_PLAYING " Now playing: "
@@ -38,5 +39,7 @@ int create_header(TUI* tui, Buffer* buffer, Config* config);
 int create_welcome(TUI* tui, Buffer* buffer, Config* config);
 
 int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config);
+
+int create_add_menu(TUI* tui, Library* library, Buffer* buffer, Config* config);
 
 #endif

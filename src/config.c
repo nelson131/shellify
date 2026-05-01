@@ -41,9 +41,10 @@ int config_load(Config** config) {
         if (sscanf(line, "shuffle=%zu", &temp->player.shuffle) == 1) continue;
 
         if (sscanf(line, "quit=%c", &temp->keys.quit) == 1) continue;
-        if (sscanf(line, "up=%c", &temp->keys.up) == 1) continue;
-        if (sscanf(line, "down=%c", &temp->keys.down) == 1) continue;
+        if (sscanf(line, "super=%c", &temp->keys.super) == 1) continue;
         if (sscanf(line, "select=%c", &temp->keys.select) == 1) continue;
+        if (sscanf(line, "add=%c", &temp->keys.add) == 1) continue;
+        if (sscanf(line, "remove=%c", &temp->keys.remove) == 1) continue;
     }
 
     free(line);
@@ -67,9 +68,9 @@ int config_save(Config* config) {
 
     fprintf(file, "[player]\nvolume=%zu\nshuffle=%zu\n\n",
             config->player.volume, config->player.shuffle);
-    fprintf(file, "[keys]\nquit=%c\nup=%c\ndown=%c\nselect=%c\n",
-            config->keys.quit, config->keys.up, config->keys.down,
-            config->keys.select);
+    fprintf(file, "[keys]\nquit=%c\nup=%c\nselect=%c\nadd=%c\nremove%c\n",
+            config->keys.quit, config->keys.super, config->keys.select,
+            config->keys.add, config->keys.remove);
 
     fclose(file);
     return 1;

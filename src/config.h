@@ -14,7 +14,7 @@
 #define CONFIG_LINE_SIZE 128
 
 #define CONFIG_APP_NAME "shellify"
-#define CONFIG_APP_VERSION "v0.4.2"
+#define CONFIG_APP_VERSION "v0.4.3"
 
 typedef struct cfg_general {
     char name[CONFIG_GENERAL_SIZE];
@@ -29,9 +29,11 @@ typedef struct cfg_player {
 
 typedef struct cfg_keys {
     char quit;
-    char up;
-    char down;
+    char super;
     char select;
+
+    char add;
+    char remove;
 } cfg_keys;
 
 typedef struct Config {
