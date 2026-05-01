@@ -27,6 +27,8 @@ void buffer_render_full(Buffer* buffer);
 void buffer_set_char(Buffer* buffer, Vec v, char ch);
 void buffer_append_line(Buffer* buffer, Vec v, const char* line);
 void buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line);
+void buffer_set_range_char(Buffer* buffer, Vec range, Vec v, char ch);
+void buffer_set_ver_range_char(Buffer* buffer, Vec range, Vec v, char ch);
 
 void buffer_clear_line(Buffer* buffer, Vec range, size_t y);
 void buffer_clear_vertical_line(Buffer* buffer, Vec range, size_t x);

@@ -13,7 +13,10 @@ typedef enum ErrorCode {
     ERR_CONFIG_SAVE,
     ERR_SQLITE_OPEN,
     ERR_SQLITE_FAILED,
-    ERR_SONG_NOT_FOUND
+    ERR_SONG_NOT_FOUND,
+    ERR_SONG_ALREADY_EXISTS,
+    ERR_PLAYLIST_NOT_FOUND,
+    ERR_PLAYLIST_ALREADY_EXISTS
 } ErrorCode;
 
 void raise_error(ErrorCode code, const char* message);

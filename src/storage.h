@@ -53,10 +53,13 @@ Playlist* storage_create_playlist(Library* library, size_t id,
                                   const char* name);
 int storage_add_playlist(sqlite3* db, Library* library, Playlist* playlist);
 
+int storage_playlist_add_song(sqlite3* db, Song* song, Playlist* playlist);
+
 void library_clear(Library* library);
 void playlist_clear(Playlist* playlist);
 void song_clear(Song* song);
 
-char* copy_str(const char* str);
+time_t get_time();
+char*  copy_str(const char* str);
 
 #endif

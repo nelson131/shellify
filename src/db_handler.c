@@ -84,6 +84,12 @@ char* get_db_file_path() {
     return path;
 }
 
+size_t get_db_last_id(sqlite3* db) {
+    if (!db) return 0;
+
+    return (size_t)sqlite3_last_insert_rowid(db);
+}
+
 void bind_int(sqlite3_stmt* stmt, int index, int value) {
     sqlite3_bind_int(stmt, index, value);
 }

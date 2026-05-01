@@ -66,7 +66,7 @@ int storage_load(sqlite3* db, Library** library) {
         return 0;
     }
 
-    Library* temp = malloc(sizeof(Library));
+    Library* temp = calloc(1, sizeof(Library));
     if (!temp) {
         raise_error(ERR_MALLOC_NULL, "storage:load:library");
         return 0;
@@ -81,6 +81,7 @@ int storage_load(sqlite3* db, Library** library) {
     if (!stmt) {
         raise_error(ERR_SQLITE_FAILED, "storage:load:prepare:stmt");
         library_clear(temp);
+        free(temp);
         return 0;
     }
 
@@ -92,6 +93,7 @@ int storage_load(sqlite3* db, Library** library) {
         raise_error(ERR_MALLOC_NULL, "storage:load:songs");
         sqlite3_finalize(stmt);
         library_clear(temp);
+        free(temp);
         return 0;
     }
 
@@ -112,13 +114,25 @@ int storage_load(sqlite3* db, Library** library) {
     if (!stmt) {
         raise_error(ERR_SQLITE_FAILED, "storage:load:stmt");
         library_clear(temp);
+        free(temp);
         return 0;
     };
 
+#define PLAYLISTS_BASE_CAPACITY 16
+    temp->playlists_capacity = PLAYLISTS_BASE_CAPACITY;
+    temp->playlist_count = 0;
+    temp->playlists = malloc(temp->playlists_capacity * sizeof(Playlist));
+    if (!temp->playlists) {
+        raise_error(ERR_MALLOC_NULL, "storage:load:playlists");
+        sqlite3_finalize(stmt);
+        library_clear(temp);
+        free(temp);
+        return 0;
+    }
+
     while (sqlite3_step(stmt) == SQLITE_ROW) {
-        storage_create_playlist(
-            temp, sqlite3_column_int64(stmt, 0),
-            strdup((const char*)sqlite3_column_text(stmt, 1)));
+        storage_create_playlist(temp, sqlite3_column_int64(stmt, 0),
+                                (const char*)sqlite3_column_text(stmt, 1));
     }
     sqlite3_finalize(stmt);
 
@@ -190,6 +204,13 @@ Song* storage_create_song(Library* library, size_t id, const char* path,
         return NULL;
     }
 
+    for (size_t i = 0; i < library->song_count; i++) {
+        if (strcmp(path, library->songs[i].path) == 0) {
+            raise_error(ERR_SONG_ALREADY_EXISTS, "storage:create_song:song");
+            return NULL;
+        }
+    }
+
     if (library->song_count + 1 >= library->songs_capacity) {
         library->songs_capacity *= 2;
         Song* temp =
@@ -250,6 +271,8 @@ int storage_add_song(sqlite3* db, Library* library, Song* song) {
         return 0;
     }
 
+    song->id = get_db_last_id(db);
+
     sqlite3_finalize(stmt);
     return 1;
 }
@@ -267,10 +290,18 @@ Playlist* storage_create_playlist(Library* library, size_t id,
         return NULL;
     }
 
+    for (size_t i = 0; i < library->playlist_count; i++) {
+        if (strcmp(name, library->playlists[i].name) == 0) {
+            raise_error(ERR_PLAYLIST_ALREADY_EXISTS,
+                        "storage:create_playlist:name");
+            return NULL;
+        }
+    }
+
     if (library->playlist_count + 1 >= library->playlists_capacity) {
         library->playlists_capacity *= 2;
-        Playlist* temp = realloc(library->playlists,
-                                 library->playlist_count * sizeof(Playlist));
+        Playlist* temp = realloc(
+            library->playlists, library->playlists_capacity * sizeof(Playlist));
         if (!temp) {
             raise_error(ERR_MALLOC_NULL,
                         "storage:create_playlist:temp:realloc");
@@ -316,6 +347,29 @@ int storage_add_playlist(sqlite3* db, Library* library, Playlist* playlist) {
     if (sqlite3_step(stmt) != SQLITE_DONE) {
         sqlite3_finalize(stmt);
         raise_error(ERR_SQLITE_FAILED, "storage:add_playlist:stmt");
+        return 0;
+    }
+
+    playlist->id = get_db_last_id(db);
+
+    sqlite3_finalize(stmt);
+    return 1;
+}
+
+int storage_playlist_add_song(sqlite3* db, Song* song, Playlist* playlist) {
+    const char* query =
+        "INSERT INTO playlist_songs (playlist_id, song_id, position) VALUES "
+        "(?, ?, ?)";
+
+    sqlite3_stmt* stmt = db_prepare(db, query);
+
+    bind_int(stmt, 1, playlist->id);
+    bind_int(stmt, 2, song->id);
+    bind_int(stmt, 3, playlist->song_count);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        raise_error(ERR_SQLITE_FAILED, "storage:playlist_add_song:stmt");
         return 0;
     }
 
@@ -371,6 +425,13 @@ void song_clear(Song* song) {
     if (song->album) {
         free(song->album);
     }
+}
+
+// getting time_t struct for songs adding
+time_t get_time() {
+    time_t t;
+    time(&t);
+    return t;
 }
 
 // creating the full copy of string in heap

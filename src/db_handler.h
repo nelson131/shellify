@@ -18,6 +18,8 @@ sqlite3_stmt* db_prepare(sqlite3* db, const char* query);
 
 char* get_db_file_path();
 
+size_t get_db_last_id(sqlite3* db);
+
 void bind_int(sqlite3_stmt* stmt, int index, int value);
 void bind_str(sqlite3_stmt* stmt, int index, const char* value);
 void bind_time(sqlite3_stmt* stmt, int index, time_t value);

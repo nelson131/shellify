@@ -6,6 +6,7 @@
 
 #include "buffer.h"
 #include "storage.h"
+#include "tui.h"
 
 Shellify* shellify = NULL;
 
@@ -86,6 +87,7 @@ void shellify_handle_input() {
 
     if (key == shellify->config->keys.quit) {
         shellify->is_running = 0;
+        return;
     }
 
     if (shellify->state == SHELLIFY_STATE_WELCOME) {
@@ -99,6 +101,9 @@ void shellify_handle_input() {
                 shellify_stop();
                 return;
             }
+
+            create_player(shellify->tui, shellify->library, shellify->buffer,
+                          shellify->config);
 
             return;
         }

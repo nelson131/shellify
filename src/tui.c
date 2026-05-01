@@ -46,8 +46,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     snprintf(tui_temp->line_status, str_size, " %s%s\n", PREFIX_PLAYING,
              tui_temp->song_name);
 
-    tui_temp->header_top_border = 2;
-    tui_temp->header_bottom_border = *window_rows - 3;
+    tui_update(tui_temp, window_cols, window_rows);
 
     *tui = tui_temp;
     return 1;
@@ -65,6 +64,17 @@ void tui_clear(TUI* tui) {
     if (tui->song_name) {
         free(tui->song_name);
     }
+}
+
+void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
+#define TUI_SPLIT_SCREEN 0.2
+    tui->header_top_border = 2;
+    tui->header_bottom_border = *window_rows - 3;
+    tui->playlist_wall = (size_t)*window_cols * TUI_SPLIT_SCREEN;
+    tui->x_playlists = 1;
+    tui->y_playlists = tui->header_top_border + 1;
+    tui->x_songs = tui->playlist_wall + 2;
+    tui->y_songs = tui->header_top_border + 1;
 }
 
 int create_header(TUI* tui, Buffer* buffer, Config* config) {
@@ -151,6 +161,28 @@ int create_welcome(TUI* tui, Buffer* buffer, Config* config) {
         config->general.desc);
 
     free(buf);
+
+    return 1;
+}
+
+int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
+    buffer_set_ver_range_char(
+        buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
+        (Vec){tui->playlist_wall, tui->header_top_border - 1}, '|');
+
+    char* buf = malloc(BUFFER_SIZE);
+    if (!buf) {
+        raise_error(ERR_MALLOC_NULL, "tui:create_player:buf");
+        return 0;
+    }
+
+    // rendering playlists
+    for (size_t i = 0; i < library->playlist_count; i++) {
+        snprintf(buf, BUFFER_SIZE, "%zu. %s", i + 1,
+                 library->playlists[i].name);
+        buffer_append_line(buffer,
+                           (Vec){tui->x_playlists, tui->y_playlists + i}, buf);
+    }
 
     return 1;
 }
