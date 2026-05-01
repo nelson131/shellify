@@ -39,6 +39,6 @@ int create_welcome(TUI* tui, Buffer* buffer, Config* config);
 
 int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config);
 
-int create_add_menu(TUI* tui, Buffer* buffer);
+int create_add_menu(TUI* tui, Buffer* buffer, Config* config);
 
 #endif

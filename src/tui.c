@@ -161,7 +161,7 @@ int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
     return 1;
 }
 
-int create_add_menu(TUI* tui, Buffer* buffer) {
+int create_add_menu(TUI* tui, Buffer* buffer, Config* config) {
     Rect rect = (Rect){(Vec){0, 0}, 60, 20};
     if (buffer->window_cols > rect.w) {
         rect.vec.x = (buffer->window_cols - rect.w) / 2;
@@ -197,6 +197,13 @@ int create_add_menu(TUI* tui, Buffer* buffer) {
         buffer_append_line(buffer, (Vec){rect.vec.x + 4, rect.vec.y + 3 + i},
                            buf);
     }
+
+    snprintf(buf, BUFFER_BASE_SIZE,
+             "Press SELECT (%c) to choose, Press LEFT to leave",
+             config->keys.select);
+    size_t msg_x = rect.vec.x + (rect.w - strlen(buf)) / 2;
+
+    buffer_append_line(buffer, (Vec){msg_x, rect.vec.y + 16}, buf);
 
     free(buf);
     return 1;

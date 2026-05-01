@@ -98,7 +98,9 @@ void shellify_handle_input() {
         return;
     }
 
+    // WELCOME TUI
     if (shellify->state == SHELLIFY_STATE_WELCOME) {
+        // moving to main player menu
         if (key == shellify->config->keys.select) {
             shellify->state = SHELLIFY_STATE_PLAYER;
             buffer_clear(shellify->buffer);
@@ -117,7 +119,9 @@ void shellify_handle_input() {
         }
     }
 
+    // PLAYER TUI: main menu of shellify, its for playlists and songs
     if (shellify->state == SHELLIFY_STATE_PLAYER) {
+        // just test
         if (key == KEY_ARROW_UP) {
             buffer_set_char(shellify->buffer, (Vec){10, 10}, '^');
             buffer_append_line(shellify->buffer, (Vec){10, 12},
@@ -125,19 +129,31 @@ void shellify_handle_input() {
             return;
         }
 
+        // open the "add new song" menu
         if (key == shellify->config->keys.add) {
             shellify->state = SHELLIFY_STATE_ADD_MENU;
             buffer_clear(shellify->buffer);
             create_header(shellify->tui, shellify->buffer, shellify->config);
-            create_add_menu(shellify->tui, shellify->buffer);
+            create_add_menu(shellify->tui, shellify->buffer, shellify->config);
             return;
         }
     }
 
+    // ADD NEW SONG MENU
     if (shellify->state == SHELLIFY_STATE_ADD_MENU) {
-        if (key == KEY_ARROW_UP) {
+        if (key == KEY_ARROW_LEFT) {
+            // returning to the player menu
+            shellify->state = SHELLIFY_STATE_PLAYER;
+            buffer_clear(shellify->buffer);
+            create_header(shellify->tui, shellify->buffer, shellify->config);
+            create_player(shellify->tui, shellify->library, shellify->buffer,
+                          shellify->config);
+            return;
+        } else if (key == KEY_ARROW_UP) {
+            // choice: from local files
             shellify->tui->selected_index = 0;
         } else if (key == KEY_ARROW_DOWN) {
+            // choice: yt-dlp
             shellify->tui->selected_index = 1;
         } else if (key == shellify->config->keys.select) {
             if (shellify->tui->selected_index == 0) {
@@ -149,7 +165,8 @@ void shellify_handle_input() {
 
         buffer_clear(shellify->buffer);
         create_header(shellify->tui, shellify->buffer, shellify->config);
-        create_add_menu(shellify->tui, shellify->buffer);
+        create_add_menu(shellify->tui, shellify->buffer, shellify->config);
+        return;
     }
 }
 
