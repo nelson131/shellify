@@ -11,6 +11,9 @@
 Shellify* shellify = NULL;
 
 void shellify_init() {
+    printf("\033[?25l");
+    fflush(stdout);
+
     shellify = malloc(sizeof(Shellify));
     if (!shellify) shellify_stop();
 
@@ -57,6 +60,9 @@ void shellify_init() {
 }
 
 void shellify_destroy() {
+    printf("\033[?25h");
+    fflush(stdout);
+
     if (!config_save(shellify->config)) {
         raise_error(ERR_CONFIG_SAVE, "something went wrong in config saving");
     }
@@ -120,10 +126,30 @@ void shellify_handle_input() {
         }
 
         if (key == shellify->config->keys.add) {
+            shellify->state = SHELLIFY_STATE_ADD_MENU;
             buffer_clear(shellify->buffer);
             create_header(shellify->tui, shellify->buffer, shellify->config);
+            create_add_menu(shellify->tui, shellify->buffer);
             return;
         }
+    }
+
+    if (shellify->state == SHELLIFY_STATE_ADD_MENU) {
+        if (key == KEY_ARROW_UP) {
+            shellify->tui->selected_index = 0;
+        } else if (key == KEY_ARROW_DOWN) {
+            shellify->tui->selected_index = 1;
+        } else if (key == shellify->config->keys.select) {
+            if (shellify->tui->selected_index == 0) {
+                // local files
+            } else {
+                // yt-dlp downloading
+            }
+        }
+
+        buffer_clear(shellify->buffer);
+        create_header(shellify->tui, shellify->buffer, shellify->config);
+        create_add_menu(shellify->tui, shellify->buffer);
     }
 }
 

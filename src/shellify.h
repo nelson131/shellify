@@ -13,8 +13,7 @@
 typedef enum ShellifyState {
     SHELLIFY_STATE_WELCOME,
     SHELLIFY_STATE_PLAYER,
-    SHELLIFY_STATE_ADD_SELECT,
-    SHELLIFY_STATE_ADD
+    SHELLIFY_STATE_ADD_MENU,
 } ShellifyState;
 
 typedef struct Shellify {

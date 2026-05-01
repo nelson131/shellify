@@ -26,8 +26,7 @@ typedef struct TUI {
     size_t x_playlists;
     size_t y_playlists;
 
-    size_t selected_song_idx;
-    size_t selected_playlist_idx;
+    size_t selected_index;
 } TUI;
 
 int  tui_init(TUI** tui, size_t* window_cols, size_t* window_rows);
@@ -40,6 +39,6 @@ int create_welcome(TUI* tui, Buffer* buffer, Config* config);
 
 int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config);
 
-int create_add_menu(TUI* tui, Library* library, Buffer* buffer, Config* config);
+int create_add_menu(TUI* tui, Buffer* buffer);
 
 #endif

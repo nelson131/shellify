@@ -161,5 +161,43 @@ int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
     return 1;
 }
 
-int create_add_menu(TUI* tui, Library* library, Buffer* buffer,
-                    Config* config) {}
+int create_add_menu(TUI* tui, Buffer* buffer) {
+    Rect rect = (Rect){(Vec){0, 0}, 60, 20};
+    if (buffer->window_cols > rect.w) {
+        rect.vec.x = (buffer->window_cols - rect.w) / 2;
+    }
+    if (buffer->window_rows > rect.h) {
+        rect.vec.y = (buffer->window_rows - rect.h) / 2;
+    }
+
+    draw_rect(buffer, rect);
+
+    const char* title = "[ ADD NEW SONG ]";
+    size_t      title_x = rect.vec.x + (rect.w - strlen(title)) / 2;
+
+    buffer_append_line(buffer, (Vec){title_x, rect.vec.y + 1}, title);
+
+    size_t      options_size = 2;
+    const char* options[2] = {"load from local files",
+                              "download from youtube using yt-dlp"};
+
+    char* buf = malloc(BUFFER_BASE_SIZE);
+    if (!buf) {
+        raise_error(ERR_MALLOC_NULL, "tui:create_add_menu:buf");
+        return 0;
+    }
+
+    for (size_t i = 0; i < options_size; i++) {
+        if (i == tui->selected_index) {
+            snprintf(buf, BUFFER_BASE_SIZE, " > %s ", options[i]);
+        } else {
+            snprintf(buf, BUFFER_BASE_SIZE, "   %s ", options[i]);
+        }
+
+        buffer_append_line(buffer, (Vec){rect.vec.x + 4, rect.vec.y + 3 + i},
+                           buf);
+    }
+
+    free(buf);
+    return 1;
+}
