@@ -19,6 +19,8 @@ typedef struct TUI_InputForm {
     size_t size;
     size_t cap;
     size_t selected_option;
+
+    size_t str_len;
 } TUI_InputForm;
 
 typedef struct TUI {

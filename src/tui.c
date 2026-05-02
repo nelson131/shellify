@@ -238,6 +238,7 @@ TUI_InputForm* create_input_form(size_t cap) {
     form->cap = cap;
     form->size = 0;
     form->selected_option = 0;
+    form->str_len = BUFFER_BASE_SIZE;
 
     form->options = malloc(cap * sizeof(char*));
     form->values = malloc(cap * sizeof(char*));
@@ -255,10 +256,10 @@ TUI_InputForm* create_input_form(size_t cap) {
     }
 
     for (size_t i = 0; i < cap; i++) {
-        form->options[i] = malloc((BUFFER_BASE_SIZE / 2) * sizeof(char));
+        form->options[i] = malloc(form->str_len * sizeof(char));
         form->options[i][0] = '\0';
 
-        form->values[i] = malloc((BUFFER_BASE_SIZE / 2) * sizeof(char));
+        form->values[i] = malloc(form->str_len * sizeof(char));
         form->values[i][0] = '\0';
     }
 
@@ -284,7 +285,7 @@ void put_in_form(TUI_InputForm* form, size_t idx, const char* msg) {
     if (!form || !msg) return;
     if (idx >= form->cap) return;
 
-    size_t max_len = (BUFFER_BASE_SIZE / 2) - 1;
+    size_t max_len = form->str_len - 1;
     strncpy(form->options[idx], msg, max_len);
     form->options[idx][max_len] = '\0';
 }

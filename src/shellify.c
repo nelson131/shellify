@@ -174,7 +174,6 @@ void shellify_handle_input() {
             }
         }
 
-        buffer_clear(shellify->buffer);
         create_header(shellify->tui, shellify->buffer, shellify->config);
         create_add_menu(shellify->tui, shellify->buffer, shellify->config);
         return;
@@ -191,6 +190,22 @@ void shellify_handle_input() {
             create_add_menu(shellify->tui, shellify->buffer, shellify->config);
             return;
         }
+
+        // select button pressed: saving the song
+        if (handle_input_form(key, shellify->tui->input_form,
+                              shellify->config)) {
+            shellify->state = SHELLIFY_STATE_PLAYER;
+            buffer_clear(shellify->buffer);
+            create_header(shellify->tui, shellify->buffer, shellify->config);
+            create_player(shellify->tui, shellify->library, shellify->buffer,
+                          shellify->config);
+            return;
+        }
+
+        create_header(shellify->tui, shellify->buffer, shellify->config);
+        create_add_local_menu(shellify->tui, shellify->buffer,
+                              shellify->tui->input_form);
+        return;
     }
 }
 
