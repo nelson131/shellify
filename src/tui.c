@@ -4,6 +4,9 @@
 
 #include "buffer.h"
 
+// Initialization of main tui struct:
+// handling separator line, now playing line and
+// current playing song in the heap
 int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     TUI* tui_temp = malloc(sizeof(TUI));
     if (!tui_temp) {
@@ -52,6 +55,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     return 1;
 }
 
+// clearing the heap lines from tui struct
 void tui_clear(TUI* tui) {
     if (tui->separator) {
         free(tui->separator);
@@ -66,6 +70,8 @@ void tui_clear(TUI* tui) {
     }
 }
 
+// updating the tui variables for rendering
+// should be called when screen size is updated
 void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
 #define TUI_SPLIT_SCREEN 0.2
     tui->header_top_border = 2;
@@ -102,6 +108,7 @@ int create_header(TUI* tui, Buffer* buffer, Config* config) {
     return 1;
 }
 
+// creating the welcome menu
 int create_welcome(TUI* tui, Buffer* buffer, Config* config) {
     Rect rect = {(Vec){0, 0}, 60, 20};
     if (buffer->window_cols > rect.w) {
@@ -139,6 +146,9 @@ int create_welcome(TUI* tui, Buffer* buffer, Config* config) {
     return 1;
 }
 
+// creating the main tui screen of shellify
+// handling the rendering of playlists, songs, selecting
+// playing song
 int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
     buffer_set_ver_range_char(
         buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
@@ -161,6 +171,8 @@ int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
     return 1;
 }
 
+// creating the add new song menu with available adding
+// sources, like local files and yt-dlp
 int create_add_menu(TUI* tui, Buffer* buffer, Config* config) {
     Rect rect = (Rect){(Vec){0, 0}, 60, 20};
     if (buffer->window_cols > rect.w) {
@@ -206,5 +218,103 @@ int create_add_menu(TUI* tui, Buffer* buffer, Config* config) {
     buffer_append_line(buffer, (Vec){msg_x, rect.vec.y + 16}, buf);
 
     free(buf);
+    return 1;
+}
+
+// creating the input form for user
+// handling the options and values arrays of the same sizes
+TUI_InputForm* create_input_form(size_t cap) {
+    TUI_InputForm* form = malloc(sizeof(TUI_InputForm));
+    if (!form) {
+        raise_error(ERR_MALLOC_NULL, "tui:create_input_form:form");
+        return NULL;
+    }
+
+    form->cap = cap;
+    form->size = 0;
+    form->selected_option = 0;
+
+    form->options = malloc(cap * sizeof(char*));
+    form->values = malloc(cap * sizeof(char*));
+    if (!form->options || !form->values) {
+        raise_error(ERR_MALLOC_NULL, "tui:create_input_form:options/values");
+
+        if (form->options) {
+            free(form->options);
+        }
+        if (form->values) {
+            free(form->values);
+        }
+        free(form);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < cap; i++) {
+        form->options[i] = malloc((BUFFER_BASE_SIZE / 2) * sizeof(char));
+        form->options[i][0] = '\0';
+
+        form->values[i] = malloc((BUFFER_BASE_SIZE / 2) * sizeof(char));
+        form->values[i][0] = '\0';
+    }
+
+    return form;
+}
+
+// clearing the arrays of input form
+void clear_input_form(TUI_InputForm* form) {
+    if (!form) return;
+
+    for (size_t i = 0; i < form->cap; i++) {
+        free(form->options[i]);
+        free(form->values[i]);
+    }
+
+    free(form->options);
+    free(form->values);
+
+    free(form);
+}
+
+// creating the input menu in the center of the screen
+// using the input form struct
+int create_input_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form, Rect rect,
+                      const char* msg) {
+    if (buffer->window_cols - rect.w > 0) {
+        rect.vec.x = (buffer->window_cols - rect.w) / 2;
+    }
+    if (buffer->window_rows - rect.h > 0) {
+        rect.vec.y = (buffer->window_rows - rect.h) / 2;
+    }
+
+    draw_rect(buffer, rect);
+
+    char* buf = malloc(BUFFER_BASE_SIZE);
+    if (!buf) {
+        raise_error(ERR_MALLOC_NULL, "tui:create_input_menu:buf");
+        return 0;
+    }
+
+    for (size_t i = 0; i < form->size; i++) {
+        if (i == form->selected_option) {
+            snprintf(buf, BUFFER_BASE_SIZE, "> %s %s_", form->options[i],
+                     form->values[i]);
+        } else {
+            snprintf(buf, BUFFER_BASE_SIZE, "  %s %s", form->options[i],
+                     form->values[i]);
+        }
+
+        buffer_append_line(
+            buffer, (Vec){rect.vec.x + 4, rect.vec.y + 3 + (i * 2)}, buf);
+    }
+
+    if (msg) {
+        buffer_append_line(
+            buffer,
+            (Vec){rect.vec.x + (rect.w - strlen(msg)) / 2, rect.vec.y + 12},
+            msg);
+    }
+
+    free(buf);
+
     return 1;
 }

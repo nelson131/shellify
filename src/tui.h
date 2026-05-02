@@ -29,6 +29,15 @@ typedef struct TUI {
     size_t selected_index;
 } TUI;
 
+typedef struct TUI_InputForm {
+    char** options;
+    char** values;
+
+    size_t size;
+    size_t cap;
+    size_t selected_option;
+} TUI_InputForm;
+
 int  tui_init(TUI** tui, size_t* window_cols, size_t* window_rows);
 void tui_clear(TUI* tui);
 
@@ -40,5 +49,10 @@ int create_welcome(TUI* tui, Buffer* buffer, Config* config);
 int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config);
 
 int create_add_menu(TUI* tui, Buffer* buffer, Config* config);
+
+TUI_InputForm* create_input_form(size_t cap);
+void           clear_input_form(TUI_InputForm* form);
+int create_input_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form, Rect rect,
+                      const char* msg);
 
 #endif
