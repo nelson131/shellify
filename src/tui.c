@@ -325,7 +325,7 @@ int create_input_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form, Rect rect,
     if (msg) {
         buffer_append_line(
             buffer,
-            (Vec){rect.vec.x + (rect.w - strlen(msg)) / 2, rect.vec.y + 12},
+            (Vec){rect.vec.x + (rect.w - strlen(msg)) / 2, rect.vec.y + 15},
             msg);
     }
 
@@ -336,14 +336,15 @@ int create_input_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form, Rect rect,
 
 int create_add_local_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form) {
     if (!form) return 0;
-    if (form->cap < 4) return 0;
+    if (form->cap < 5) return 0;
 
-    const size_t size = 4;
-    const char*  options[] = {"Path: ", "Title: ", "Artist: ", "Album: "};
+    const size_t size = 5;
+    const char*  options[] = {
+        "Playlist-id: ", "Path : ", "Title : ", "Artist : ", "Album : "};
     for (size_t i = 0; i < size; i++) {
         put_in_form(form, i, options[i]);
     }
-    form->size = 4;
+    form->size = 5;
 
     Rect        rect = {(Vec){0, 0}, 60, 20};
     const char* msg = "UP/DOWN: moving, SELECT to choose, LEFT to leave";

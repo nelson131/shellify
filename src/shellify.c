@@ -160,7 +160,7 @@ void shellify_handle_input() {
                 // local files
                 shellify->state = SHELLIFY_STATE_ADD_MENU_LOCAL;
 
-                shellify->tui->input_form = create_input_form(4);
+                shellify->tui->input_form = create_input_form(5);
                 buffer_clear(shellify->buffer);
                 create_header(shellify->tui, shellify->buffer,
                               shellify->config);
@@ -184,6 +184,9 @@ void shellify_handle_input() {
 
         if (key == KEY_ARROW_LEFT) {
             // returning to the add_menu
+            clear_input_form(shellify->tui->input_form);
+            shellify->tui->input_form = NULL;
+
             shellify->state = SHELLIFY_STATE_ADD_MENU;
             buffer_clear(shellify->buffer);
             create_header(shellify->tui, shellify->buffer, shellify->config);
@@ -195,6 +198,16 @@ void shellify_handle_input() {
         if (handle_input_form(key, shellify->tui->input_form,
                               shellify->config)) {
             shellify->state = SHELLIFY_STATE_PLAYER;
+
+            // TUI_InputForm* form = shellify->tui->input_form;
+            // Song*          song = storage_create_song(
+            //   shellify->library, 0, form->options[0], form->options[1],
+            // form->options[2], form->options[3], 5, get_time());
+            // storage_add_song(shellify->db, shellify->library, song);
+
+            clear_input_form(shellify->tui->input_form);
+            shellify->tui->input_form = NULL;
+
             buffer_clear(shellify->buffer);
             create_header(shellify->tui, shellify->buffer, shellify->config);
             create_player(shellify->tui, shellify->library, shellify->buffer,
@@ -202,6 +215,7 @@ void shellify_handle_input() {
             return;
         }
 
+        buffer_clear(shellify->buffer);
         create_header(shellify->tui, shellify->buffer, shellify->config);
         create_add_local_menu(shellify->tui, shellify->buffer,
                               shellify->tui->input_form);

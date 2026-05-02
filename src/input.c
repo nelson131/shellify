@@ -57,6 +57,7 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
         size_t len = strlen(cur_value);
         if (len > 0) cur_value[len - 1] = '\0';
     } else if (key == config->keys.select) {
+        // checking fields filling
         for (size_t i = 0; i < form->size; i++) {
             size_t len = strlen(form->values[i]);
             if (!len) return 0;
