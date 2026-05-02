@@ -158,8 +158,19 @@ void shellify_handle_input() {
         } else if (key == shellify->config->keys.select) {
             if (shellify->tui->selected_index == 0) {
                 // local files
+                shellify->state = SHELLIFY_STATE_ADD_MENU_LOCAL;
+
+                shellify->tui->input_form = create_input_form(4);
+                buffer_clear(shellify->buffer);
+                create_header(shellify->tui, shellify->buffer,
+                              shellify->config);
+                create_add_local_menu(shellify->tui, shellify->buffer,
+                                      shellify->tui->input_form);
+                return;
             } else {
                 // yt-dlp downloading
+                shellify->state = SHELLIFY_STATE_ADD_MENU_YTDLP;
+                return;
             }
         }
 
@@ -167,6 +178,19 @@ void shellify_handle_input() {
         create_header(shellify->tui, shellify->buffer, shellify->config);
         create_add_menu(shellify->tui, shellify->buffer, shellify->config);
         return;
+    }
+
+    if (shellify->state == SHELLIFY_STATE_ADD_MENU_LOCAL) {
+        if (!shellify->tui->input_form) return;
+
+        if (key == KEY_ARROW_LEFT) {
+            // returning to the add_menu
+            shellify->state = SHELLIFY_STATE_ADD_MENU;
+            buffer_clear(shellify->buffer);
+            create_header(shellify->tui, shellify->buffer, shellify->config);
+            create_add_menu(shellify->tui, shellify->buffer, shellify->config);
+            return;
+        }
     }
 }
 

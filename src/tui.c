@@ -50,6 +50,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
              tui_temp->song_name);
 
     tui_update(tui_temp, window_cols, window_rows);
+    tui_temp->input_form = NULL;
 
     *tui = tui_temp;
     return 1;
@@ -67,6 +68,10 @@ void tui_clear(TUI* tui) {
 
     if (tui->song_name) {
         free(tui->song_name);
+    }
+
+    if (tui->input_form) {
+        clear_input_form(tui->input_form);
     }
 }
 
@@ -275,6 +280,15 @@ void clear_input_form(TUI_InputForm* form) {
     free(form);
 }
 
+void put_in_form(TUI_InputForm* form, size_t idx, const char* msg) {
+    if (!form || !msg) return;
+    if (idx >= form->cap) return;
+
+    size_t max_len = (BUFFER_BASE_SIZE / 2) - 1;
+    strncpy(form->options[idx], msg, max_len);
+    form->options[idx][max_len] = '\0';
+}
+
 // creating the input menu in the center of the screen
 // using the input form struct
 int create_input_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form, Rect rect,
@@ -317,4 +331,21 @@ int create_input_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form, Rect rect,
     free(buf);
 
     return 1;
+}
+
+int create_add_local_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form) {
+    if (!form) return 0;
+    if (form->cap < 4) return 0;
+
+    const size_t size = 4;
+    const char*  options[] = {"Path: ", "Title: ", "Artist: ", "Album: "};
+    for (size_t i = 0; i < size; i++) {
+        put_in_form(form, i, options[i]);
+    }
+    form->size = 4;
+
+    Rect        rect = {(Vec){0, 0}, 60, 20};
+    const char* msg = "UP/DOWN: moving, SELECT to choose, LEFT to leave";
+
+    return create_input_menu(tui, buffer, form, rect, msg);
 }

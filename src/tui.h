@@ -12,6 +12,15 @@
 
 #define PREFIX_PLAYING " Now playing: "
 
+typedef struct TUI_InputForm {
+    char** options;
+    char** values;
+
+    size_t size;
+    size_t cap;
+    size_t selected_option;
+} TUI_InputForm;
+
 typedef struct TUI {
     size_t header_top_border;
     size_t header_bottom_border;
@@ -27,16 +36,9 @@ typedef struct TUI {
     size_t y_playlists;
 
     size_t selected_index;
+
+    TUI_InputForm* input_form;
 } TUI;
-
-typedef struct TUI_InputForm {
-    char** options;
-    char** values;
-
-    size_t size;
-    size_t cap;
-    size_t selected_option;
-} TUI_InputForm;
 
 int  tui_init(TUI** tui, size_t* window_cols, size_t* window_rows);
 void tui_clear(TUI* tui);
@@ -52,7 +54,10 @@ int create_add_menu(TUI* tui, Buffer* buffer, Config* config);
 
 TUI_InputForm* create_input_form(size_t cap);
 void           clear_input_form(TUI_InputForm* form);
+void           put_in_form(TUI_InputForm* form, size_t idx, const char* msg);
 int create_input_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form, Rect rect,
                       const char* msg);
+
+int create_add_local_menu(TUI* tui, Buffer* buffer, TUI_InputForm* form);
 
 #endif
