@@ -9,6 +9,8 @@ int config_load(Config** config) {
         return 0;
     }
 
+    config_default(temp);
+
     FILE* file = get_config_file("r");
     if (!file) {
         free(temp);
@@ -45,6 +47,8 @@ int config_load(Config** config) {
         if (sscanf(line, "select=%c", &temp->keys.select) == 1) continue;
         if (sscanf(line, "add=%c", &temp->keys.add) == 1) continue;
         if (sscanf(line, "remove=%c", &temp->keys.remove) == 1) continue;
+        if (sscanf(line, "song=%c", &temp->keys.song) == 1) continue;
+        if (sscanf(line, "playlist=%c", &temp->keys.playlist) == 1) continue;
     }
 
     free(line);
@@ -68,12 +72,34 @@ int config_save(Config* config) {
 
     fprintf(file, "[player]\nvolume=%zu\nshuffle=%zu\n\n",
             config->player.volume, config->player.shuffle);
-    fprintf(file, "[keys]\nquit=%c\nup=%c\nselect=%c\nadd=%c\nremove%c\n",
+    fprintf(file,
+            "[keys]\nquit=%c\nsuper=%c\nselect=%c\nadd=%c\nremove=%c\nsong=%"
+            "c\nplaylist=%c\n",
             config->keys.quit, config->keys.super, config->keys.select,
-            config->keys.add, config->keys.remove);
+            config->keys.add, config->keys.remove, config->keys.song,
+            config->keys.playlist);
 
     fclose(file);
     return 1;
+}
+
+void config_default(Config* config) {
+    if (!config) return;
+
+    strcpy(config->general.name, CONFIG_APP_NAME);
+    strcpy(config->general.version, CONFIG_APP_VERSION);
+    strcpy(config->general.desc, CONFIG_APP_DESC);
+
+    config->player.volume = CONFIG_DEF_VOLUME;
+    config->player.shuffle = CONFIG_DEF_SHUFFLE;
+
+    config->keys.quit = CONFIG_DEF_QUIT;
+    config->keys.super = CONFIG_DEF_SUPER;
+    config->keys.select = CONFIG_DEF_SELECT;
+    config->keys.add = CONFIG_DEF_ADD;
+    config->keys.remove = CONFIG_DEF_REMOVE;
+    config->keys.song = CONFIG_DEF_SONG;
+    config->keys.playlist = CONFIG_DEF_PLAYLIST;
 }
 
 char* get_config_path() {

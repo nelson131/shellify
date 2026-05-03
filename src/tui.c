@@ -89,27 +89,35 @@ void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
 }
 
 int create_header(TUI* tui, Buffer* buffer, Config* config) {
-    size_t size =
-        strlen(config->general.name) + strlen(config->general.version) + 3;
-    char* headline = malloc(size * sizeof(char));
-    if (!headline) {
+#define BUFFER_BASE_SIZE 128 * sizeof(char)
+    char* buf = malloc(BUFFER_BASE_SIZE);
+    if (!buf) {
         raise_error(ERR_MALLOC_NULL, "tui:create_header:headline");
         return 0;
     }
 
-    snprintf(headline, size * sizeof(char), "%s %s", config->general.name,
+    // top side
+    snprintf(buf, BUFFER_BASE_SIZE, "%s %s", config->general.name,
              config->general.version);
+    buffer_append_line(buffer, (Vec){0, 0}, buf);
 
-    buffer_append_line(buffer, (Vec){0, 0}, headline);
-    free(headline);
+    snprintf(buf, BUFFER_BASE_SIZE,
+             "help -> super: %c; select: %c; add: %c; remove: %c; song: %c; "
+             "playlist: %c;",
+             config->keys.super, config->keys.select, config->keys.add,
+             config->keys.remove, config->keys.song, config->keys.playlist);
+    buffer_append_line(buffer, (Vec){0, 1}, buf);
 
     buffer_append_line(buffer, (Vec){0, tui->header_top_border},
                        tui->separator);
+
+    // bottom side
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border},
                        tui->separator);
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border + 1},
                        tui->line_status);
 
+    free(buf);
     return 1;
 }
 
@@ -125,7 +133,6 @@ int create_welcome(TUI* tui, Buffer* buffer, Config* config) {
 
     draw_rect(buffer, rect);
 
-#define BUFFER_BASE_SIZE 128 * sizeof(char)
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) {
         raise_error(ERR_MALLOC_NULL, "tui:create_welcome:buf");

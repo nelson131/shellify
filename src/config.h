@@ -14,7 +14,18 @@
 #define CONFIG_LINE_SIZE 128
 
 #define CONFIG_APP_NAME "shellify"
-#define CONFIG_APP_VERSION "v0.5.4"
+#define CONFIG_APP_VERSION "v0.5.5"
+#define CONFIG_APP_DESC "terminal based audio player"
+
+#define CONFIG_DEF_VOLUME 50
+#define CONFIG_DEF_SHUFFLE 0
+#define CONFIG_DEF_QUIT 'q'
+#define CONFIG_DEF_SUPER 'x'
+#define CONFIG_DEF_SELECT 'e'
+#define CONFIG_DEF_ADD 'a'
+#define CONFIG_DEF_REMOVE 'r'
+#define CONFIG_DEF_SONG 's'
+#define CONFIG_DEF_PLAYLIST 'p'
 
 typedef struct cfg_general {
     char name[CONFIG_GENERAL_SIZE];
@@ -34,6 +45,8 @@ typedef struct cfg_keys {
 
     char add;
     char remove;
+    char song;
+    char playlist;
 } cfg_keys;
 
 typedef struct Config {
@@ -44,6 +57,8 @@ typedef struct Config {
 
 int config_load(Config** config);
 int config_save(Config* config);
+
+void config_default(Config* config);
 
 char* get_config_path();
 FILE* get_config_file(const char* mode);
