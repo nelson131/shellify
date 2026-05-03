@@ -23,6 +23,7 @@ typedef enum ShellifyState {
 typedef struct Shellify {
     int           is_running;
     ShellifyState state;
+    InputState    input_state;
 
     size_t window_cols;
     size_t window_rows;

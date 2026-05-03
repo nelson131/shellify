@@ -93,147 +93,149 @@ void shellify_handle_input() {
     int key = input_poll();
     if (key == -1) return;
 
-    if (key == shellify->config->keys.quit) {
-        shellify->is_running = 0;
-        return;
-    }
-
-    // WELCOME TUI
-    if (shellify->state == SHELLIFY_STATE_WELCOME) {
-        // moving to main player menu
-        if (key == shellify->config->keys.select) {
-            shellify->state = SHELLIFY_STATE_PLAYER;
-            buffer_clear(shellify->buffer);
-            create_header(shellify->tui, shellify->buffer, shellify->config);
-
-            if (!storage_load(shellify->db, &shellify->library)) {
-                raise_error(FAILED, "shellify:storage_load");
-                shellify_stop();
-                return;
-            }
-
-            create_player(shellify->tui, shellify->library, shellify->buffer,
-                          shellify->config);
-
-            return;
-        }
-    }
-
-    // PLAYER TUI: main menu of shellify, its for playlists and songs
-    if (shellify->state == SHELLIFY_STATE_PLAYER) {
-        // just test
-        if (key == KEY_ARROW_UP) {
-            buffer_set_char(shellify->buffer, (Vec){10, 10}, '^');
-            buffer_append_line(shellify->buffer, (Vec){10, 12},
-                               "the pain, it comes in waves");
-            return;
-        }
-
-        // open the "add new song" menu
-        if (key == shellify->config->keys.add) {
-            shellify->state = SHELLIFY_STATE_ADD_SONG;
-            buffer_clear(shellify->buffer);
-            create_header(shellify->tui, shellify->buffer, shellify->config);
-            create_add_menu(shellify->tui, shellify->buffer, shellify->config);
-            return;
-        }
-    }
-
-    if (shellify->state == SHELLIFY_STATE_ADD_PLAYLIST) {
-        if (key == KEY_ARROW_LEFT) {
-            // returning to the player menu
-            shellify->state = SHELLIFY_STATE_PLAYER;
-            buffer_clear(shellify->buffer);
-            create_header(shellify->tui, shellify->buffer, shellify->config);
-            create_player(shellify->tui, shellify->library, shellify->buffer,
-                          shellify->config);
-            return;
-        }
-    }
-
-    // ADD NEW SONG MENU
-    if (shellify->state == SHELLIFY_STATE_ADD_SONG) {
-        if (key == KEY_ARROW_LEFT) {
-            // returning to the player menu
-            shellify->state = SHELLIFY_STATE_PLAYER;
-            buffer_clear(shellify->buffer);
-            create_header(shellify->tui, shellify->buffer, shellify->config);
-            create_player(shellify->tui, shellify->library, shellify->buffer,
-                          shellify->config);
-            return;
-        } else if (key == KEY_ARROW_UP) {
-            // choice: from local files
-            shellify->tui->selected_index = 0;
-        } else if (key == KEY_ARROW_DOWN) {
-            // choice: yt-dlp
-            shellify->tui->selected_index = 1;
-        } else if (key == shellify->config->keys.select) {
-            if (shellify->tui->selected_index == 0) {
-                // local files
-                shellify->state = SHELLIFY_STATE_ADD_SONG_LOCAL;
-
-                shellify->tui->input_form = create_input_form(5);
+    switch (shellify->state) {
+        case SHELLIFY_STATE_WELCOME:
+            if (key == shellify->config->keys.select) {
+                if (!storage_load(shellify->db, &shellify->library)) {
+                    raise_error(FAILED, "shellify:load_storage");
+                    shellify_stop();
+                    break;
+                }
+                shellify->state = SHELLIFY_STATE_PLAYER;
                 buffer_clear(shellify->buffer);
                 create_header(shellify->tui, shellify->buffer,
                               shellify->config);
-                create_add_local_menu(shellify->tui, shellify->buffer,
-                                      shellify->tui->input_form);
-                return;
-            } else {
-                // yt-dlp downloading
-                shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP;
-                return;
+                create_player(shellify->tui, shellify->library,
+                              shellify->buffer, shellify->config);
+            } else if (key == shellify->config->keys.quit) {
+                shellify_stop();
             }
-        }
+            break;
+        case SHELLIFY_STATE_PLAYER:
+            switch (shellify->input_state) {
+                case INPUT_STATE_NONE:
+                    if (key == shellify->config->keys.quit) {
+                        shellify_stop();
+                        return;
+                    } else if (key == shellify->config->keys.add) {
+                        shellify->input_state = INPUT_STATE_ADD;
+                        buffer_clear(shellify->buffer);
+                        create_header(shellify->tui, shellify->buffer,
+                                      shellify->config);
+                        create_add_menu(shellify->tui, shellify->buffer,
+                                        shellify->config);
+                        return;
+                    } else if (key == shellify->config->keys.remove) {
+                        shellify->input_state = INPUT_STATE_REMOVE;
+                        break;
+                    }
 
-        create_header(shellify->tui, shellify->buffer, shellify->config);
-        create_add_menu(shellify->tui, shellify->buffer, shellify->config);
-        return;
-    }
+                    buffer_clear(shellify->buffer);
+                    create_header(shellify->tui, shellify->buffer,
+                                  shellify->config);
+                    create_player(shellify->tui, shellify->library,
+                                  shellify->buffer, shellify->config);
+                    break;
+                case INPUT_STATE_ADD:
+                    if (key == shellify->config->keys.song) {
+                        shellify->state = SHELLIFY_STATE_ADD_SONG;
+                        shellify->input_state = INPUT_STATE_NONE;
+                        shellify->tui->selected_index = 0;
 
-    if (shellify->state == SHELLIFY_STATE_ADD_SONG_LOCAL) {
-        if (!shellify->tui->input_form) return;
+                        buffer_clear(shellify->buffer);
+                        create_header(shellify->tui, shellify->buffer,
+                                      shellify->config);
+                        create_add_menu(shellify->tui, shellify->buffer,
+                                        shellify->config);
+                    } else if (key == shellify->config->keys.playlist) {
+                        shellify->state = SHELLIFY_STATE_ADD_PLAYLIST;
+                        buffer_clear(shellify->buffer);
+                    } else if (key == KEY_ESC) {
+                        shellify->input_state = INPUT_STATE_NONE;
+                    }
+                    break;
+                case INPUT_STATE_REMOVE:
+                    break;
+                default:
+                    shellify->input_state = INPUT_STATE_NONE;
+                    break;
+            }
+            break;
+        case SHELLIFY_STATE_ADD_SONG:
+            if (key == KEY_ARROW_LEFT) {
+                shellify->state = SHELLIFY_STATE_PLAYER;
+                buffer_clear(shellify->buffer);
+                create_header(shellify->tui, shellify->buffer,
+                              shellify->config);
+                create_player(shellify->tui, shellify->library,
+                              shellify->buffer, shellify->config);
+            } else if (key == KEY_ARROW_UP) {
+                shellify->tui->selected_index = 0;
+            } else if (key == KEY_ARROW_DOWN) {
+                shellify->tui->selected_index = 1;
+            } else if (key == shellify->config->keys.select) {
+                if (shellify->tui->selected_index == 0) {
+                    shellify->state = SHELLIFY_STATE_ADD_SONG_LOCAL;
+                    shellify->tui->input_form = create_input_form(5);
+                    buffer_clear(shellify->buffer);
+                    create_header(shellify->tui, shellify->buffer,
+                                  shellify->config);
+                    create_add_local_menu(shellify->tui, shellify->buffer,
+                                          shellify->tui->input_form);
+                } else {
+                    shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP;
+                }
+            }
 
-        if (key == KEY_ARROW_LEFT) {
-            // returning to the add_menu
-            clear_input_form(shellify->tui->input_form);
-            shellify->tui->input_form = NULL;
-
-            shellify->state = SHELLIFY_STATE_ADD_SONG;
-            buffer_clear(shellify->buffer);
             create_header(shellify->tui, shellify->buffer, shellify->config);
             create_add_menu(shellify->tui, shellify->buffer, shellify->config);
-            return;
-        }
+            break;
+        case SHELLIFY_STATE_ADD_SONG_LOCAL:
+            if (!shellify->tui->input_form) break;
 
-        // select button pressed: saving the song
-        if (handle_input_form(key, shellify->tui->input_form,
-                              shellify->config)) {
-            shellify->state = SHELLIFY_STATE_PLAYER;
+            if (key == KEY_ARROW_LEFT) {
+                clear_input_form(shellify->tui->input_form);
+                shellify->tui->input_form = NULL;
 
-            TUI_InputForm* form = shellify->tui->input_form;
-            Song*          song = storage_create_song(
-                shellify->library, 0, form->options[1], form->options[2],
-                form->options[3], form->options[4],
-                file_get_duration_sec(form->options[1], shellify->config),
-                get_time());
-            storage_add_song(shellify->db, shellify->library, song);
+                shellify->state = SHELLIFY_STATE_ADD_SONG;
+                buffer_clear(shellify->buffer);
+                create_header(shellify->tui, shellify->buffer,
+                              shellify->config);
+                create_add_menu(shellify->tui, shellify->buffer,
+                                shellify->config);
+            } else if (handle_input_form(key, shellify->tui->input_form,
+                                         shellify->config)) {
+                shellify->state = SHELLIFY_STATE_PLAYER;
+                TUI_InputForm* form = shellify->tui->input_form;
+                Song*          song = storage_create_song(
+                    shellify->library, 0, form->options[1], form->options[2],
+                    form->options[3], form->options[4],
+                    file_get_duration_sec(form->options[1], shellify->config),
+                    get_time());
+                storage_add_song(shellify->db, shellify->library, song);
 
-            clear_input_form(shellify->tui->input_form);
-            shellify->tui->input_form = NULL;
+                clear_input_form(shellify->tui->input_form);
+                shellify->tui->input_form = NULL;
+
+                buffer_clear(shellify->buffer);
+                create_header(shellify->tui, shellify->buffer,
+                              shellify->config);
+                create_player(shellify->tui, shellify->library,
+                              shellify->buffer, shellify->config);
+            }
 
             buffer_clear(shellify->buffer);
             create_header(shellify->tui, shellify->buffer, shellify->config);
-            create_player(shellify->tui, shellify->library, shellify->buffer,
-                          shellify->config);
-            return;
-        }
-
-        buffer_clear(shellify->buffer);
-        create_header(shellify->tui, shellify->buffer, shellify->config);
-        create_add_local_menu(shellify->tui, shellify->buffer,
-                              shellify->tui->input_form);
-        return;
+            create_add_local_menu(shellify->tui, shellify->buffer,
+                                  shellify->tui->input_form);
+            break;
+        case SHELLIFY_STATE_ADD_SONG_YTDLP:
+            break;
+        case SHELLIFY_STATE_ADD_PLAYLIST:
+            break;
+        default:
+            shellify->state = SHELLIFY_STATE_PLAYER;
+            break;
     }
 }
 
