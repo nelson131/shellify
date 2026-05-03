@@ -50,9 +50,11 @@ int storage_close(sqlite3** db, Library** library) {
         return 0;
     }
 
-    library_clear(*library);
-    free(*library);
-    *library = NULL;
+    if (library) {
+        library_clear(*library);
+        free(*library);
+        *library = NULL;
+    }
 
     return db_close(*db);
 }
@@ -80,7 +82,6 @@ int storage_load(sqlite3* db, Library** library) {
     stmt = db_prepare(db, query);
     if (!stmt) {
         raise_error(ERR_SQLITE_FAILED, "storage:load:prepare:stmt");
-        library_clear(temp);
         free(temp);
         return 0;
     }
@@ -88,11 +89,10 @@ int storage_load(sqlite3* db, Library** library) {
 #define SONGS_BASE_CAPACITY 16
     temp->songs_capacity = SONGS_BASE_CAPACITY;
     temp->song_count = 0;
-    temp->songs = malloc(temp->songs_capacity * sizeof(Song));
+    temp->songs = malloc(temp->songs_capacity * sizeof(Song*));
     if (!temp->songs) {
         raise_error(ERR_MALLOC_NULL, "storage:load:songs");
         sqlite3_finalize(stmt);
-        library_clear(temp);
         free(temp);
         return 0;
     }
@@ -106,6 +106,7 @@ int storage_load(sqlite3* db, Library** library) {
                             sqlite3_column_int64(stmt, 5),
                             (time_t)sqlite3_column_int64(stmt, 6));
     }
+
     sqlite3_finalize(stmt);
 
     // INSERTING PLAYLISTS
@@ -121,7 +122,7 @@ int storage_load(sqlite3* db, Library** library) {
 #define PLAYLISTS_BASE_CAPACITY 16
     temp->playlists_capacity = PLAYLISTS_BASE_CAPACITY;
     temp->playlist_count = 0;
-    temp->playlists = malloc(temp->playlists_capacity * sizeof(Playlist));
+    temp->playlists = malloc(temp->playlists_capacity * sizeof(Playlist*));
     if (!temp->playlists) {
         raise_error(ERR_MALLOC_NULL, "storage:load:playlists");
         sqlite3_finalize(stmt);
@@ -134,6 +135,7 @@ int storage_load(sqlite3* db, Library** library) {
         storage_create_playlist(temp, sqlite3_column_int64(stmt, 0),
                                 (const char*)sqlite3_column_text(stmt, 1));
     }
+
     sqlite3_finalize(stmt);
 
     // CREATING CONNECTION BEETWEEN SONGS AND PLAYLISTS
@@ -149,7 +151,7 @@ int storage_load(sqlite3* db, Library** library) {
     }
 
     for (size_t i = 0; i < temp->playlist_count; i++) {
-        Playlist* playlist = &temp->playlists[i];
+        Playlist* playlist = temp->playlists[i];
 
         sqlite3_reset(stmt);
         bind_int(stmt, 1, playlist->id);
@@ -167,6 +169,7 @@ int storage_load(sqlite3* db, Library** library) {
             }
         }
     }
+
     sqlite3_finalize(stmt);
 
     *library = temp;
@@ -181,8 +184,8 @@ Song* find_song_by_id(Library* library, size_t id) {
     }
 
     for (size_t i = 0; i < library->song_count; i++) {
-        if (library->songs[i].id == id) {
-            return &library->songs[i];
+        if (library->songs[i]->id == id) {
+            return library->songs[i];
         }
     }
 
@@ -205,7 +208,7 @@ Song* storage_create_song(Library* library, size_t id, const char* path,
     }
 
     for (size_t i = 0; i < library->song_count; i++) {
-        if (strcmp(path, library->songs[i].path) == 0) {
+        if (strcmp(path, library->songs[i]->path) == 0) {
             raise_error(ERR_SONG_ALREADY_EXISTS, "storage:create_song:song");
             return NULL;
         }
@@ -213,8 +216,8 @@ Song* storage_create_song(Library* library, size_t id, const char* path,
 
     if (library->song_count + 1 >= library->songs_capacity) {
         library->songs_capacity *= 2;
-        Song* temp =
-            realloc(library->songs, library->songs_capacity * sizeof(Song));
+        Song** temp =
+            realloc(library->songs, library->songs_capacity * sizeof(Song*));
         if (!temp) {
             raise_error(ERR_MALLOC_NULL, "storage:create_song:temp:realloc");
             return NULL;
@@ -223,7 +226,12 @@ Song* storage_create_song(Library* library, size_t id, const char* path,
         library->songs = temp;
     }
 
-    Song* song = &library->songs[library->song_count];
+    Song* song = malloc(sizeof(Song));
+    if (!song) {
+        raise_error(ERR_MALLOC_NULL, "storage:create_song:song");
+        return NULL;
+    }
+
     song->id = id;
     song->path = copy_str(path);
     song->title = copy_str(title);
@@ -232,7 +240,7 @@ Song* storage_create_song(Library* library, size_t id, const char* path,
     song->duration = duration;
     song->time = time;
 
-    library->song_count++;
+    library->songs[library->song_count++] = song;
 
     return song;
 }
@@ -291,7 +299,7 @@ Playlist* storage_create_playlist(Library* library, size_t id,
     }
 
     for (size_t i = 0; i < library->playlist_count; i++) {
-        if (strcmp(name, library->playlists[i].name) == 0) {
+        if (strcmp(name, library->playlists[i]->name) == 0) {
             raise_error(ERR_PLAYLIST_ALREADY_EXISTS,
                         "storage:create_playlist:name");
             return NULL;
@@ -300,8 +308,9 @@ Playlist* storage_create_playlist(Library* library, size_t id,
 
     if (library->playlist_count + 1 >= library->playlists_capacity) {
         library->playlists_capacity *= 2;
-        Playlist* temp = realloc(
-            library->playlists, library->playlists_capacity * sizeof(Playlist));
+        Playlist** temp =
+            realloc(library->playlists,
+                    library->playlists_capacity * sizeof(Playlist*));
         if (!temp) {
             raise_error(ERR_MALLOC_NULL,
                         "storage:create_playlist:temp:realloc");
@@ -311,13 +320,18 @@ Playlist* storage_create_playlist(Library* library, size_t id,
         library->playlists = temp;
     }
 
-    Playlist* playlist = &library->playlists[library->playlist_count];
+    Playlist* playlist = malloc(sizeof(Playlist));
+    if (!playlist) {
+        raise_error(ERR_MALLOC_NULL, "storage:create_playlist:playlist");
+        return NULL;
+    }
+
     playlist->id = id;
     playlist->name = copy_str(name);
     playlist->songs = NULL;
     playlist->song_count = 0;
 
-    library->playlist_count++;
+    library->playlists[library->playlist_count++] = playlist;
 
     return playlist;
 }
@@ -381,29 +395,37 @@ int storage_playlist_add_song(sqlite3* db, Song* song, Playlist* playlist) {
 void library_clear(Library* library) {
     if (!library) return;
 
+    // clearing all playlists
     for (size_t i = 0; i < library->playlist_count; i++) {
-        playlist_clear(&library->playlists[i]);
+        playlist_clear(library->playlists[i]);
+        free(library->playlists[i]);
     }
 
+    // clearing all songs
     for (size_t i = 0; i < library->song_count; i++) {
-        song_clear(&library->songs[i]);
+        song_clear(library->songs[i]);
+        free(library->songs[i]);
     }
 
     library->song_count = 0;
     library->playlist_count = 0;
+
+    free(library->songs);
+    free(library->playlists);
 }
 
 // clearing the playlists fields
 void playlist_clear(Playlist* playlist) {
     if (!playlist) return;
-
-    playlist->id = 0;
-    playlist->song_count = 0;
-    playlist->songs = NULL;
-
     if (playlist->name) {
         free(playlist->name);
     }
+    if (playlist->songs) {
+        free(playlist->songs);
+    }
+
+    playlist->songs = NULL;
+    playlist->song_count = 0;
 }
 
 // clearing the song fields

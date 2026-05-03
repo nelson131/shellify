@@ -6,6 +6,7 @@
 
 #include "buffer.h"
 #include "config.h"
+#include "file.h"
 #include "input.h"
 #include "storage.h"
 #include "tui.h"

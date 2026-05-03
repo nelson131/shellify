@@ -199,11 +199,13 @@ void shellify_handle_input() {
                               shellify->config)) {
             shellify->state = SHELLIFY_STATE_PLAYER;
 
-            // TUI_InputForm* form = shellify->tui->input_form;
-            // Song*          song = storage_create_song(
-            //   shellify->library, 0, form->options[0], form->options[1],
-            // form->options[2], form->options[3], 5, get_time());
-            // storage_add_song(shellify->db, shellify->library, song);
+            TUI_InputForm* form = shellify->tui->input_form;
+            Song*          song = storage_create_song(
+                shellify->library, 0, form->options[1], form->options[2],
+                form->options[3], form->options[4],
+                file_get_duration_sec(form->options[1], shellify->config),
+                get_time());
+            storage_add_song(shellify->db, shellify->library, song);
 
             clear_input_form(shellify->tui->input_form);
             shellify->tui->input_form = NULL;

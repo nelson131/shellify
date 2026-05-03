@@ -15,6 +15,7 @@ add_executable(shellify
     src/db_handler.c
     src/storage.c
     src/rect.c
+    src/file.c
 )
 
 target_link_libraries(shellify

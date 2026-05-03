@@ -28,13 +28,13 @@ typedef struct Playlist {
 } Playlist;
 
 typedef struct Library {
-    Song*  songs;
+    Song** songs;
     size_t song_count;
     size_t songs_capacity;
 
-    Playlist* playlists;
-    size_t    playlist_count;
-    size_t    playlists_capacity;
+    Playlist** playlists;
+    size_t     playlist_count;
+    size_t     playlists_capacity;
 } Library;
 
 int storage_init(sqlite3** db);

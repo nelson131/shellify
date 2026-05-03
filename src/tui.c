@@ -168,11 +168,12 @@ int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
     // rendering playlists
     for (size_t i = 0; i < library->playlist_count; i++) {
         snprintf(buf, BUFFER_BASE_SIZE, "%zu. %s", i + 1,
-                 library->playlists[i].name);
+                 library->playlists[i]->name);
         buffer_append_line(buffer,
                            (Vec){tui->x_playlists, tui->y_playlists + i}, buf);
     }
 
+    free(buf);
     return 1;
 }
 

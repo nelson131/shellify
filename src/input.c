@@ -51,7 +51,7 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
     if (key == KEY_ARROW_UP && form->selected_option - 1 >= 0) {
         form->selected_option -= 1;
     } else if (key == KEY_ARROW_DOWN &&
-               form->selected_option + 1 <= form->size) {
+               form->selected_option + 1 < form->size) {
         form->selected_option += 1;
     } else if (key == KEY_BACKSPACE) {
         size_t len = strlen(cur_value);
@@ -65,7 +65,7 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
         return 1;
     } else if (key >= 32 && key <= 126) {
         size_t len = strlen(cur_value);
-        if (len < form->str_len) {
+        if (len < form->str_len - 1) {
             cur_value[len] = (char)key;
             cur_value[len + 1] = '\0';
         }
