@@ -20,6 +20,7 @@ void shellify_init() {
     shellify->is_running = 1;
     shellify->db = NULL;
     shellify->state = SHELLIFY_STATE_WELCOME;
+    shellify->input_state = INPUT_STATE_NONE;
 
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
@@ -52,7 +53,8 @@ void shellify_init() {
     printf("\033[2J");
     printf("\033[H");
 
-    if (!create_header(shellify->tui, shellify->buffer, shellify->config))
+    if (!create_header(shellify->tui, shellify->buffer, shellify->config,
+                       instate_char(shellify->input_state)))
         shellify_stop();
 
     if (!create_welcome(shellify->tui, shellify->buffer, shellify->config))
@@ -93,6 +95,11 @@ void shellify_handle_input() {
     int key = input_poll();
     if (key == -1) return;
 
+    if (key == shellify->config->keys.quit) {
+        shellify_stop();
+        return;
+    }
+
     switch (shellify->state) {
         case SHELLIFY_STATE_WELCOME:
             if (key == shellify->config->keys.select) {
@@ -103,8 +110,8 @@ void shellify_handle_input() {
                 }
                 shellify->state = SHELLIFY_STATE_PLAYER;
                 buffer_clear(shellify->buffer);
-                create_header(shellify->tui, shellify->buffer,
-                              shellify->config);
+                create_header(shellify->tui, shellify->buffer, shellify->config,
+                              instate_char(shellify->input_state));
                 create_player(shellify->tui, shellify->library,
                               shellify->buffer, shellify->config);
             } else if (key == shellify->config->keys.quit) {
@@ -114,25 +121,16 @@ void shellify_handle_input() {
         case SHELLIFY_STATE_PLAYER:
             switch (shellify->input_state) {
                 case INPUT_STATE_NONE:
-                    if (key == shellify->config->keys.quit) {
-                        shellify_stop();
-                        return;
-                    } else if (key == shellify->config->keys.add) {
+                    if (key == shellify->config->keys.add) {
                         shellify->input_state = INPUT_STATE_ADD;
-                        buffer_clear(shellify->buffer);
-                        create_header(shellify->tui, shellify->buffer,
-                                      shellify->config);
-                        create_add_menu(shellify->tui, shellify->buffer,
-                                        shellify->config);
-                        return;
                     } else if (key == shellify->config->keys.remove) {
                         shellify->input_state = INPUT_STATE_REMOVE;
-                        break;
                     }
 
                     buffer_clear(shellify->buffer);
                     create_header(shellify->tui, shellify->buffer,
-                                  shellify->config);
+                                  shellify->config,
+                                  instate_char(shellify->input_state));
                     create_player(shellify->tui, shellify->library,
                                   shellify->buffer, shellify->config);
                     break;
@@ -144,12 +142,15 @@ void shellify_handle_input() {
 
                         buffer_clear(shellify->buffer);
                         create_header(shellify->tui, shellify->buffer,
-                                      shellify->config);
+                                      shellify->config,
+                                      instate_char(shellify->input_state));
                         create_add_menu(shellify->tui, shellify->buffer,
                                         shellify->config);
+                        return;
                     } else if (key == shellify->config->keys.playlist) {
                         shellify->state = SHELLIFY_STATE_ADD_PLAYLIST;
                         buffer_clear(shellify->buffer);
+                        return;
                     } else if (key == KEY_ESC) {
                         shellify->input_state = INPUT_STATE_NONE;
                     }
@@ -165,10 +166,11 @@ void shellify_handle_input() {
             if (key == KEY_ARROW_LEFT) {
                 shellify->state = SHELLIFY_STATE_PLAYER;
                 buffer_clear(shellify->buffer);
-                create_header(shellify->tui, shellify->buffer,
-                              shellify->config);
+                create_header(shellify->tui, shellify->buffer, shellify->config,
+                              instate_char(shellify->input_state));
                 create_player(shellify->tui, shellify->library,
                               shellify->buffer, shellify->config);
+                return;
             } else if (key == KEY_ARROW_UP) {
                 shellify->tui->selected_index = 0;
             } else if (key == KEY_ARROW_DOWN) {
@@ -179,15 +181,18 @@ void shellify_handle_input() {
                     shellify->tui->input_form = create_input_form(5);
                     buffer_clear(shellify->buffer);
                     create_header(shellify->tui, shellify->buffer,
-                                  shellify->config);
+                                  shellify->config,
+                                  instate_char(shellify->input_state));
                     create_add_local_menu(shellify->tui, shellify->buffer,
                                           shellify->tui->input_form);
+                    return;
                 } else {
                     shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP;
                 }
             }
 
-            create_header(shellify->tui, shellify->buffer, shellify->config);
+            create_header(shellify->tui, shellify->buffer, shellify->config,
+                          instate_char(shellify->input_state));
             create_add_menu(shellify->tui, shellify->buffer, shellify->config);
             break;
         case SHELLIFY_STATE_ADD_SONG_LOCAL:
@@ -199,10 +204,11 @@ void shellify_handle_input() {
 
                 shellify->state = SHELLIFY_STATE_ADD_SONG;
                 buffer_clear(shellify->buffer);
-                create_header(shellify->tui, shellify->buffer,
-                              shellify->config);
+                create_header(shellify->tui, shellify->buffer, shellify->config,
+                              instate_char(shellify->input_state));
                 create_add_menu(shellify->tui, shellify->buffer,
                                 shellify->config);
+                return;
             } else if (handle_input_form(key, shellify->tui->input_form,
                                          shellify->config)) {
                 shellify->state = SHELLIFY_STATE_PLAYER;
@@ -218,14 +224,16 @@ void shellify_handle_input() {
                 shellify->tui->input_form = NULL;
 
                 buffer_clear(shellify->buffer);
-                create_header(shellify->tui, shellify->buffer,
-                              shellify->config);
+                create_header(shellify->tui, shellify->buffer, shellify->config,
+                              instate_char(shellify->input_state));
                 create_player(shellify->tui, shellify->library,
                               shellify->buffer, shellify->config);
+                return;
             }
 
             buffer_clear(shellify->buffer);
-            create_header(shellify->tui, shellify->buffer, shellify->config);
+            create_header(shellify->tui, shellify->buffer, shellify->config,
+                          instate_char(shellify->input_state));
             create_add_local_menu(shellify->tui, shellify->buffer,
                                   shellify->tui->input_form);
             break;

@@ -47,7 +47,7 @@ void tui_clear(TUI* tui);
 
 void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows);
 
-int create_header(TUI* tui, Buffer* buffer, Config* config);
+int create_header(TUI* tui, Buffer* buffer, Config* config, const char* mode);
 int create_welcome(TUI* tui, Buffer* buffer, Config* config);
 
 int create_player(TUI* tui, Library* library, Buffer* buffer, Config* config);

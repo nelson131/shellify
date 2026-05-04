@@ -28,4 +28,6 @@ int input_poll();
 
 int handle_input_form(int key, TUI_InputForm* form, Config* config);
 
+const char* instate_char(InputState input_state);
+
 #endif

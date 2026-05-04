@@ -73,3 +73,16 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
 
     return 0;
 }
+
+const char* instate_char(InputState input_state) {
+    switch (input_state) {
+        case INPUT_STATE_NONE:
+            return "none";
+        case INPUT_STATE_ADD:
+            return "add";
+        case INPUT_STATE_REMOVE:
+            return "remove";
+        default:
+            return "unknown";
+    }
+}

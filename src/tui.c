@@ -88,7 +88,7 @@ void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
     tui->y_songs = tui->header_top_border + 1;
 }
 
-int create_header(TUI* tui, Buffer* buffer, Config* config) {
+int create_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
 #define BUFFER_BASE_SIZE 128 * sizeof(char)
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) {
@@ -114,8 +114,14 @@ int create_header(TUI* tui, Buffer* buffer, Config* config) {
     // bottom side
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border},
                        tui->separator);
+
+    snprintf(buf, BUFFER_BASE_SIZE, "Mode = [ %s ]", mode);
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border + 1},
                        tui->line_status);
+    buffer_append_line(
+        buffer,
+        (Vec){strlen(tui->line_status) + 10, tui->header_bottom_border + 1},
+        buf);
 
     free(buf);
     return 1;
