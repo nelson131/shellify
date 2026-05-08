@@ -34,3 +34,20 @@ void draw_rect(Buffer* buffer, Rect r) {
                                 wall);
     free(wall);
 }
+
+void rect_center(Rect* rect, size_t h, size_t w) {
+    rect_center_x(rect, w);
+    rect_center_y(rect, h);
+}
+
+void rect_center_x(Rect* rect, size_t w) {
+    if (w > rect->w) {
+        rect->vec.x = (w - rect->w) / 2;
+    }
+}
+
+void rect_center_y(Rect* rect, size_t h) {
+    if (h > rect->h) {
+        rect->vec.y = (h - rect->h) / 2;
+    }
+}

@@ -27,6 +27,7 @@ int input_pause();
 int input_poll();
 
 int handle_input_form(int key, TUI_InputForm* form, Config* config);
+int handle_choice_form(int key, TUI_ChoiceForm* form, Config* config);
 
 const char* instate_char(InputState input_state);
 

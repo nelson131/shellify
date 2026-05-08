@@ -74,6 +74,20 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
     return 0;
 }
 
+int handle_choice_form(int key, TUI_ChoiceForm* form, Config* config) {
+    if (!form) return 0;
+
+    if (key == KEY_ARROW_UP && form->selected_option - 1 >= 0) {
+        form->selected_option -= 1;
+    } else if (key == KEY_ARROW_DOWN &&
+               form->selected_option + 1 < form->size) {
+        form->selected_option += 1;
+    } else if (key == config->keys.select)
+        return 1;
+
+    return 0;
+}
+
 const char* instate_char(InputState input_state) {
     switch (input_state) {
         case INPUT_STATE_NONE:

@@ -108,7 +108,7 @@ void buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line) {
 
 void buffer_set_range_char(Buffer* buffer, Vec range, Vec v, char ch) {
     if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
-    if (range.x + v.y > buffer->window_cols) return;
+    if (range.y + v.x > buffer->window_cols) return;
 
     for (size_t i = range.x; i < range.y - range.x; i++) {
         buffer_set_char(buffer, (Vec){v.x + i, v.y}, ch);
@@ -121,6 +121,33 @@ void buffer_set_ver_range_char(Buffer* buffer, Vec range, Vec v, char ch) {
 
     for (size_t i = range.x; i < range.y - range.x; i++) {
         buffer_set_char(buffer, (Vec){v.x, v.y + i}, ch);
+    }
+}
+
+void buffer_append_range(Buffer* buffer, Vec range, Vec v, const char* line) {
+    if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
+    if (range.y + v.x > buffer->window_cols) return;
+    size_t len = strlen(line);
+    if (len >= buffer->window_cols) return;
+
+    size_t idx = 0;
+    for (size_t i = range.x; i < range.y - range.x; i++, idx++) {
+        buffer_set_char(buffer, (Vec){v.x + i, v.y}, line[idx]);
+        if (idx >= len) idx = 0;
+    }
+}
+
+void buffer_append_ver_range(Buffer* buffer, Vec range, Vec v,
+                             const char* line) {
+    if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
+    if (range.y + v.y > buffer->window_rows) return;
+    size_t len = strlen(line);
+    if (len >= buffer->window_rows) return;
+
+    size_t idx = 0;
+    for (size_t i = range.x; i < range.y - range.x; i++, idx++) {
+        buffer_set_char(buffer, (Vec){v.x, v.y + i}, line[idx]);
+        if (idx >= len) idx = 0;
     }
 }
 

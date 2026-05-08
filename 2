@@ -103,11 +103,12 @@ void make_welcome(TUI* tui, Buffer* buffer, Config* config) {
     snprintf(buf, BUFFER_BASE_SIZE,
              "Press SELECT-BUTTON (%c) to start shellify", config->keys.select);
     size_t msg_x = rect.vec.x + (rect.w - strlen(buf)) / 2;
+
     buffer_append_line(buffer, (Vec){msg_x, rect.vec.y + 16}, buf);
     free(buf);
 }
 
-void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
+void make_header(TUI* tui, Buffer* buffer, Config* config) {
     if (!tui || !buffer || !config) return;
 
     char* buf = malloc(BUFFER_BASE_SIZE);
@@ -137,11 +138,7 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
 
     snprintf(buf, BUFFER_BASE_SIZE, "%s %s", PREFIX_PLAYING, tui->song_name);
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border + 1}, buf);
-    size_t len = strlen(buf);
 
-    snprintf(buf, BUFFER_BASE_SIZE, "Mode = [ %s ]", mode);
-    buffer_append_line(buffer, (Vec){len + 10, tui->header_bottom_border + 1},
-                       buf);
     free(buf);
 }
 
