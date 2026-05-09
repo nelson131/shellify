@@ -13,7 +13,7 @@
 #define PREFIX_PLAYING " Now playing: "
 #define PREFIX_PLAYLING_LEN strlen(PREFIX_PLAYING)
 
-#define UNICODE_VER_LINE "⎪"
+#define UNICODE_VER_LINE "|"
 
 typedef struct TUI_InputForm {
     char** options;

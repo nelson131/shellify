@@ -145,9 +145,9 @@ void buffer_append_ver_range(Buffer* buffer, Vec range, Vec v,
     if (len >= buffer->window_rows) return;
 
     size_t idx = 0;
-    for (size_t i = range.x; i < range.y - range.x; i++, idx++) {
+    for (size_t i = range.x; i < range.y; i++, idx++) {
         buffer_set_char(buffer, (Vec){v.x, v.y + i}, line[idx]);
-        if (idx >= len) idx = 0;
+        if (idx >= len - 1) idx = 0;
     }
 }
 

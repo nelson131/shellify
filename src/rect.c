@@ -35,7 +35,7 @@ void draw_rect(Buffer* buffer, Rect r) {
     free(wall);
 }
 
-void rect_center(Rect* rect, size_t h, size_t w) {
+void rect_center(Rect* rect, size_t w, size_t h) {
     rect_center_x(rect, w);
     rect_center_y(rect, h);
 }

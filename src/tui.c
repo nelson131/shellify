@@ -26,6 +26,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     }
 
     memset(temp->separator, '_', size * sizeof(char));
+    temp->separator[*window_cols] = '\0';
 
     // creating song name line
 #define MAX_LEN_SONG 96
@@ -37,7 +38,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
         return 0;
     }
 
-    memset(temp->song_name, ' ', MAX_LEN_SONG * sizeof(char));
+    temp->song_name[0] = '\0';
 
     temp->input_form = NULL;
     temp->choice_form = NULL;
@@ -83,7 +84,7 @@ void make_welcome(TUI* tui, Buffer* buffer, Config* config) {
     rect_center(&rect, buffer->window_cols, buffer->window_rows);
     draw_rect(buffer, rect);
 
-#define BUFFER_BASE_SIZE 128 * sizeof(char)
+#define BUFFER_BASE_SIZE 256 * sizeof(char)
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) {
         raise_error(ERR_MALLOC_NULL, "tui:make_welcome:buf");
@@ -146,18 +147,17 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
 }
 
 void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
-    buffer_append_ver_range(
+    buffer_set_ver_range_char(
         buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
-        (Vec){tui->playlist_wall, tui->header_top_border - 1},
-        UNICODE_VER_LINE);
+        (Vec){tui->playlist_wall, tui->header_top_border - 1}, '|');
 }
 
 // ADD song
 
 void make_add_sn(TUI* tui, Buffer* buffer, Config* config) {
-    size_t size = 3;
+    size_t size = 2;
     if (!tui->choice_form) {
-        const char* options[3] = {"load from local files",
+        const char* options[2] = {"load from local files",
                                   "download from youtube using yt-dlp"};
 
         set_choice_form(tui, options, size);
@@ -179,9 +179,9 @@ void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config) {
     size_t size = 5;
     if (!tui->input_form) {
         const char* options[5] = {
-            "Playlist-id: ", "Path: ", "Artist: ", "Album: "};
+            "Playlist-id: ", "Path: ", "Title: ", "Artist : ", " Album : "};
 
-        set_input_form(tui, options, size);
+        set_choice_form(tui, options, size);
     }
 
     Rect rect = (Rect){(Vec){0, 0}, 60, 20};

@@ -45,6 +45,7 @@ void shellify_destroy();
 
 void shellify_update();
 void shellify_draw();
+void shellify_draw_state();
 void shellify_handle_input();
 
 void shellify_stop();
