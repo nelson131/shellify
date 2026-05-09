@@ -57,6 +57,27 @@ int config_load(Config** config) {
     return 1;
 }
 
+void config_setup() {
+    const char* home = getenv("HOME");
+
+    char* buf = malloc(CONFIG_PATH_SIZE * sizeof(char));
+    if (!buf) return;
+    snprintf(buf, CONFIG_PATH_SIZE, CONFIGS_DIR, home);
+
+    struct stat statbuf;
+    if (stat(buf, &statbuf) != 0) {
+        mkdir(buf, 0755);
+    } else {
+        return;
+    }
+
+    snprintf(buf, CONFIG_PATH_SIZE, CONFIG_DB_PATH, home);
+    FILE* file = fopen(buf, "w");
+    if (file) {
+        fclose(file);
+    }
+}
+
 int config_save(Config* config) {
     FILE* file = get_config_file("w");
     if (!file) {

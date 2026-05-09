@@ -7,14 +7,17 @@
 #include <time.h>
 
 #include "error_handler.h"
+#include "sys/stat.h"
 
 #define CONFIG_PATH "%s/.config/shellify/config"
+#define CONFIG_DB_PATH "%s/.config/shellify/shellify.db"
+#define CONFIGS_DIR "%s/.config/shellify"
 #define CONFIG_GENERAL_SIZE 16
 #define CONFIG_PATH_SIZE 256
 #define CONFIG_LINE_SIZE 128
 
 #define CONFIG_APP_NAME "shellify"
-#define CONFIG_APP_VERSION "v0.6.2"
+#define CONFIG_APP_VERSION "v0.6.3"
 #define CONFIG_APP_DESC "terminal based audio player"
 
 #define CONFIG_DEF_VOLUME 50
@@ -55,8 +58,9 @@ typedef struct Config {
     cfg_keys    keys;
 } Config;
 
-int config_load(Config** config);
-int config_save(Config* config);
+int  config_load(Config** config);
+void config_setup();
+int  config_save(Config* config);
 
 void config_default(Config* config);
 
