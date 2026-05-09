@@ -109,10 +109,13 @@ void shellify_draw_state() {
             make_add_sn(shellify->tui, shellify->buffer, shellify->config);
             break;
         case SHELLIFY_STATE_ADD_SONG_LOCAL:
+            make_add_local_sn(shellify->tui, shellify->buffer,
+                              shellify->config);
             break;
         case SHELLIFY_STATE_ADD_SONG_YTDLP:
             break;
         case SHELLIFY_STATE_ADD_PLAYLIST:
+            make_add_plist(shellify->tui, shellify->buffer, shellify->config);
             break;
         default:
             break;
@@ -171,6 +174,7 @@ void shellify_handle_input() {
         case SHELLIFY_STATE_ADD_SONG:
             if (key == KEY_ARROW_LEFT) {
                 shellify->state = SHELLIFY_STATE_PLAYER;
+                clear_choice_form(shellify->tui);
                 return;
             }
             int idx = handle_choice_form(key, shellify->tui->choice_form,
@@ -178,6 +182,7 @@ void shellify_handle_input() {
             if (idx >= 0) {
                 switch (idx) {
                     case 0:
+                        shellify->state = SHELLIFY_STATE_ADD_SONG_LOCAL;
                         break;
                     case 1:
                         break;
@@ -187,10 +192,34 @@ void shellify_handle_input() {
             }
             break;
         case SHELLIFY_STATE_ADD_SONG_LOCAL:
+            if (key == KEY_ARROW_LEFT) {
+                shellify->state = SHELLIFY_STATE_ADD_SONG;
+                clear_input_form(shellify->tui);
+                return;
+            } else if (handle_input_form(key, shellify->tui->input_form,
+                                         shellify->config)) {
+            }
+
             break;
         case SHELLIFY_STATE_ADD_SONG_YTDLP:
             break;
         case SHELLIFY_STATE_ADD_PLAYLIST:
+            if (key == KEY_ARROW_LEFT) {
+                shellify->state = SHELLIFY_STATE_PLAYER;
+                clear_input_form(shellify->tui);
+                shellify->tui->input_form = NULL;
+            } else if (handle_input_form(key, shellify->tui->input_form,
+                                         shellify->config)) {
+                const char* plist_name = shellify->tui->input_form->values[0];
+                Playlist*   playlist =
+                    storage_create_playlist(shellify->library, 0, plist_name);
+                if (playlist) {
+                    storage_add_playlist(shellify->db, shellify->library,
+                                         playlist);
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                    clear_input_form(shellify->tui);
+                }
+            }
             break;
         default:
             shellify->state = SHELLIFY_STATE_PLAYER;

@@ -53,7 +53,7 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
     } else if (key == KEY_ARROW_DOWN &&
                form->selected_option + 1 < form->size) {
         form->selected_option += 1;
-    } else if (key == KEY_BACKSPACE) {
+    } else if (key == KEY_BACKSPACE || key == 127) {
         size_t len = strlen(cur_value);
         if (len > 0) cur_value[len - 1] = '\0';
     } else if (key == config->keys.select) {

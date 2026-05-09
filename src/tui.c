@@ -40,6 +40,8 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
 
     temp->song_name[0] = '\0';
 
+    temp->idx_plists = 0;
+    temp->idx_songs = 0;
     temp->input_form = NULL;
     temp->choice_form = NULL;
     tui_update(temp, window_cols, window_rows);
@@ -68,16 +70,16 @@ void tui_clear(TUI* tui) {
     if (tui->song_name) free(tui->song_name);
 
     if (tui->input_form) {
-        clear_input_form(tui->input_form);
-        tui->input_form = NULL;
+        clear_input_form(tui);
     }
     if (tui->choice_form) {
-        clear_choice_form(tui->choice_form);
-        tui->choice_form = NULL;
+        clear_choice_form(tui);
     }
 }
 
 // tui elements and inteface
+
+// bosses
 
 void make_welcome(TUI* tui, Buffer* buffer, Config* config) {
     Rect rect = (Rect){(Vec){0, 0}, 60, 20};
@@ -150,6 +152,34 @@ void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
     buffer_set_ver_range_char(
         buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
         (Vec){tui->playlist_wall, tui->header_top_border - 1}, '|');
+
+    view_plists(tui, library, buffer);
+}
+
+// views
+
+void view_plists(TUI* tui, Library* library, Buffer* buffer) {
+    size_t x = tui->x_playlists;
+    size_t y = tui->y_playlists;
+
+    buffer_append_line(buffer, (Vec){x, y}, "[ PLAYLISTS ]");
+
+    char* buf = malloc(BUFFER_BASE_SIZE);
+    if (!buf) return;
+
+    for (size_t i = 0; i < library->playlist_count; i++) {
+        if (i == tui->idx_plists) {
+            snprintf(buf, BUFFER_BASE_SIZE, "> %zu. %s",
+                     library->playlists[i]->id, library->playlists[i]->name);
+        } else {
+            snprintf(buf, BUFFER_BASE_SIZE, "  %zu. %s",
+                     library->playlists[i]->id, library->playlists[i]->name);
+        }
+
+        if (y + i + 3 >= tui->header_bottom_border) break;
+
+        buffer_append_line(buffer, (Vec){x, y + i + 3}, buf);
+    }
 }
 
 // ADD song
@@ -179,23 +209,39 @@ void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config) {
     size_t size = 5;
     if (!tui->input_form) {
         const char* options[5] = {
-            "Playlist-id: ", "Path: ", "Title: ", "Artist : ", " Album : "};
+            "Playlist-id: ", "Path: ", "Title: ", "Artist : ", "Album : "};
 
-        set_choice_form(tui, options, size);
+        set_input_form(tui, options, size);
     }
 
     Rect rect = (Rect){(Vec){0, 0}, 60, 20};
     rect_center(&rect, buffer->window_cols, buffer->window_rows);
 
-    make_choice_form(tui, buffer, rect,
-                     "UP/DOWN: moving, SELECT to choose, LEFT to leave");
+    make_input_form(tui, buffer, rect,
+                    "UP/DOWN: moving, SELECT to choose, LEFT to leave");
+}
+
+// ADD playlist
+
+void make_add_plist(TUI* tui, Buffer* buffer, Config* config) {
+    size_t size = 1;
+    if (!tui->input_form) {
+        const char* options[1] = {"Name: "};
+
+        set_input_form(tui, options, size);
+    }
+
+    Rect rect = (Rect){(Vec){0, 0}, 60, 20};
+    rect_center(&rect, buffer->window_cols, buffer->window_rows);
+
+    make_input_form(tui, buffer, rect, "SELECT to choose, LEFT to leave");
 }
 
 // >>> input form handler
 
 void create_input_form(TUI* tui, size_t cap) {
     if (tui->input_form) {
-        clear_input_form(tui->input_form);
+        clear_input_form(tui);
         tui->input_form = NULL;
     }
 
@@ -226,7 +272,7 @@ void create_input_form(TUI* tui, size_t cap) {
 
 void set_input_form(TUI* tui, const char* options[], size_t cap) {
     if (tui->input_form) {
-        clear_input_form(tui->input_form);
+        clear_input_form(tui);
         tui->input_form = NULL;
     }
 
@@ -236,18 +282,19 @@ void set_input_form(TUI* tui, const char* options[], size_t cap) {
     }
 }
 
-void clear_input_form(TUI_InputForm* form) {
-    if (!form) return;
+void clear_input_form(TUI* tui) {
+    if (!tui->input_form) return;
 
-    for (size_t i = 0; i < form->cap; i++) {
-        free(form->options[i]);
-        free(form->values[i]);
+    for (size_t i = 0; i < tui->input_form->cap; i++) {
+        free(tui->input_form->options[i]);
+        free(tui->input_form->values[i]);
     }
 
-    free(form->options);
-    free(form->values);
+    free(tui->input_form->options);
+    free(tui->input_form->values);
 
-    free(form);
+    free(tui->input_form);
+    tui->input_form = NULL;
 }
 
 void put_inform(TUI_InputForm* form, size_t idx, const char* msg) {
@@ -296,7 +343,7 @@ void make_input_form(TUI* tui, Buffer* buffer, Rect rect, const char* msg) {
 
 void create_choice_form(TUI* tui, size_t cap) {
     if (tui->choice_form) {
-        clear_choice_form(tui->choice_form);
+        clear_choice_form(tui);
         tui->choice_form = NULL;
     }
 
@@ -323,7 +370,7 @@ void create_choice_form(TUI* tui, size_t cap) {
 
 void set_choice_form(TUI* tui, const char* options[], size_t cap) {
     if (tui->choice_form) {
-        clear_choice_form(tui->choice_form);
+        clear_choice_form(tui);
         tui->choice_form = NULL;
     }
 
@@ -333,15 +380,17 @@ void set_choice_form(TUI* tui, const char* options[], size_t cap) {
     }
 }
 
-void clear_choice_form(TUI_ChoiceForm* form) {
-    if (!form) return;
+void clear_choice_form(TUI* tui) {
+    if (!tui->choice_form) return;
 
-    for (size_t i = 0; i < form->cap; i++) {
-        free(form->options[i]);
+    for (size_t i = 0; i < tui->choice_form->cap; i++) {
+        free(tui->choice_form->options[i]);
     }
 
-    free(form->options);
-    free(form);
+    free(tui->choice_form->options);
+    free(tui->choice_form);
+
+    tui->choice_form = NULL;
 }
 
 void put_chform(TUI_ChoiceForm* form, size_t idx, const char* msg) {
