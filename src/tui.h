@@ -51,6 +51,8 @@ typedef struct TUI {
 
     size_t idx_plists;
     size_t idx_songs;
+    size_t scroll_plists;
+    size_t scroll_songs;
 
     TUI_InputForm*  input_form;
     TUI_ChoiceForm* choice_form;
@@ -58,6 +60,7 @@ typedef struct TUI {
 
 int  tui_init(TUI** tui, size_t* window_cols, size_t* window_rows);
 void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows);
+void tui_sync(TUI* tui, Library* library);
 void tui_clear(TUI* tui);
 
 // >>> tui elements and interfaces

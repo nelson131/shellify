@@ -70,7 +70,7 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
     } else if (key == KEY_BACKSPACE || key == 127) {
         size_t len = strlen(cur_value);
         if (len > 0) cur_value[len - 1] = '\0';
-    } else if (key == config->keys.select) {
+    } else if (key == KEY_ARROW_RIGHT) {
         // checking fields filling
         for (size_t i = 0; i < form->size; i++) {
             size_t len = strlen(form->values[i]);

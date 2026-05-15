@@ -82,7 +82,7 @@ void shellify_destroy() {
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
-void shellify_update() {}
+void shellify_update() { tui_sync(shellify->tui, shellify->library); }
 
 void shellify_draw() {
     shellify_draw_state();
@@ -216,6 +216,9 @@ void shellify_handle_input() {
                 return;
             } else if (handle_input_form(key, shellify->tui->input_form,
                                          shellify->config)) {
+                add_song(shellify->tui, shellify->db, shellify->library);
+                clear_input_form(shellify->tui);
+                shellify->state = SHELLIFY_STATE_PLAYER;
             }
 
             break;

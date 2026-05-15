@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "buffer.h"
 #include "rect.h"
 
 int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
@@ -40,8 +41,8 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
 
     temp->song_name[0] = '\0';
 
-    temp->idx_plists = 0;
-    temp->idx_songs = 0;
+    temp->idx_plists = 0, temp->idx_songs = 0;
+    temp->scroll_plists = 0, temp->scroll_songs = 0;
     temp->input_form = NULL;
     temp->choice_form = NULL;
     tui_update(temp, window_cols, window_rows);
@@ -61,6 +62,21 @@ void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
     tui->y_playlists = tui->header_top_border + 2;
     tui->x_songs = tui->playlist_wall + 3;
     tui->y_songs = tui->header_top_border + 2;
+}
+
+void tui_sync(TUI* tui, Library* library) {
+    if (!tui || !library) return;
+
+    Playlist* playlist = library->playlists[tui->idx_plists];
+    size_t    max_songs = tui->header_bottom_border - tui->y_songs - 1;
+
+    if (tui->idx_songs < tui->scroll_songs) {
+        tui->scroll_songs = tui->idx_songs;
+    }
+
+    if (tui->idx_songs >= tui->scroll_songs + max_songs) {
+        tui->scroll_songs = tui->idx_songs - max_songs + 1;
+    }
 }
 
 void tui_clear(TUI* tui) {
@@ -190,6 +206,8 @@ void view_plists(TUI* tui, Library* library, Buffer* buffer) {
     if (!buf) return;
 
     for (size_t i = 0; i < library->playlist_count; i++) {
+        if (y + i + 3 >= tui->header_bottom_border) break;
+
         if (i == tui->idx_plists) {
             snprintf(buf, BUFFER_BASE_SIZE, "> %s",
                      library->playlists[i]->name);
@@ -198,13 +216,44 @@ void view_plists(TUI* tui, Library* library, Buffer* buffer) {
                      library->playlists[i]->name);
         }
 
-        if (y + i + 3 >= tui->header_bottom_border) break;
-
         buffer_append_line(buffer, (Vec){x, y + i + 3}, buf);
     }
 }
 
-void view_songs(TUI* tui, Library* library, Buffer* buffer) {}
+void view_songs(TUI* tui, Library* library, Buffer* buffer) {
+    size_t x = tui->x_songs;
+    size_t y = tui->y_songs;
+
+    buffer_append_line(buffer, (Vec){x, y}, "[ SONGS ]");
+
+    Playlist* playlist = library->playlists[tui->idx_plists];
+
+    if (playlist->song_count == 0) {
+        buffer_append_line(buffer, (Vec){x, y + 3}, "(No songs!!!!)");
+        return;
+    }
+
+    char* buf = malloc(BUFFER_BASE_SIZE);
+    if (!buf) return;
+
+    size_t max = tui->header_bottom_border - y - 1;
+    for (size_t i = tui->scroll_songs; i < playlist->song_count; i++) {
+        if (i - tui->scroll_songs >= max) break;
+
+        Song* song = playlist->songs[i];
+        if (i == tui->idx_songs) {
+            snprintf(buf, BUFFER_BASE_SIZE, "> [%zu] %s - %s", i + 1,
+                     song->artist, song->title);
+        } else {
+            snprintf(buf, BUFFER_BASE_SIZE, "  [%zu] %s - %s", i + 1,
+                     song->artist, song->title);
+        }
+
+        buffer_append_line(buffer, (Vec){x, y + (i - tui->scroll_songs) + 3},
+                           buf);
+    }
+    free(buf);
+}
 
 // ADD song
 
@@ -241,7 +290,7 @@ void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config) {
     rect_center(&rect, buffer->window_cols, buffer->window_rows);
 
     make_input_form(tui, buffer, rect,
-                    "UP/DOWN: moving, SELECT to choose, LEFT to leave");
+                    "UP/DOWN: moving, RIGHT to choose, LEFT to leave");
 }
 
 // ADD playlist

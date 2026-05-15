@@ -8,6 +8,7 @@
 #include "config.h"
 #include "file.h"
 #include "input.h"
+#include "stg_handler.h"
 #include "storage.h"
 #include "tui.h"
 

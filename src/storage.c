@@ -14,7 +14,7 @@ int storage_init(sqlite3** db) {
 
     if (!db_execute(temp, query)) {
         raise_error(ERR_SQLITE_FAILED, "storage:init:execute:songs");
-        db_close(*db);
+        db_close(temp);
         return 0;
     }
 
@@ -24,7 +24,7 @@ int storage_init(sqlite3** db) {
 
     if (!db_execute(temp, query)) {
         raise_error(ERR_SQLITE_FAILED, "storage:init:execute:playlists");
-        db_close(*db);
+        db_close(temp);
         return 0;
     }
 
@@ -35,7 +35,7 @@ int storage_init(sqlite3** db) {
 
     if (!db_execute(temp, query)) {
         raise_error(ERR_SQLITE_FAILED, "storage:init:execute:playlist_songs");
-        db_close(*db);
+        db_close(temp);
         return 0;
     }
 
