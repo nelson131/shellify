@@ -57,10 +57,10 @@ void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
     tui->header_top_border = 2;
     tui->header_bottom_border = *window_rows - 3;
     tui->playlist_wall = (size_t)*window_cols * TUI_SPLIT_SCREEN;
-    tui->x_playlists = 1;
-    tui->y_playlists = tui->header_top_border + 1;
-    tui->x_songs = tui->playlist_wall + 2;
-    tui->y_songs = tui->header_top_border + 1;
+    tui->x_playlists = 2;
+    tui->y_playlists = tui->header_top_border + 2;
+    tui->x_songs = tui->playlist_wall + 3;
+    tui->y_songs = tui->header_top_border + 2;
 }
 
 void tui_clear(TUI* tui) {
@@ -148,12 +148,34 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
     free(buf);
 }
 
-void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config) {
+void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config,
+                 int focus) {
     buffer_set_ver_range_char(
         buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
         (Vec){tui->playlist_wall, tui->header_top_border - 1}, '|');
 
     view_plists(tui, library, buffer);
+    view_songs(tui, library, buffer);
+
+    Rect rect = (Rect){(Vec){0, 0}, 0, 0};
+    switch (focus) {
+        case 0:
+            rect = (Rect){
+                (Vec){1, tui->header_top_border + 1}, tui->playlist_wall - 1,
+                tui->header_bottom_border - tui->header_top_border - 1};
+
+            draw_rect(buffer, rect);
+            break;
+        case 1:
+            rect = (Rect){
+                (Vec){tui->playlist_wall + 2, tui->header_top_border + 1},
+                buffer->window_cols - tui->playlist_wall - 2,
+                tui->header_bottom_border - tui->header_top_border - 1};
+            draw_rect(buffer, rect);
+            break;
+        default:
+            break;
+    }
 }
 
 // views
@@ -169,11 +191,11 @@ void view_plists(TUI* tui, Library* library, Buffer* buffer) {
 
     for (size_t i = 0; i < library->playlist_count; i++) {
         if (i == tui->idx_plists) {
-            snprintf(buf, BUFFER_BASE_SIZE, "> %zu. %s",
-                     library->playlists[i]->id, library->playlists[i]->name);
+            snprintf(buf, BUFFER_BASE_SIZE, "> %s",
+                     library->playlists[i]->name);
         } else {
-            snprintf(buf, BUFFER_BASE_SIZE, "  %zu. %s",
-                     library->playlists[i]->id, library->playlists[i]->name);
+            snprintf(buf, BUFFER_BASE_SIZE, "  %s",
+                     library->playlists[i]->name);
         }
 
         if (y + i + 3 >= tui->header_bottom_border) break;
@@ -181,6 +203,8 @@ void view_plists(TUI* tui, Library* library, Buffer* buffer) {
         buffer_append_line(buffer, (Vec){x, y + i + 3}, buf);
     }
 }
+
+void view_songs(TUI* tui, Library* library, Buffer* buffer) {}
 
 // ADD song
 
@@ -206,10 +230,9 @@ void make_add_sn(TUI* tui, Buffer* buffer, Config* config) {
 }
 
 void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config) {
-    size_t size = 5;
+    size_t size = 4;
     if (!tui->input_form) {
-        const char* options[5] = {
-            "Playlist-id: ", "Path: ", "Title: ", "Artist : ", "Album : "};
+        const char* options[4] = {"Path: ", "Title: ", "Artist : ", "Album : "};
 
         set_input_form(tui, options, size);
     }

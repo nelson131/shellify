@@ -39,6 +39,20 @@ int input_poll() {
     return c;
 }
 
+int handle_player(int key, size_t* idx, size_t max, Config* config) {
+    if (!idx) return -1;
+
+    if (key == KEY_ARROW_UP && *idx - 1 >= 0) {
+        *idx -= 1;
+    } else if (key == KEY_ARROW_DOWN && *idx + 1 < max) {
+        *idx += 1;
+    } else if (key == config->keys.select) {
+        return *idx;
+    }
+
+    return -1;
+}
+
 // used for input forms
 // returning 0 as default
 // returning 1 as confirmation of send of input form result

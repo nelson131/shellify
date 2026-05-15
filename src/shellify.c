@@ -22,6 +22,7 @@ void shellify_init() {
     shellify->db = NULL;
     shellify->state = SHELLIFY_STATE_WELCOME;
     shellify->input_state = INPUT_STATE_NONE;
+    shellify->focus_state = SHELLIFY_PLAYLISTS;
 
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
@@ -103,7 +104,7 @@ void shellify_draw_state() {
             break;
         case SHELLIFY_STATE_PLAYER:
             make_player(shellify->tui, shellify->library, shellify->buffer,
-                        shellify->config);
+                        shellify->config, shellify->focus_state);
             break;
         case SHELLIFY_STATE_ADD_SONG:
             make_add_sn(shellify->tui, shellify->buffer, shellify->config);
@@ -143,6 +144,14 @@ void shellify_handle_input() {
             }
             break;
         case SHELLIFY_STATE_PLAYER:
+            if (key == KEY_ARROW_LEFT &&
+                shellify->focus_state != SHELLIFY_PLAYLISTS) {
+                shellify->focus_state = SHELLIFY_PLAYLISTS;
+            } else if (key == KEY_ARROW_RIGHT &&
+                       shellify->focus_state != SHELLIFY_SONGS) {
+                shellify->focus_state = SHELLIFY_SONGS;
+            }
+
             switch (shellify->input_state) {
                 case INPUT_STATE_NONE:
                     if (key == shellify->config->keys.add) {
@@ -169,6 +178,15 @@ void shellify_handle_input() {
                 default:
                     shellify->input_state = INPUT_STATE_NONE;
                     break;
+            }
+            size_t* index = &shellify->tui->idx_songs;
+            size_t  max = shellify->library->song_count;
+            if (shellify->focus_state == SHELLIFY_PLAYLISTS) {
+                index = &shellify->tui->idx_plists;
+                max = shellify->library->playlist_count;
+            }
+
+            if (handle_player(key, index, max, shellify->config) >= 0) {
             }
             break;
         case SHELLIFY_STATE_ADD_SONG:

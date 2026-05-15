@@ -20,10 +20,13 @@ typedef enum ShellifyState {
     SHELLIFY_STATE_ADD_SONG_YTDLP
 } ShellifyState;
 
+typedef enum FocusState { SHELLIFY_PLAYLISTS, SHELLIFY_SONGS } FocusState;
+
 typedef struct Shellify {
     int           is_running;
     ShellifyState state;
     InputState    input_state;
+    FocusState    focus_state;
 
     size_t window_cols;
     size_t window_rows;

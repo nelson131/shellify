@@ -64,7 +64,8 @@ void tui_clear(TUI* tui);
 // bosses
 void make_welcome(TUI* tui, Buffer* buffer, Config* config);
 void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode);
-void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config);
+void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config,
+                 int focus);
 // views
 void view_plists(TUI* tui, Library* library, Buffer* buffer);
 void view_songs(TUI* tui, Library* library, Buffer* buffer);
