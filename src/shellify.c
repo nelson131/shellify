@@ -15,6 +15,8 @@ void shellify_init() {
     printf("\033[?25l");
     fflush(stdout);
 
+    logger_init("shellify.log");
+
     shellify = malloc(sizeof(Shellify));
     if (!shellify) shellify_stop();
 
@@ -54,6 +56,8 @@ void shellify_init() {
 
     printf("\033[2J");
     printf("\033[H");
+
+    slog(INFO, "shellify has been initialized successfully.");
 }
 
 void shellify_destroy() {
@@ -75,6 +79,8 @@ void shellify_destroy() {
         raise_error(FAILED, "shellify:destroy:storage");
 
     free(shellify);
+
+    logger_close();
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);

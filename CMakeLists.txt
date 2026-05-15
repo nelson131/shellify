@@ -20,6 +20,7 @@ add_executable(shellify
     src/rect.c
     src/file.c
     src/stg_handler.c
+    src/logger.c
 )
 
 target_link_libraries(shellify
