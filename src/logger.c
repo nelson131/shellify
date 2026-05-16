@@ -5,6 +5,21 @@
 
 FILE*       log_file = NULL;
 const char* log_msgs[] = {"DEBUG", "INFO", "WARNING", "ERROR"};
+const char* err_msgs[] = {"FAILED",
+                          "NONE",
+                          "SUCCESS",
+                          "ERR_NULL_OBJECT",
+                          "ERR_MALLOC_NULL",
+                          "ERR_EMPTY_OBJECT",
+                          "ERR_FILE_OPENING",
+                          "ERR_CONFIG_LOAD",
+                          "ERR_CONFIG_SAVE",
+                          "ERR_SQLITE_OPEN",
+                          "ERR_SQLITE_FAILED",
+                          "ERR_SONG_NOT_FOUND",
+                          "ERR_SONG_ALREADY_EXISTS",
+                          "ERR_PLAYLIST_NOT_FOUND",
+                          "ERR_PLAYLIST_ALREADY_EXISTS"};
 
 void logger_init(const char* file_name) {
     if (!file_name) return;
@@ -31,6 +46,7 @@ void logger_init(const char* file_name) {
 void logger_close() {
     if (log_file && log_file != stdout) {
         fclose(log_file);
+        log_file = NULL;
     }
 }
 
@@ -45,4 +61,22 @@ void slog(LogLevel log_level, const char* msg) {
     strftime(tstr, sizeof(tstr), "%c", localtime(&t));
 
     fprintf(log_file, "[%s]: {%s} -> %s\n", tstr, level_msg, msg);
+}
+
+void alog(LogLevel log_level, const char* s1, const char* msg) {
+    if (!s1 || !msg) return;
+
+    char buf[BUF_BASE_SIZE];
+    snprintf(buf, BUF_BASE_SIZE, "arg: %s -> msg: %s", s1, msg);
+    slog(log_level, buf);
+}
+
+void errlog(ErrorCode err_code, const char* msg) {
+    if (!msg) return;
+
+    const char* err_msg = err_msgs[err_code];
+
+    char buf[BUF_BASE_SIZE];
+    snprintf(buf, BUF_BASE_SIZE, "(%s) %s", err_msg, msg);
+    slog(ERROR, buf);
 }

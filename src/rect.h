@@ -2,6 +2,7 @@
 #define RECT_H
 
 #include "buffer.h"
+#include "logger.h"
 #include "vec.h"
 
 typedef struct Rect {

@@ -6,6 +6,7 @@
 
 #include "buffer.h"
 #include "input.h"
+#include "logger.h"
 #include "storage.h"
 #include "tui.h"
 
@@ -18,7 +19,10 @@ void shellify_init() {
     logger_init("shellify.log");
 
     shellify = malloc(sizeof(Shellify));
-    if (!shellify) shellify_stop();
+    if (!shellify) {
+        errlog(ERR_MALLOC_NULL, "shellify:init:shellify");
+        shellify_stop();
+    }
 
     shellify->is_running = 1;
     shellify->db = NULL;
@@ -31,18 +35,27 @@ void shellify_init() {
     shellify->window_cols = winsize.ws_col;
     shellify->window_rows = winsize.ws_row;
 
-    if (!config_load(&shellify->config)) shellify_stop();
+    if (!config_load(&shellify->config)) {
+        errlog(FAILED, "shellify:init:config_load");
+        shellify_stop();
+    }
 
     if (!buffer_init(&shellify->buffer, &shellify->window_cols,
-                     &shellify->window_rows))
+                     &shellify->window_rows)) {
+        errlog(FAILED, "shellify:init:buffer_load");
         shellify_stop();
+    }
 
     if (!tui_init(&shellify->tui, &shellify->window_cols,
-                  &shellify->window_rows))
+                  &shellify->window_rows)) {
+        errlog(FAILED, "shellify:init:tui_init");
         shellify_stop();
+    }
 
-    if (!storage_init(&shellify->db)) shellify_stop();
-
+    if (!storage_init(&shellify->db)) {
+        errlog(FAILED, "shellify:init:storage:init");
+        shellify_stop();
+    }
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
 
@@ -65,8 +78,9 @@ void shellify_destroy() {
     fflush(stdout);
 
     if (!config_save(shellify->config)) {
-        raise_error(ERR_CONFIG_SAVE, "something went wrong in config saving");
+        errlog(ERR_CONFIG_SAVE, "something went wrong in config saving");
     }
+
     free(shellify->config);
 
     buffer_destroy(shellify->buffer);
@@ -76,7 +90,7 @@ void shellify_destroy() {
     free(shellify->tui);
 
     if (!storage_close(&shellify->db, &shellify->library))
-        raise_error(FAILED, "shellify:destroy:storage");
+        errlog(FAILED, "shellify:destroy:storage");
 
     free(shellify);
 
@@ -86,6 +100,8 @@ void shellify_destroy() {
     tcgetattr(STDIN_FILENO, &term);
     term.c_lflag |= ICANON;
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
+
+    slog(INFO, "shellify has been closed successfully.");
 }
 
 void shellify_update() { tui_sync(shellify->tui, shellify->library); }
@@ -142,7 +158,7 @@ void shellify_handle_input() {
         case SHELLIFY_STATE_WELCOME:
             if (key == shellify->config->keys.select) {
                 if (!storage_load(shellify->db, &shellify->library)) {
-                    raise_error(FAILED, "shellify:load_storage");
+                    errlog(FAILED, "shellify:load_storage");
                     shellify_stop();
                     break;
                 }
@@ -254,4 +270,7 @@ void shellify_handle_input() {
     }
 }
 
-void shellify_stop() { shellify->is_running = 0; }
+void shellify_stop() {
+    slog(ERROR, "shellify is forced to close.");
+    shellify->is_running = 0;
+}

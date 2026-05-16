@@ -6,7 +6,7 @@
 
 #include "buffer.h"
 #include "config.h"
-#include "error_handler.h"
+#include "logger.h"
 #include "rect.h"
 #include "storage.h"
 

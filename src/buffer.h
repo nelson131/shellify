@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "error_handler.h"
+#include "logger.h"
 #include "vec.h"
 
 typedef struct Buffer {

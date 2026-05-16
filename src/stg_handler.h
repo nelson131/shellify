@@ -4,6 +4,7 @@
 #include <sqlite3.h>
 #include <time.h>
 
+#include "logger.h"
 #include "storage.h"
 #include "tui.h"
 

@@ -7,13 +7,13 @@
 
 int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     if (!tui || !window_cols || !window_rows) {
-        raise_error(ERR_NULL_OBJECT, "tui:init_tui:args");
+        errlog(ERR_NULL_OBJECT, "tui:init_tui:args");
         return 0;
     }
 
     TUI* temp = malloc(sizeof(TUI));
     if (!temp) {
-        raise_error(ERR_MALLOC_NULL, "tui:init_tui:temp");
+        errlog(ERR_MALLOC_NULL, "tui:init_tui:temp");
         return 0;
     }
 
@@ -21,7 +21,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     // creating separator
     temp->separator = malloc(size * sizeof(char));
     if (!temp->separator) {
-        raise_error(ERR_MALLOC_NULL, "tui:init_tui:sep");
+        errlog(ERR_MALLOC_NULL, "tui:init_tui:sep");
         free(temp);
         return 0;
     }
@@ -33,7 +33,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
 #define MAX_LEN_SONG 96
     temp->song_name = malloc(MAX_LEN_SONG * sizeof(char));
     if (!temp->song_name) {
-        raise_error(ERR_MALLOC_NULL, "tui:init_tui:song_name");
+        errlog(ERR_MALLOC_NULL, "tui:init_tui:song_name");
         free(temp->separator);
         free(temp);
         return 0;
@@ -48,6 +48,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     tui_update(temp, window_cols, window_rows);
 
     *tui = temp;
+    slog(INFO, "tui has been init");
     return 1;
 }
 
@@ -62,6 +63,7 @@ void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
     tui->y_playlists = tui->header_top_border + 2;
     tui->x_songs = tui->playlist_wall + 3;
     tui->y_songs = tui->header_top_border + 2;
+    slog(INFO, "tui parameters has been updated");
 }
 
 void tui_sync(TUI* tui, Library* library) {
@@ -91,6 +93,8 @@ void tui_clear(TUI* tui) {
     if (tui->choice_form) {
         clear_choice_form(tui);
     }
+
+    slog(INFO, "tui has been cleaned");
 }
 
 // tui elements and inteface
@@ -105,7 +109,7 @@ void make_welcome(TUI* tui, Buffer* buffer, Config* config) {
 #define BUFFER_BASE_SIZE 256 * sizeof(char)
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) {
-        raise_error(ERR_MALLOC_NULL, "tui:make_welcome:buf");
+        errlog(ERR_MALLOC_NULL, "tui:make_welcome:buf");
         return;
     }
 
@@ -131,7 +135,7 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
 
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) {
-        raise_error(ERR_MALLOC_NULL, "tui:make_header:buf");
+        errlog(ERR_MALLOC_NULL, "tui:make_header:buf");
         return;
     }
 
@@ -319,7 +323,7 @@ void create_input_form(TUI* tui, size_t cap) {
 
     TUI_InputForm* form = malloc(sizeof(TUI_InputForm));
     if (!form) {
-        raise_error(ERR_MALLOC_NULL, "tui:create_input_form:form");
+        errlog(ERR_MALLOC_NULL, "tui:create_input_form:form");
         return;
     }
 
@@ -421,7 +425,7 @@ void create_choice_form(TUI* tui, size_t cap) {
 
     TUI_ChoiceForm* form = malloc(sizeof(TUI_ChoiceForm));
     if (!form) {
-        raise_error(ERR_MALLOC_NULL, "tui:create_choice_form:form");
+        errlog(ERR_MALLOC_NULL, "tui:create_choice_form:form");
         return;
     }
 

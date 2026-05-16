@@ -3,7 +3,7 @@
 void draw_rect(Buffer* buffer, Rect r) {
     char* line = malloc((r.w + 1) * sizeof(char));
     if (!line) {
-        raise_error(ERR_MALLOC_NULL, "tui:draw_rect:line");
+        errlog(ERR_MALLOC_NULL, "tui:draw_rect:line");
         return;
     }
 
@@ -20,7 +20,7 @@ void draw_rect(Buffer* buffer, Rect r) {
 
     char* wall = malloc((r.h - 1) * sizeof(char));
     if (!wall) {
-        raise_error(ERR_MALLOC_NULL, "tui:draw_rect:wall");
+        errlog(ERR_MALLOC_NULL, "tui:draw_rect:wall");
         return;
     }
 

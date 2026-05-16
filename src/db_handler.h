@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "error_handler.h"
+#include "logger.h"
 
 #define DB_FILE_PATH "%s/.config/shellify/shellify.db"
 

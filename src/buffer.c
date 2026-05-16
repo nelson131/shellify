@@ -9,14 +9,14 @@ size_t to_index(Buffer* buffer, Vec v) {
 int buffer_init(Buffer** buffer, size_t* window_cols, size_t* window_rows) {
     Buffer* temp = malloc(sizeof(Buffer));
     if (!temp) {
-        raise_error(ERR_MALLOC_NULL, "buffer:init:buffer");
+        errlog(ERR_MALLOC_NULL, "buffer:init:buffer");
         return 0;
     }
     size_t size = *window_cols * *window_rows;
     temp->actual = malloc(size * sizeof(char));
     temp->old = malloc(size * sizeof(char));
     if (!temp->actual || !temp->old) {
-        raise_error(ERR_MALLOC_NULL, "buffer:init:buffer_arrays");
+        errlog(ERR_MALLOC_NULL, "buffer:init:buffer_arrays");
         return 0;
     }
 

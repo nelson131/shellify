@@ -13,7 +13,6 @@ add_executable(shellify
     src/buffer.c
     src/input.c
     src/config.c
-    src/error_handler.c
     src/tui.c
     src/db_handler.c
     src/storage.c

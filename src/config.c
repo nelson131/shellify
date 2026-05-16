@@ -5,7 +5,7 @@ Config config;
 int config_load(Config** config) {
     Config* temp = malloc(sizeof(Config));
     if (!temp) {
-        raise_error(ERR_MALLOC_NULL, "config:config_load:temp");
+        errlog(ERR_MALLOC_NULL, "config:config_load:temp");
         return 0;
     }
 
@@ -14,7 +14,7 @@ int config_load(Config** config) {
     FILE* file = get_config_file("r");
     if (!file) {
         free(temp);
-        raise_error(ERR_NULL_OBJECT, "config:config_load:file");
+        errlog(ERR_NULL_OBJECT, "config:config_load:file");
         return 0;
     }
 
@@ -22,7 +22,7 @@ int config_load(Config** config) {
     if (!line) {
         fclose(file);
         free(temp);
-        raise_error(ERR_MALLOC_NULL, "config:config_load:file");
+        errlog(ERR_MALLOC_NULL, "config:config_load:file");
         return 0;
     }
 
@@ -54,6 +54,7 @@ int config_load(Config** config) {
     free(line);
     fclose(file);
     *config = temp;
+    slog(INFO, "config has been loaded successfully");
     return 1;
 }
 
@@ -81,7 +82,7 @@ void config_setup() {
 int config_save(Config* config) {
     FILE* file = get_config_file("w");
     if (!file) {
-        raise_error(ERR_NULL_OBJECT, "config:config_save:file");
+        errlog(ERR_NULL_OBJECT, "config:config_save:file");
         return 0;
     }
 
@@ -101,6 +102,7 @@ int config_save(Config* config) {
             config->keys.playlist);
 
     fclose(file);
+    slog(INFO, "config has been saved successfully");
     return 1;
 }
 
@@ -128,7 +130,7 @@ char* get_config_path() {
 
     char* path = malloc(CONFIG_PATH_SIZE * sizeof(char));
     if (!path) {
-        raise_error(ERR_MALLOC_NULL, "config:get_config_path:path");
+        errlog(ERR_MALLOC_NULL, "config:get_config_path:path");
         return NULL;
     }
 
@@ -139,13 +141,13 @@ char* get_config_path() {
 FILE* get_config_file(const char* mode) {
     char* config_path = get_config_path();
     if (!config_path) {
-        raise_error(ERR_MALLOC_NULL, "config:get_config_file:file");
+        errlog(ERR_MALLOC_NULL, "config:get_config_file:file");
         return NULL;
     }
 
     FILE* file = fopen(config_path, mode);
     if (!file) {
-        raise_error(ERR_FILE_OPENING, "config:get_config:file:file");
+        errlog(ERR_FILE_OPENING, "config:get_config:file:file");
         free(config_path);
         return NULL;
     }
@@ -161,7 +163,7 @@ char* get_config_header() {
 #define STR_SIZE 128 * sizeof(char)
     char* str = malloc(STR_SIZE);
     if (!str) {
-        raise_error(ERR_MALLOC_NULL, "config:get_config_header:str");
+        errlog(ERR_MALLOC_NULL, "config:get_config_header:str");
         return NULL;
     }
 

@@ -7,7 +7,7 @@
 #include <time.h>
 
 #include "db_handler.h"
-#include "error_handler.h"
+#include "logger.h"
 
 typedef struct Song {
     size_t id;
