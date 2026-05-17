@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "audio.h"
 #include "buffer.h"
 #include "input.h"
 #include "logger.h"
@@ -58,6 +59,9 @@ void shellify_init() {
         errlog(FAILED, "shellify:init:storage:init");
         shellify_stop();
     }
+
+    audio_init(&shellify->audio);
+
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
 
@@ -93,6 +97,8 @@ void shellify_destroy() {
 
     if (!storage_close(&shellify->db, &shellify->library))
         errlog(FAILED, "shellify:destroy:storage");
+
+    audio_close(&shellify->audio);
 
     free(shellify);
 
@@ -215,6 +221,12 @@ void shellify_handle_input() {
             }
 
             if (handle_player(key, index, max, shellify->config) >= 0) {
+                if (shellify->focus_state == SHELLIFY_SONGS) {
+                    Playlist* playlist =
+                        shellify->library->playlists[shellify->tui->idx_plists];
+                    audio_play(shellify->audio,
+                               playlist->songs[shellify->tui->idx_songs]->path);
+                }
             }
             break;
         case SHELLIFY_STATE_ADD_SONG:

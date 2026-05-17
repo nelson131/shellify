@@ -4,9 +4,9 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 
+#include "audio.h"
 #include "buffer.h"
 #include "config.h"
-#include "file.h"
 #include "input.h"
 #include "logger.h"
 #include "stg_handler.h"
@@ -41,6 +41,8 @@ typedef struct Shellify {
 
     sqlite3* db;
     Library* library;
+
+    Audio* audio;
 } Shellify;
 
 extern Shellify* shellify;

@@ -17,9 +17,9 @@ add_executable(shellify
     src/db_handler.c
     src/storage.c
     src/rect.c
-    src/file.c
     src/stg_handler.c
     src/logger.c
+    src/audio.c
 )
 
 target_link_libraries(shellify

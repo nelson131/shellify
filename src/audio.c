@@ -11,10 +11,16 @@ void audio_init(Audio** audio) {
     ma_result res = ma_engine_init(NULL, &(*audio)->engine);
     if (res != MA_SUCCESS) {
         errlog(ERR_AUDIO_INIT, "audio:init:engine");
-        free(audio);
+        free(*audio);
         return;
     }
     (*audio)->is_init = 1;
+
+#define MUSIC_DIR_SIZE strlen(MUSIC_DIR) + 64
+    (*audio)->music_dir = malloc(MUSIC_DIR_SIZE);
+    const char* home = getenv("HOME");
+    snprintf((*audio)->music_dir, MUSIC_DIR_SIZE, MUSIC_DIR, home);
+
     slog(INFO, "audio has been init");
 }
 
@@ -29,16 +35,19 @@ void audio_close(Audio** audio) {
         ma_engine_uninit(&(*audio)->engine);
     }
 
+    if ((*audio)->music_dir) {
+        free((*audio)->music_dir);
+    }
+
     free(*audio);
     *audio = NULL;
     slog(INFO, "audio has been closed");
 }
 
-void audio_update(Audio* audio, float volume) {
+void audio_update(Audio* audio, Config* config) {
     if (!audio) return;
-    if (volume < 0 || volume > 1.0) return;
 
-    ma_engine_set_volume(&audio->engine, volume);
+    ma_engine_set_volume(&audio->engine, config->player.volume);
 }
 
 void audio_play(Audio* audio, const char* path) {
@@ -57,7 +66,9 @@ void audio_play(Audio* audio, const char* path) {
         audio->is_sound = 0;
     }
 
-    ma_result res = ma_sound_init_from_file(&audio->engine, path, 0, NULL, NULL,
+    char buf[128];
+    snprintf(buf, sizeof(buf), "%s%s", audio->music_dir, path);
+    ma_result res = ma_sound_init_from_file(&audio->engine, buf, 0, NULL, NULL,
                                             &audio->cur_sound);
     if (res != MA_SUCCESS) {
         alog(ERROR, path, "failed to play audio");

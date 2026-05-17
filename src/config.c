@@ -39,7 +39,7 @@ int config_load(Config** config) {
             continue;
         }
 
-        if (sscanf(line, "volume=%zu", &temp->player.volume) == 1) continue;
+        if (sscanf(line, "volume=%f", &temp->player.volume) == 1) continue;
         if (sscanf(line, "shuffle=%zu", &temp->player.shuffle) == 1) continue;
 
         if (sscanf(line, "quit=%c", &temp->keys.quit) == 1) continue;
@@ -92,8 +92,8 @@ int config_save(Config* config) {
 
     fprintf(file, "[general]\ndesc=%s\n\n", config->general.desc);
 
-    fprintf(file, "[player]\nvolume=%zu\nshuffle=%zu\n\n",
-            config->player.volume, config->player.shuffle);
+    fprintf(file, "[player]\nvolume=%f\nshuffle=%zu\n\n", config->player.volume,
+            config->player.shuffle);
     fprintf(file,
             "[keys]\nquit=%c\nsuper=%c\nselect=%c\nadd=%c\nremove=%c\nsong=%"
             "c\nplaylist=%c\n",
