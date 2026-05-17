@@ -42,7 +42,7 @@ int input_poll() {
 int handle_player(int key, size_t* idx, size_t max, Config* config) {
     if (!idx) return -1;
 
-    if (key == KEY_ARROW_UP && *idx - 1 >= 0) {
+    if (key == KEY_ARROW_UP && *idx > 0) {
         *idx -= 1;
     } else if (key == KEY_ARROW_DOWN && *idx + 1 < max) {
         *idx += 1;
@@ -62,7 +62,7 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
     char* cur_value = NULL;
     cur_value = form->values[form->selected_option];
 
-    if (key == KEY_ARROW_UP && form->selected_option - 1 >= 0) {
+    if (key == KEY_ARROW_UP && form->selected_option > 0) {
         form->selected_option -= 1;
     } else if (key == KEY_ARROW_DOWN &&
                form->selected_option + 1 < form->size) {
@@ -91,7 +91,7 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
 int handle_choice_form(int key, TUI_ChoiceForm* form, Config* config) {
     if (!form) return -1;
 
-    if (key == KEY_ARROW_UP && form->selected_option - 1 >= 0) {
+    if (key == KEY_ARROW_UP && form->selected_option > 0) {
         form->selected_option -= 1;
     } else if (key == KEY_ARROW_DOWN &&
                form->selected_option + 1 < form->size) {

@@ -25,6 +25,7 @@ typedef struct Playlist {
 
     Song** songs;
     size_t song_count;
+    size_t capacity;
 } Playlist;
 
 typedef struct Library {

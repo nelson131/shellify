@@ -39,6 +39,8 @@ void shellify_init() {
         errlog(FAILED, "shellify:init:config_load");
         shellify_stop();
     }
+    slog(INFO, "-----------");
+    alog(INFO, shellify->config->general.version, "SHELLIFY launched");
 
     if (!buffer_init(&shellify->buffer, &shellify->window_cols,
                      &shellify->window_rows)) {
@@ -202,10 +204,14 @@ void shellify_handle_input() {
                     break;
             }
             size_t* index = &shellify->tui->idx_songs;
-            size_t  max = shellify->library->song_count;
+            size_t  max = 0;
             if (shellify->focus_state == SHELLIFY_PLAYLISTS) {
                 index = &shellify->tui->idx_plists;
                 max = shellify->library->playlist_count;
+            } else {
+                index = &shellify->tui->idx_songs;
+                max = shellify->library->playlists[shellify->tui->idx_plists]
+                          ->song_count;
             }
 
             if (handle_player(key, index, max, shellify->config) >= 0) {
@@ -271,6 +277,6 @@ void shellify_handle_input() {
 }
 
 void shellify_stop() {
-    slog(ERROR, "shellify is forced to close.");
+    slog(WARNING, "shellify is forced to close.");
     shellify->is_running = 0;
 }

@@ -7,7 +7,7 @@ int storage_init(sqlite3** db) {
     sqlite3* temp = db_init();
 
     const char* query =
-        "CREATE TABLE IF NOT EXISTS songs(id UNSIGNED INTEGER PRIMARY KEY, "
+        "CREATE TABLE IF NOT EXISTS songs(id INTEGER PRIMARY KEY, "
         "path TEXT UNIQUE, title TEXT, artist TEXT, album TEXT, duration "
         "INTEGER, mtime INTEGER)";
 
@@ -18,7 +18,7 @@ int storage_init(sqlite3** db) {
     }
 
     query =
-        "CREATE TABLE IF NOT EXISTS playlists(id UNSIGNED INTEGER PRIMARY KEY, "
+        "CREATE TABLE IF NOT EXISTS playlists(id INTEGER PRIMARY KEY, "
         "name TEXT)";
 
     if (!db_execute(temp, query)) {
@@ -30,7 +30,8 @@ int storage_init(sqlite3** db) {
     query =
         "CREATE TABLE IF NOT EXISTS playlist_songs(playlist_id INTEGER, "
         "song_id INTEGER, position INTEGER, FOREIGN KEY(playlist_id) "
-        "REFERENCES playlists(id), FOREIGN KEY(song_id) REFERENCES songs(id))";
+        "REFERENCES playlists(id), FOREIGN KEY(song_id) REFERENCES songs(id) "
+        "ON DELETE CASCADE)";
 
     if (!db_execute(temp, query)) {
         errlog(ERR_SQLITE_FAILED, "storage:init:execute:playlist_songs");
@@ -170,8 +171,12 @@ int storage_load(sqlite3* db, Library** library) {
                 playlist->songs[playlist->song_count] = target;
                 playlist->song_count++;
             } else {
-                slog(WARNING,
-                     "failed to find the target song in the storage loading");
+                char buf[64];
+                snprintf(
+                    buf, sizeof(buf),
+                    "failed to find song with id: %zu, in the storage loading",
+                    s_id);
+                slog(WARNING, buf);
             }
         }
     }
@@ -330,6 +335,7 @@ Playlist* storage_create_playlist(Library* library, size_t id,
         slog(WARNING, "playlists capacity has been increased");
     }
 
+#define PLAYLIST_BASE_SONG_CAP 32
     Playlist* playlist = malloc(sizeof(Playlist));
     if (!playlist) {
         errlog(ERR_MALLOC_NULL, "storage:create_playlist:playlist");
@@ -338,8 +344,9 @@ Playlist* storage_create_playlist(Library* library, size_t id,
 
     playlist->id = id;
     playlist->name = copy_str(name);
-    playlist->songs = NULL;
+    playlist->songs = malloc(PLAYLIST_BASE_SONG_CAP * sizeof(Song*));
     playlist->song_count = 0;
+    playlist->capacity = PLAYLIST_BASE_SONG_CAP;
 
     library->playlists[library->playlist_count++] = playlist;
 
@@ -395,11 +402,25 @@ int storage_playlist_add_song(sqlite3* db, Song* song, Playlist* playlist) {
 
     if (sqlite3_step(stmt) != SQLITE_DONE) {
         sqlite3_finalize(stmt);
-        errlog(ERR_SQLITE_FAILED, "storage:playlist_add_song:stmt");
+        alog(ERROR, sqlite3_errmsg(db), "storage:playlist_add_song:stmt");
         return 0;
     }
 
     sqlite3_finalize(stmt);
+
+    if (playlist->song_count + 1 >= playlist->capacity) {
+        playlist->capacity *= 2;
+        Song** temp =
+            realloc(playlist->songs, playlist->capacity * sizeof(Song*));
+        if (!temp) {
+            errlog(ERR_MALLOC_NULL, "storage:playlist_add_song:temp");
+            return 0;
+        }
+        playlist->songs = temp;
+    }
+
+    playlist->songs[playlist->song_count++] = song;
+
     alog(INFO, song->path, "created connection with a playlist");
     alog(INFO, playlist->name, "created connection with a song");
     return 1;
@@ -432,6 +453,8 @@ void library_clear(Library* library) {
 // clearing the playlists fields
 void playlist_clear(Playlist* playlist) {
     if (!playlist) return;
+
+    alog(INFO, playlist->name, "playlist freedom");
     if (playlist->name) {
         free(playlist->name);
     }
@@ -441,13 +464,14 @@ void playlist_clear(Playlist* playlist) {
 
     playlist->songs = NULL;
     playlist->song_count = 0;
-    alog(INFO, playlist->name, "playlist freedom");
+    playlist->capacity = 0;
 }
 
 // clearing the song fields
 void song_clear(Song* song) {
     if (!song) return;
 
+    alog(INFO, song->path, "song freedom");
     if (song->path) {
         free(song->path);
     }
@@ -463,8 +487,6 @@ void song_clear(Song* song) {
     if (song->album) {
         free(song->album);
     }
-
-    alog(INFO, song->path, "song freedom");
 }
 
 // getting time_t struct for songs adding

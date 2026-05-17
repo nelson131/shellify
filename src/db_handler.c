@@ -14,6 +14,8 @@ sqlite3* db_init() {
         return NULL;
     }
 
+    db_execute(db, "PRAGMA foreign_keys = ON;");
+
     free(file_path);
     slog(INFO, "sqlite db has been init");
     return db;

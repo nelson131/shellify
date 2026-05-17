@@ -230,6 +230,11 @@ void view_songs(TUI* tui, Library* library, Buffer* buffer) {
 
     buffer_append_line(buffer, (Vec){x, y}, "[ SONGS ]");
 
+    if (library->playlist_count == 0) {
+        buffer_append_line(buffer, (Vec){x, y + 3}, "(No playlists!!!)");
+        return;
+    }
+
     Playlist* playlist = library->playlists[tui->idx_plists];
 
     if (playlist->song_count == 0) {

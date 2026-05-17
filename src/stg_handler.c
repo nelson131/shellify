@@ -19,8 +19,12 @@ void add_song(TUI* tui, sqlite3* db, Library* library) {
         storage_create_song(library, 0, form->values[0], form->values[1],
                             form->values[2], form->values[3], 200, t);
     if (song) {
-        storage_playlist_add_song(db, song, playlist);
-        slog(INFO, "song has been added successfully");
+        if (storage_add_song(db, library, song)) {
+            if (storage_playlist_add_song(db, song, playlist))
+                alog(INFO, song->path, "song has been added successfully");
+        } else {
+            errlog(ERR_SQLITE_FAILED, "failed to add the song");
+        }
     } else {
         errlog(ERR_NULL_OBJECT, "add_song:song");
     }
