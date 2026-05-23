@@ -29,6 +29,7 @@ void shellify_init() {
     shellify->state = SHELLIFY_STATE_WELCOME;
     shellify->input_state = INPUT_STATE_NONE;
     shellify->focus_state = SHELLIFY_PLAYLISTS;
+    shellify->audio = NULL;
 
     struct winsize winsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);

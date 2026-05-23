@@ -15,6 +15,7 @@ void audio_init(Audio** audio) {
         return;
     }
     (*audio)->is_init = 1;
+    (*audio)->is_sound = 0;
 
 #define MUSIC_DIR_SIZE strlen(MUSIC_DIR) + 64
     (*audio)->music_dir = malloc(MUSIC_DIR_SIZE);

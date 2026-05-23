@@ -222,6 +222,7 @@ void view_plists(TUI* tui, Storage* stg, Buffer* buffer) {
 
         buffer_append_line(buffer, (Vec){x, y + i + 3}, buf);
     }
+    free(buf);
 }
 
 void view_songs(TUI* tui, Storage* stg, Buffer* buffer) {
