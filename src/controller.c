@@ -1,5 +1,6 @@
 #include "controller.h"
 
+#include "library.h"
 #include "storage.h"
 
 size_t last_playlist_id = 0;
@@ -64,7 +65,51 @@ void add_plist(TUI* tui, Storage* stg) {
     }
 }
 
-void rem_song(TUI* tui, Storage* stg) {}
+void rem_song(TUI* tui, Storage* stg, Audio* audio) {
+    if (!tui || !stg || !audio) {
+        errlog(ERR_NULL_OBJECT, "controller:rem_song:args");
+        return;
+    }
+
+    Playlist* plist = stg->lib->playlists[tui->idx_plists];
+    if (plist->song_count == 0) return;
+    if (last_song_id == tui->idx_songs) {
+        audio_unload(audio);
+    }
+    if (!stg_rem_sng(stg, plist->songs[tui->idx_songs], plist)) {
+        errlog(FAILED, "contoller:rem_song:stg");
+        return;
+    }
+
+    lib_rem_sng_plist(plist, plist->songs[tui->idx_songs]);
+
+    handle_idx(&tui->idx_songs);
+}
+
+void rem_song_abs(TUI* tui, Storage* stg, Audio* audio) {
+    if (!tui || !stg || !audio) {
+        errlog(ERR_NULL_OBJECT, "controller:rem_song:args");
+        return;
+    }
+
+    Playlist* plist = stg->lib->playlists[tui->idx_plists];
+    if (plist->song_count == 0) return;
+    if (last_song_id == tui->idx_songs) {
+        audio_unload(audio);
+    }
+    if (!stg_rem_sng_abs(stg, plist->songs[tui->idx_songs])) {
+        errlog(FAILED, "controller:rem_song_abs:stg");
+        return;
+    }
+
+    char* n = lib_rem_sng(stg->lib, plist->songs[tui->idx_songs]);
+    if (n) {
+        alog(INFO, n, "song has been deleted at all");
+    }
+    free(n);
+
+    handle_idx(&tui->idx_songs);
+}
 
 void rem_plist(TUI* tui, Storage* stg) {
     if (!tui || !stg) {
@@ -73,6 +118,7 @@ void rem_plist(TUI* tui, Storage* stg) {
     }
 
     Playlist* plist = stg->lib->playlists[tui->idx_plists];
+    if (stg->lib->playlist_count == 0) return;
     if (!stg_rem_plist(stg, plist)) {
         errlog(FAILED, "controller:rem_plist:stg");
         return;
@@ -80,14 +126,11 @@ void rem_plist(TUI* tui, Storage* stg) {
 
     char* n = lib_rem_plist(stg->lib, plist);
     if (n) {
-        alog(ERROR, n, "playlist has been deleted at all");
+        alog(INFO, n, "playlist has been deleted at all");
     }
+    free(n);
 
-    if (tui->idx_plists > 0) {
-        tui->idx_plists -= 1;
-    } else {
-        tui->idx_plists = 0;
-    }
+    handle_idx(&tui->idx_plists);
 }
 
 // >>> audio contoller
@@ -127,4 +170,14 @@ rock:
     audio_play(
         audio,
         stg->lib->playlists[tui->idx_plists]->songs[tui->idx_songs]->path);
+}
+
+void handle_idx(size_t* idx) {
+    if (!idx) return;
+
+    if (*idx > 0) {
+        *idx -= 1;
+    } else {
+        *idx = 0;
+    }
 }

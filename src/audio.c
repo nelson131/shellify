@@ -17,10 +17,10 @@ void audio_init(Audio** audio) {
     (*audio)->is_init = 1;
     (*audio)->is_sound = 0;
 
-#define MUSIC_DIR_SIZE strlen(MUSIC_DIR) + 64
+#define MUSIC_DIR_SIZE strlen(MUSIC_DIR_AU) + 64
     (*audio)->music_dir = malloc(MUSIC_DIR_SIZE);
     const char* home = getenv("HOME");
-    snprintf((*audio)->music_dir, MUSIC_DIR_SIZE, MUSIC_DIR, home);
+    snprintf((*audio)->music_dir, MUSIC_DIR_SIZE, MUSIC_DIR_AU, home);
 
     slog(INFO, "audio has been init");
 }
@@ -98,4 +98,12 @@ void audio_stop(Audio* audio) {
 
     ma_sound_stop(&audio->cur_sound);
     slog(INFO, "audio sound stopped");
+}
+
+void audio_unload(Audio* audio) {
+    if (!audio || !audio->is_sound) return;
+
+    ma_sound_stop(&audio->cur_sound);
+    ma_sound_uninit(&audio->cur_sound);
+    audio->is_sound = 0;
 }

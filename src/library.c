@@ -4,6 +4,8 @@
 
 #include "logger.h"
 
+// creating the lib:
+// allocating lib struct, songs and playlist arrays
 Library* lib_create(size_t sng_cap, size_t pl_cap) {
     Library* lib = calloc(1, sizeof(Library));
     if (!lib) {
@@ -34,6 +36,11 @@ Library* lib_create(size_t sng_cap, size_t pl_cap) {
     return lib;
 }
 
+// >>> SONGS
+
+// creating new song:
+// checking for duplicates,
+// allocating the song struct
 Song* lib_new_sng(Library* library, size_t id, const char* path,
                   const char* title, const char* artist, const char* album,
                   size_t duration, time_t time) {
@@ -82,6 +89,8 @@ Song* lib_new_sng(Library* library, size_t id, const char* path,
     return song;
 }
 
+// finding the song by his id:
+// returning a pointer to the struct
 Song* find_sng_by_id(Library* library, size_t id) {
     if (!library) {
         errlog(ERR_NULL_OBJECT, "lib:find_sng_id:library");
@@ -103,6 +112,67 @@ Song* find_sng_by_id(Library* library, size_t id) {
     return NULL;
 }
 
+// removing the song only from the playlist
+void lib_rem_sng_plist(Playlist* plist, Song* sng) {
+    if (!plist || !sng) {
+        errlog(ERR_NULL_OBJECT, "lib:rem_sng_plist:args");
+        return;
+    }
+
+    for (size_t i = 0; i < plist->song_count; i++) {
+        if (plist->songs[i]->id == sng->id) {
+            for (size_t j = i; j < plist->song_count - 1; j++) {
+                plist->songs[j] = plist->songs[j + 1];
+            }
+
+            plist->song_count--;
+            i--;
+        }
+    }
+}
+
+// removing the song from all keepers
+char* lib_rem_sng(Library* library, Song* sng) {
+    if (!library || !sng) {
+        errlog(ERR_NULL_OBJECT, "lib:rem_sng:args");
+    }
+
+    size_t idx = -1;
+    for (size_t i = 0; i < library->song_count; i++) {
+        if (library->songs[i]->id == sng->id) {
+            idx = i;
+            break;
+        }
+    }
+
+    if (idx == -1) {
+        errlog(ERR_SONG_NOT_FOUND, "lib:rem_sng:not_found");
+        return NULL;
+    }
+
+    for (size_t i = 0; i < library->playlist_count; i++) {
+        lib_rem_sng_plist(library->playlists[i], sng);
+    }
+
+    char* name = malloc(strlen(library->songs[idx]->title + 1));
+    strcpy(name, library->songs[idx]->title);
+
+    lib_clear_sng(library->songs[idx]);
+    free(library->songs[idx]);
+
+    for (size_t i = idx; i < library->song_count - 1; i++) {
+        library->songs[i] = library->songs[i + 1];
+    }
+
+    library->song_count--;
+    return name;
+}
+
+// >>> PLAYLISTS
+
+// creating the new plist:
+// checking for duplicates
+// allocating the memory
 Playlist* lib_new_plist(Library* library, size_t id, const char* name,
                         size_t cap) {
     if (!library || !name) {
@@ -155,6 +225,30 @@ Playlist* lib_new_plist(Library* library, size_t id, const char* name,
     return playlist;
 }
 
+// finding the playlist by id:
+// returning a pointer to the struct
+Playlist* find_plist_by_id(Library* library, size_t id) {
+    if (!library) {
+        errlog(ERR_NULL_OBJECT, "lib:find_plist:library");
+        return NULL;
+    }
+
+    if (library->playlist_count == 0) {
+        errlog(FAILED, "lib:find_plist:playlist_count_zero");
+        return NULL;
+    }
+
+    for (size_t i = 0; i < library->playlist_count; i++) {
+        if (library->playlists[i]->id == id) {
+            return library->playlists[i];
+        }
+    }
+
+    errlog(ERR_PLAYLIST_NOT_FOUND, "lib:find_plist:not_found");
+    return NULL;
+}
+
+// removing playlist from all data keepers
 char* lib_rem_plist(Library* library, Playlist* plist) {
     if (!library || !plist) {
         errlog(ERR_NULL_OBJECT, "lib:rem_plist:args");
@@ -192,6 +286,8 @@ char* lib_rem_plist(Library* library, Playlist* plist) {
     return name;
 }
 
+// clearing the library content
+// DOESNT NOT RELEAES THE LIB STRUCT
 void lib_clear(Library* library) {
     if (!library) return;
 
@@ -212,6 +308,8 @@ void lib_clear(Library* library) {
     slog(INFO, "library has been cleared");
 }
 
+// clearing the song content
+// DOESNT NOT RELEAES THE SONG STRUCT
 void lib_clear_sng(Song* song) {
     if (!song) return;
 
@@ -227,6 +325,8 @@ void lib_clear_sng(Song* song) {
     song->time = 0;
 }
 
+// clearing the playlist content
+// DOESNT NOT RELEAES THE PLAYLIST STRUCT
 void lib_clear_plist(Playlist* plist) {
     if (!plist) return;
 
@@ -240,7 +340,7 @@ void lib_clear_plist(Playlist* plist) {
     plist->capacity = 0;
 }
 
-// creating the full copy of string in heap
+// creating the full copy of string in thte heap
 char* copy_str(const char* str) {
     if (!str) {
         errlog(ERR_NULL_OBJECT, "storage:copy_str:str");

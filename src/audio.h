@@ -8,7 +8,7 @@
 #include "config.h"
 #include "logger.h"
 
-#define MUSIC_DIR "%s/Music/shellify/"
+#define MUSIC_DIR_AU "%s/Music/shellify/"
 
 typedef struct Audio {
     ma_engine engine;
@@ -28,5 +28,6 @@ void audio_update(Audio* audio, Config* config);
 void audio_play(Audio* audio, const char* path);
 void audio_pause(Audio* audio);
 void audio_stop(Audio* audio);
+void audio_unload(Audio* audio);
 
 #endif

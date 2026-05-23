@@ -6,6 +6,7 @@
 
 #include "audio.h"
 #include "buffer.h"
+#include "controller.h"
 #include "input.h"
 #include "logger.h"
 #include "storage.h"
@@ -190,6 +191,7 @@ void shellify_handle_input() {
                     } else if (key == shellify->config->keys.remove) {
                         shellify->input_state = INPUT_STATE_REMOVE;
                     }
+
                     break;
                 case INPUT_STATE_ADD:
                     if (key == shellify->config->keys.song) {
@@ -207,11 +209,14 @@ void shellify_handle_input() {
                 case INPUT_STATE_REMOVE:
                     if (key == shellify->config->keys.song) {
                         shellify->input_state = INPUT_STATE_NONE;
-                        return;
+                        rem_song(shellify->tui, shellify->stg, shellify->audio);
                     } else if (key == shellify->config->keys.playlist) {
                         shellify->input_state = INPUT_STATE_NONE;
                         rem_plist(shellify->tui, shellify->stg);
-                        return;
+                    } else if (key == shellify->config->keys.super) {
+                        shellify->input_state = INPUT_STATE_NONE;
+                        rem_song_abs(shellify->tui, shellify->stg,
+                                     shellify->audio);
                     } else if (key == KEY_ESC) {
                         shellify->input_state = INPUT_STATE_NONE;
                     }

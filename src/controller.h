@@ -18,10 +18,14 @@ extern size_t last_song_id;
 void add_song(TUI* tui, Storage* stg);
 void add_plist(TUI* tui, Storage* stg);
 
-void rem_song(TUI* tui, Storage* stg);
+void rem_song(TUI* tui, Storage* stg, Audio* audio);
+void rem_song_abs(TUI* tui, Storage* stg, Audio* audio);
 void rem_plist(TUI* tui, Storage* stg);
 
 // >>> audio contoller
 void handle_audio(TUI* tui, Storage* stg, Audio* audio);
+
+// >>> utils
+void handle_idx(size_t* idx);
 
 #endif

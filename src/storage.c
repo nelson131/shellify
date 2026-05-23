@@ -3,6 +3,9 @@
 #include "library.h"
 #include "logger.h"
 
+// Initialization of storage:
+// allocating the storage and a library,
+// creating sql tables if they dont exist
 Storage* stg_init() {
     Storage* storage = malloc(sizeof(Storage));
     if (!storage) {
@@ -54,6 +57,8 @@ Storage* stg_init() {
         goto db_error;
     }
 
+    init_music_dir();
+
     slog(INFO, "storage has been init");
     return storage;
 
@@ -65,6 +70,8 @@ db_error:
     return NULL;
 }
 
+// closing the storage:
+// clearing library and closing sql db
 void stg_close(Storage* stg) {
     if (!stg) {
         errlog(ERR_NULL_OBJECT, "stg:close:stg");
@@ -83,6 +90,9 @@ void stg_close(Storage* stg) {
     slog(INFO, "storage has been closed");
 }
 
+// loading the storage:
+// loading into the memory data from
+// sql tables like songs, playlists, playlist_songs
 int stg_load(Storage* stg) {
     if (!stg) {
         errlog(ERR_NULL_OBJECT, "stg:load:stg");
@@ -181,6 +191,8 @@ stmt_error:
 
 // >>> SONGS
 
+// adding the memory allocated song into
+// the sql db + inserting the real song id
 int stg_add_sng(Storage* stg, Song* sng) {
     if (!stg || !sng) {
         errlog(ERR_NULL_OBJECT, "stg:add_sng:args");
@@ -212,8 +224,84 @@ int stg_add_sng(Storage* stg, Song* sng) {
     return 1;
 }
 
+// absolute (full) removing the song:
+// removing it from songs and connection tables
+int stg_rem_sng_abs(Storage* stg, Song* sng) {
+    if (!stg || !sng) {
+        errlog(ERR_NULL_OBJECT, "stg:rem_sng_abs:args");
+        return 0;
+    }
+
+#define BUF_BASE_SIZE 256
+    char* buf = malloc(BUF_BASE_SIZE);
+    if (!buf) {
+        errlog(ERR_MALLOC_NULL, "stg:rem_sng:abs:buf");
+        return 0;
+    }
+    char* path = get_music_dir();
+    snprintf(buf, BUF_BASE_SIZE, "%s/%s", path, sng->path);
+
+    if (unlink(buf) != 0) {
+        alog(WARNING, buf, "song file not found");
+    }
+    free(buf);
+    free(path);
+
+    const char*   query = "DELETE FROM songs WHERE id = ?";
+    sqlite3_stmt* stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:rem_sng_abs:stmt:songs");
+        return 0;
+    }
+
+    bind_int(stmt, 1, sng->id);
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        errlog(ERR_SQLITE_FAILED, "stg:rem_sng_abs:step");
+        return 0;
+    }
+
+    sqlite3_finalize(stmt);
+
+    alog(INFO, sng->title, "song has been deleted from conn and db");
+    return 1;
+}
+
+// local removing the song:
+// removing it only from connection table!!!!!
+int stg_rem_sng(Storage* stg, Song* sng, Playlist* plist) {
+    if (!stg || !sng || !plist) {
+        errlog(ERR_NULL_OBJECT, "stg:rem_song:args");
+        return 0;
+    }
+
+    const char* query =
+        "DELETE from playlist_songs WHERE playlist_id = ? AND song_id = ?";
+    sqlite3_stmt* stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:rem_song:stmt");
+        return 0;
+    }
+
+    bind_int(stmt, 1, plist->id);
+    bind_int(stmt, 2, sng->id);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        errlog(ERR_SQLITE_FAILED, "stg:rem_song:step");
+        return 0;
+    }
+
+    sqlite3_finalize(stmt);
+
+    alog(INFO, sng->title, "song has been removed from the playlist");
+    return 1;
+}
+
 // >>> PLAYLISTS
 
+// adding the memory allocated playlist
+// into the sql db
 int stg_add_plist(Storage* stg, Playlist* plist) {
     if (!stg || !plist) {
         errlog(ERR_NULL_OBJECT, "stg:add_plist:args");
@@ -238,6 +326,7 @@ int stg_add_plist(Storage* stg, Playlist* plist) {
     return 1;
 }
 
+// removing the playlist from sql db
 int stg_rem_plist(Storage* stg, Playlist* plist) {
     if (!stg || !plist) {
         errlog(ERR_NULL_OBJECT, "stg:rem_plist:args");
@@ -274,12 +363,14 @@ int stg_rem_plist(Storage* stg, Playlist* plist) {
     }
     sqlite3_finalize(stmt);
 
-    alog(INFO, plist->name, "playlist has been deleted");
+    alog(INFO, plist->name, "playlist has been deleted from conn and db");
     return 1;
 }
 
 // >>> CONNECTION
 
+// creating connection between song and playlist:
+// assigning a song to his playlist
 int stg_conn(Storage* stg, Song* sng, Playlist* plist) {
     if (!stg || !sng || !plist) {
         errlog(ERR_NULL_OBJECT, "stg:conn:args");
@@ -319,4 +410,64 @@ int stg_conn(Storage* stg, Song* sng, Playlist* plist) {
     alog(INFO, sng->path, "created connection with a playlist");
     alog(INFO, plist->name, "created connection with a song");
     return 1;
+}
+
+// >>> utils
+
+// creating Music/ and shellify/ if they dont exist
+void init_music_dir() {
+    const char* home = getenv("HOME");
+    if (!home) {
+        errlog(ERR_NULL_OBJECT, "stg:init_dir:home");
+        return;
+    }
+
+    char* buf = malloc(BUF_BASE_SIZE);
+    if (!buf) {
+        errlog(ERR_MALLOC_NULL, "stg:init_dir:buf");
+        return;
+    }
+
+    struct stat statbuf;
+
+    snprintf(buf, BUF_BASE_SIZE, MUSIC_DIR, home);
+    if (stat(buf, &statbuf) != 0) {
+        if (mkdir(buf, 0755) != 0) {
+            errlog(FAILED, "stg:init_dir:failed_dir1");
+            free(buf);
+            return;
+        }
+
+        slog(INFO, "music dir has been created");
+    }
+
+    snprintf(buf, BUF_BASE_SIZE, STG_DIR, home, STG_DIR_NAME);
+    if (stat(buf, &statbuf) != 0) {
+        if (mkdir(buf, 0755) != 0) {
+            errlog(FAILED, "stg:init_dir:failed_dir2");
+            free(buf);
+            return;
+        }
+
+        slog(INFO, "stg dir has been created");
+    }
+
+    free(buf);
+}
+
+char* get_music_dir() {
+    const char* home = getenv("HOME");
+    if (!home) {
+        errlog(ERR_NULL_OBJECT, "stg:get_dir:home");
+        return NULL;
+    }
+
+    char* buf = malloc(BUF_BASE_SIZE);
+    if (!buf) {
+        errlog(ERR_MALLOC_NULL, "stg:get_dir:buf");
+        return NULL;
+    }
+
+    snprintf(buf, BUF_BASE_SIZE, STG_DIR, home, STG_DIR_NAME);
+    return buf;
 }
