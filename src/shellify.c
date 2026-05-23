@@ -222,11 +222,7 @@ void shellify_handle_input() {
 
             if (handle_player(key, index, max, shellify->config) >= 0) {
                 if (shellify->focus_state == SHELLIFY_SONGS) {
-                    Playlist* playlist =
-                        shellify->stg->lib
-                            ->playlists[shellify->tui->idx_plists];
-                    audio_play(shellify->audio,
-                               playlist->songs[shellify->tui->idx_songs]->path);
+                    handle_audio(shellify->tui, shellify->stg, shellify->audio);
                 }
             }
             break;

@@ -2,6 +2,11 @@
 
 #include "storage.h"
 
+size_t last_playlist_id = 0;
+size_t last_song_id = 0;
+
+// >>> stg contoller
+
 void add_song(TUI* tui, Storage* stg) {
     if (!tui || !stg) {
         errlog(ERR_NULL_OBJECT, "controller:add_song:args");
@@ -66,4 +71,43 @@ void rem_song(TUI* tui, Storage* stg) {
     }
 
     Playlist* playlist = stg->lib->playlists[tui->idx_plists];
+}
+
+// >>> audio contoller
+
+void handle_audio(TUI* tui, Storage* stg, Audio* audio) {
+    if (!tui || !audio) {
+        errlog(ERR_NULL_OBJECT, "contoller:handle_audio:args");
+        return;
+    }
+
+    if (audio->is_sound) {
+        if (ma_sound_at_end(&audio->cur_sound)) {
+            tui->idx_songs += 1;
+            if (tui->idx_songs >=
+                stg->lib->playlists[tui->idx_plists]->song_count) {
+                tui->idx_songs = 0;
+            }
+
+            goto rock;
+        }
+        if (tui->idx_songs != last_song_id) {
+            last_song_id = tui->idx_songs;
+            goto rock;
+        } else if (tui->idx_plists != last_playlist_id) {
+            last_playlist_id = tui->idx_plists;
+            goto rock;
+        } else {
+            audio_pause(audio);
+        }
+    } else {
+        goto rock;
+    }
+
+    return;
+
+rock:
+    audio_play(
+        audio,
+        stg->lib->playlists[tui->idx_plists]->songs[tui->idx_songs]->path);
 }
