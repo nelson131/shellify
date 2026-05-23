@@ -26,7 +26,6 @@ void shellify_init() {
     }
 
     shellify->is_running = 1;
-    shellify->db = NULL;
     shellify->state = SHELLIFY_STATE_WELCOME;
     shellify->input_state = INPUT_STATE_NONE;
     shellify->focus_state = SHELLIFY_PLAYLISTS;
@@ -55,7 +54,8 @@ void shellify_init() {
         shellify_stop();
     }
 
-    if (!storage_init(&shellify->db)) {
+    shellify->stg = stg_init();
+    if (!shellify->stg) {
         errlog(FAILED, "shellify:init:storage:init");
         shellify_stop();
     }
@@ -95,8 +95,8 @@ void shellify_destroy() {
     tui_clear(shellify->tui);
     free(shellify->tui);
 
-    if (!storage_close(&shellify->db, &shellify->library))
-        errlog(FAILED, "shellify:destroy:storage");
+    stg_close(shellify->stg);
+    free(shellify->stg);
 
     audio_close(&shellify->audio);
 
@@ -112,7 +112,7 @@ void shellify_destroy() {
     slog(INFO, "shellify has been closed successfully.");
 }
 
-void shellify_update() { tui_sync(shellify->tui, shellify->library); }
+void shellify_update() { tui_sync(shellify->tui, shellify->stg); }
 
 void shellify_draw() {
     shellify_draw_state();
@@ -133,7 +133,7 @@ void shellify_draw_state() {
             make_welcome(shellify->tui, shellify->buffer, shellify->config);
             break;
         case SHELLIFY_STATE_PLAYER:
-            make_player(shellify->tui, shellify->library, shellify->buffer,
+            make_player(shellify->tui, shellify->stg, shellify->buffer,
                         shellify->config, shellify->focus_state);
             break;
         case SHELLIFY_STATE_ADD_SONG:
@@ -165,7 +165,7 @@ void shellify_handle_input() {
     switch (shellify->state) {
         case SHELLIFY_STATE_WELCOME:
             if (key == shellify->config->keys.select) {
-                if (!storage_load(shellify->db, &shellify->library)) {
+                if (!stg_load(shellify->stg)) {
                     errlog(FAILED, "shellify:load_storage");
                     shellify_stop();
                     break;
@@ -213,17 +213,18 @@ void shellify_handle_input() {
             size_t  max = 0;
             if (shellify->focus_state == SHELLIFY_PLAYLISTS) {
                 index = &shellify->tui->idx_plists;
-                max = shellify->library->playlist_count;
+                max = shellify->stg->lib->playlist_count;
             } else {
                 index = &shellify->tui->idx_songs;
-                max = shellify->library->playlists[shellify->tui->idx_plists]
+                max = shellify->stg->lib->playlists[shellify->tui->idx_plists]
                           ->song_count;
             }
 
             if (handle_player(key, index, max, shellify->config) >= 0) {
                 if (shellify->focus_state == SHELLIFY_SONGS) {
                     Playlist* playlist =
-                        shellify->library->playlists[shellify->tui->idx_plists];
+                        shellify->stg->lib
+                            ->playlists[shellify->tui->idx_plists];
                     audio_play(shellify->audio,
                                playlist->songs[shellify->tui->idx_songs]->path);
                 }
@@ -256,7 +257,7 @@ void shellify_handle_input() {
                 return;
             } else if (handle_input_form(key, shellify->tui->input_form,
                                          shellify->config)) {
-                add_song(shellify->tui, shellify->db, shellify->library);
+                add_song(shellify->tui, shellify->stg);
                 clear_input_form(shellify->tui);
                 shellify->state = SHELLIFY_STATE_PLAYER;
             }
@@ -271,15 +272,6 @@ void shellify_handle_input() {
                 shellify->tui->input_form = NULL;
             } else if (handle_input_form(key, shellify->tui->input_form,
                                          shellify->config)) {
-                const char* plist_name = shellify->tui->input_form->values[0];
-                Playlist*   playlist =
-                    storage_create_playlist(shellify->library, 0, plist_name);
-                if (playlist) {
-                    storage_add_playlist(shellify->db, shellify->library,
-                                         playlist);
-                    shellify->state = SHELLIFY_STATE_PLAYER;
-                    clear_input_form(shellify->tui);
-                }
             }
             break;
         default:

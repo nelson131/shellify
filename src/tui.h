@@ -60,18 +60,18 @@ typedef struct TUI {
 
 int  tui_init(TUI** tui, size_t* window_cols, size_t* window_rows);
 void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows);
-void tui_sync(TUI* tui, Library* library);
+void tui_sync(TUI* tui, Storage* stg);
 void tui_clear(TUI* tui);
 
 // >>> tui elements and interfaces
 // bosses
 void make_welcome(TUI* tui, Buffer* buffer, Config* config);
 void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode);
-void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config,
+void make_player(TUI* tui, Storage* stg, Buffer* buffer, Config* config,
                  int focus);
 // views
-void view_plists(TUI* tui, Library* library, Buffer* buffer);
-void view_songs(TUI* tui, Library* library, Buffer* buffer);
+void view_plists(TUI* tui, Storage* stg, Buffer* buffer);
+void view_songs(TUI* tui, Storage* stg, Buffer* buffer);
 // ADD song
 void make_add_sn(TUI* tui, Buffer* buffer, Config* config);
 void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config);

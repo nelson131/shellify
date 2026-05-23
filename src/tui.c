@@ -66,10 +66,10 @@ void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
     slog(INFO, "tui parameters has been updated");
 }
 
-void tui_sync(TUI* tui, Library* library) {
-    if (!tui || !library) return;
+void tui_sync(TUI* tui, Storage* stg) {
+    if (!tui || !stg) return;
 
-    Playlist* playlist = library->playlists[tui->idx_plists];
+    Playlist* playlist = stg->lib->playlists[tui->idx_plists];
     size_t    max_songs = tui->header_bottom_border - tui->y_songs - 1;
 
     if (tui->idx_songs < tui->scroll_songs) {
@@ -168,14 +168,14 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
     free(buf);
 }
 
-void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config,
+void make_player(TUI* tui, Storage* stg, Buffer* buffer, Config* config,
                  int focus) {
     buffer_set_ver_range_char(
         buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
         (Vec){tui->playlist_wall, tui->header_top_border - 1}, '|');
 
-    view_plists(tui, library, buffer);
-    view_songs(tui, library, buffer);
+    view_plists(tui, stg, buffer);
+    view_songs(tui, stg, buffer);
 
     Rect rect = (Rect){(Vec){0, 0}, 0, 0};
     switch (focus) {
@@ -200,7 +200,7 @@ void make_player(TUI* tui, Library* library, Buffer* buffer, Config* config,
 
 // views
 
-void view_plists(TUI* tui, Library* library, Buffer* buffer) {
+void view_plists(TUI* tui, Storage* stg, Buffer* buffer) {
     size_t x = tui->x_playlists;
     size_t y = tui->y_playlists;
 
@@ -209,33 +209,33 @@ void view_plists(TUI* tui, Library* library, Buffer* buffer) {
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) return;
 
-    for (size_t i = 0; i < library->playlist_count; i++) {
+    for (size_t i = 0; i < stg->lib->playlist_count; i++) {
         if (y + i + 3 >= tui->header_bottom_border) break;
 
         if (i == tui->idx_plists) {
             snprintf(buf, BUFFER_BASE_SIZE, "> %s",
-                     library->playlists[i]->name);
+                     stg->lib->playlists[i]->name);
         } else {
             snprintf(buf, BUFFER_BASE_SIZE, "  %s",
-                     library->playlists[i]->name);
+                     stg->lib->playlists[i]->name);
         }
 
         buffer_append_line(buffer, (Vec){x, y + i + 3}, buf);
     }
 }
 
-void view_songs(TUI* tui, Library* library, Buffer* buffer) {
+void view_songs(TUI* tui, Storage* stg, Buffer* buffer) {
     size_t x = tui->x_songs;
     size_t y = tui->y_songs;
 
     buffer_append_line(buffer, (Vec){x, y}, "[ SONGS ]");
 
-    if (library->playlist_count == 0) {
+    if (stg->lib->playlist_count == 0) {
         buffer_append_line(buffer, (Vec){x, y + 3}, "(No playlists!!!)");
         return;
     }
 
-    Playlist* playlist = library->playlists[tui->idx_plists];
+    Playlist* playlist = stg->lib->playlists[tui->idx_plists];
 
     if (playlist->song_count == 0) {
         buffer_append_line(buffer, (Vec){x, y + 3}, "(No songs!!!!)");

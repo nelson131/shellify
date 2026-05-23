@@ -7,60 +7,25 @@
 #include <time.h>
 
 #include "db_handler.h"
+#include "library.h"
 #include "logger.h"
 
-typedef struct Song {
-    size_t id;
-    char*  path;
-    char*  title;
-    char*  artist;
-    char*  album;
-    size_t duration;
-    time_t time;
-} Song;
+typedef struct Storage {
+    Library* lib;
+    sqlite3* db;
+} Storage;
 
-typedef struct Playlist {
-    size_t id;
-    char*  name;
+Storage* stg_init();
+void     stg_close(Storage* stg);
 
-    Song** songs;
-    size_t song_count;
-    size_t capacity;
-} Playlist;
+int stg_load(Storage* stg);
 
-typedef struct Library {
-    Song** songs;
-    size_t song_count;
-    size_t songs_capacity;
+int stg_add_sng(Storage* stg, Song* sng);
+int stg_rem_sng();
 
-    Playlist** playlists;
-    size_t     playlist_count;
-    size_t     playlists_capacity;
-} Library;
+int stg_add_plist(Storage* stg, Playlist* plist);
+int stg_rem_plist();
 
-int storage_init(sqlite3** db);
-int storage_close(sqlite3** db, Library** library);
-
-int storage_load(sqlite3* db, Library** library);
-
-Song* find_song_by_id(Library* library, size_t id);
-
-Song* storage_create_song(Library* library, size_t id, const char* path,
-                          const char* title, const char* artist,
-                          const char* album, size_t duration, time_t time);
-int   storage_add_song(sqlite3* db, Library* library, Song* song);
-
-Playlist* storage_create_playlist(Library* library, size_t id,
-                                  const char* name);
-int storage_add_playlist(sqlite3* db, Library* library, Playlist* playlist);
-
-int storage_playlist_add_song(sqlite3* db, Song* song, Playlist* playlist);
-
-void library_clear(Library* library);
-void playlist_clear(Playlist* playlist);
-void song_clear(Song* song);
-
-time_t get_time();
-char*  copy_str(const char* str);
+int stg_conn(Storage* stg, Song* sng, Playlist* plist);
 
 #endif

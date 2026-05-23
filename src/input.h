@@ -20,7 +20,8 @@ typedef enum KeyCode {
     KEY_ARROW_RIGHT,
     KEY_ESC = 27,
     KEY_ENTER = 13,
-    KEY_BACKSPACE = 8
+    KEY_BACKSPACE = 8,
+    KEY_SPACE = 32
 } KeyCode;
 
 int input_pause();

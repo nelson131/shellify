@@ -7,9 +7,9 @@
 #include "audio.h"
 #include "buffer.h"
 #include "config.h"
+#include "controller.h"
 #include "input.h"
 #include "logger.h"
-#include "stg_handler.h"
 #include "storage.h"
 #include "tui.h"
 
@@ -39,8 +39,7 @@ typedef struct Shellify {
 
     TUI* tui;
 
-    sqlite3* db;
-    Library* library;
+    Storage* stg;
 
     Audio* audio;
 } Shellify;

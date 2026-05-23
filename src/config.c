@@ -69,6 +69,7 @@ void config_setup() {
     if (stat(buf, &statbuf) != 0) {
         mkdir(buf, 0755);
     } else {
+        free(buf);
         return;
     }
 
@@ -77,6 +78,8 @@ void config_setup() {
     if (file) {
         fclose(file);
     }
+
+    free(buf);
 }
 
 int config_save(Config* config) {
