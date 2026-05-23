@@ -64,13 +64,30 @@ void add_plist(TUI* tui, Storage* stg) {
     }
 }
 
-void rem_song(TUI* tui, Storage* stg) {
+void rem_song(TUI* tui, Storage* stg) {}
+
+void rem_plist(TUI* tui, Storage* stg) {
     if (!tui || !stg) {
-        errlog(ERR_NULL_OBJECT, "controller:rem_song:args");
+        errlog(ERR_NULL_OBJECT, "controller:rem_plist:args");
         return;
     }
 
-    Playlist* playlist = stg->lib->playlists[tui->idx_plists];
+    Playlist* plist = stg->lib->playlists[tui->idx_plists];
+    if (!stg_rem_plist(stg, plist)) {
+        errlog(FAILED, "controller:rem_plist:stg");
+        return;
+    }
+
+    char* n = lib_rem_plist(stg->lib, plist);
+    if (n) {
+        alog(ERROR, n, "playlist has been deleted at all");
+    }
+
+    if (tui->idx_plists > 0) {
+        tui->idx_plists -= 1;
+    } else {
+        tui->idx_plists = 0;
+    }
 }
 
 // >>> audio contoller

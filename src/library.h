@@ -41,10 +41,12 @@ Song* lib_new_sng(Library* library, size_t id, const char* path,
                   const char* title, const char* artist, const char* album,
                   size_t duration, time_t time);
 Song* find_sng_by_id(Library* library, size_t id);
+void  lib_rem_sng();
 
 // >>> playlists funcs
 Playlist* lib_new_plist(Library* library, size_t id, const char* name,
                         size_t cap);
+char*     lib_rem_plist(Library* library, Playlist* plist);
 
 // >>> clearing for lib elements
 void lib_clear_sng(Song* sng);

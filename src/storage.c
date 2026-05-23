@@ -238,6 +238,46 @@ int stg_add_plist(Storage* stg, Playlist* plist) {
     return 1;
 }
 
+int stg_rem_plist(Storage* stg, Playlist* plist) {
+    if (!stg || !plist) {
+        errlog(ERR_NULL_OBJECT, "stg:rem_plist:args");
+        return 0;
+    }
+
+    const char*   query = "DELETE FROM playlist_songs WHERE playlist_id = ?";
+    sqlite3_stmt* stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:rem_plist:stmt:conn");
+        return 0;
+    }
+
+    bind_int(stmt, 1, plist->id);
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        errlog(ERR_SQLITE_FAILED, "stg:rem_plist:step:conn");
+        return 0;
+    }
+    sqlite3_finalize(stmt);
+
+    query = "DELETE FROM playlists WHERE id = ?";
+    stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:rem_plist:stmt:plist");
+        return 0;
+    }
+
+    bind_int(stmt, 1, plist->id);
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        errlog(ERR_SQLITE_FAILED, "stg:rem_plist:step:plist");
+        return 0;
+    }
+    sqlite3_finalize(stmt);
+
+    alog(INFO, plist->name, "playlist has been deleted");
+    return 1;
+}
+
 // >>> CONNECTION
 
 int stg_conn(Storage* stg, Song* sng, Playlist* plist) {

@@ -24,7 +24,7 @@ int stg_add_sng(Storage* stg, Song* sng);
 int stg_rem_sng();
 
 int stg_add_plist(Storage* stg, Playlist* plist);
-int stg_rem_plist();
+int stg_rem_plist(Storage* stg, Playlist* plist);
 
 int stg_conn(Storage* stg, Song* sng, Playlist* plist);
 

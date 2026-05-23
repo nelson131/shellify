@@ -155,6 +155,43 @@ Playlist* lib_new_plist(Library* library, size_t id, const char* name,
     return playlist;
 }
 
+char* lib_rem_plist(Library* library, Playlist* plist) {
+    if (!library || !plist) {
+        errlog(ERR_NULL_OBJECT, "lib:rem_plist:args");
+        return NULL;
+    }
+
+    size_t idx = -1;
+    for (size_t i = 0; i < library->playlist_count; i++) {
+        if (library->playlists[i]->id == plist->id) {
+            idx = i;
+            break;
+        }
+    }
+
+    if (idx == -1) {
+        errlog(ERR_PLAYLIST_NOT_FOUND, "lib:rem_plist:not_found");
+        return NULL;
+    }
+
+    char* name = malloc(strlen(library->playlists[idx]->name + 1));
+    if (!name) {
+        errlog(ERR_MALLOC_NULL, "lib:rem_plist:name");
+        return NULL;
+    }
+    strcpy(name, library->playlists[idx]->name);
+
+    lib_clear_plist(library->playlists[idx]);
+    free(library->playlists[idx]);
+
+    for (size_t i = idx; i < library->playlist_count - 1; i++) {
+        library->playlists[i] = library->playlists[i + 1];
+    }
+
+    library->playlist_count--;
+    return name;
+}
+
 void lib_clear(Library* library) {
     if (!library) return;
 

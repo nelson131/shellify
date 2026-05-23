@@ -204,6 +204,16 @@ void shellify_handle_input() {
                     }
                     break;
                 case INPUT_STATE_REMOVE:
+                    if (key == shellify->config->keys.song) {
+                        shellify->input_state = INPUT_STATE_NONE;
+                        return;
+                    } else if (key == shellify->config->keys.playlist) {
+                        shellify->input_state = INPUT_STATE_NONE;
+                        rem_plist(shellify->tui, shellify->stg);
+                        return;
+                    } else if (key == KEY_ESC) {
+                        shellify->input_state = INPUT_STATE_NONE;
+                    }
                     break;
                 default:
                     shellify->input_state = INPUT_STATE_NONE;
