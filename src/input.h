@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "audio.h"
 #include "config.h"
 #include "tui.h"
 
@@ -27,9 +28,10 @@ typedef enum KeyCode {
 int input_pause();
 int input_poll();
 
-int handle_player(int key, size_t* idx, size_t max, Config* config);
-int handle_input_form(int key, TUI_InputForm* form, Config* config);
-int handle_choice_form(int key, TUI_ChoiceForm* form, Config* config);
+int  handle_player(int key, size_t* idx, size_t max, Config* config);
+void handle_volume(int key, Audio* audio, Config* config);
+int  handle_input_form(int key, TUI_InputForm* form, Config* config);
+int  handle_choice_form(int key, TUI_ChoiceForm* form, Config* config);
 
 const char* instate_char(InputState input_state);
 

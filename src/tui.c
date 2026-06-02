@@ -152,6 +152,10 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
              config->keys.remove, config->keys.song, config->keys.playlist);
     buffer_append_line(buffer, (Vec){0, 1}, buf);
 
+    snprintf(buf, BUFFER_BASE_SIZE, "Volume -> %.2f", config->player.volume);
+    buffer_append_line_styled(buffer, (Vec){buffer->window_cols - 20, 1}, buf,
+                              COLOR_DEFAULT, COLOR_DEFAULT, STYLE_BOLD);
+
     buffer_append_line(buffer, (Vec){0, tui->header_top_border},
                        tui->separator);
 

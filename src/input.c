@@ -1,5 +1,7 @@
 #include "input.h"
 
+#include "audio.h"
+
 int input_pause() {
     char c;
     if (read(STDIN_FILENO, &c, 1) != 1) return -1;
@@ -51,6 +53,26 @@ int handle_player(int key, size_t* idx, size_t max, Config* config) {
     }
 
     return -1;
+}
+
+void handle_volume(int key, Audio* audio, Config* config) {
+    if (!config) return;
+
+    if (key == config->keys.inc) {
+        float vol = config->player.volume;
+        vol += 0.05f;
+        if (vol > 1.0f) vol = 1.0f;
+
+        config->player.volume = vol;
+        audio_update(audio, config);
+    } else if (key == config->keys.dec) {
+        float vol = config->player.volume;
+        vol -= 0.05f;
+        if (vol < 0.0f) vol = 0.0f;
+
+        config->player.volume = vol;
+        audio_update(audio, config);
+    }
 }
 
 // used for input forms

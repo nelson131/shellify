@@ -63,6 +63,7 @@ void shellify_init() {
     }
 
     audio_init(&shellify->audio);
+    audio_update(shellify->audio, shellify->config);
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -191,6 +192,7 @@ void shellify_handle_input() {
                     } else if (key == shellify->config->keys.remove) {
                         shellify->input_state = INPUT_STATE_REMOVE;
                     }
+                    handle_volume(key, shellify->audio, shellify->config);
 
                     break;
                 case INPUT_STATE_ADD:

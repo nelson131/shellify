@@ -25,6 +25,8 @@
 #define CONFIG_DEF_QUIT 'q'
 #define CONFIG_DEF_SUPER 'x'
 #define CONFIG_DEF_SELECT 'e'
+#define CONFIG_DEF_INCREASE ']'
+#define CONFIG_DEF_DECREASE '['
 #define CONFIG_DEF_ADD 'a'
 #define CONFIG_DEF_REMOVE 'r'
 #define CONFIG_DEF_SONG 's'
@@ -45,6 +47,9 @@ typedef struct cfg_keys {
     char quit;
     char super;
     char select;
+
+    char inc;
+    char dec;
 
     char add;
     char remove;
