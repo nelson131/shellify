@@ -1,40 +1,100 @@
 #include "buffer.h"
 
-#include <stdio.h>
-
 size_t to_index(Buffer* buffer, Vec v) {
     return v.y * buffer->window_cols + v.x;
 }
 
+void cell_reset(Cell* cell) {
+    if (!cell) return;
+
+    cell->c = ' ';
+    cell->tg = COLOR_DEFAULT;
+    cell->bg = COLOR_DEFAULT;
+    cell->fl = STYLE_NONE;
+}
+
+int cell_eq(Cell* c1, Cell* c2) {
+    return (c1->c == c2->c && c1->tg == c2->tg && c1->bg == c2->bg &&
+            c1->fl == c2->fl);
+}
+
+void cell_cmpl(Cell* c, i32* c_tg, i32* c_bg, u8* c_fl) {
+    if (!c || !c_tg || !c_bg || !c_fl) return;
+
+    if (c->tg != *c_tg || c->bg != *c_bg || c->fl != *c_fl) {
+        printf("\033[0m");
+
+        if (c->fl & STYLE_BOLD) {
+            printf("\033[1m");
+        }
+
+        if (c->fl & STYLE_UNDERLINE) {
+            printf("\033[4m");
+        }
+
+        if (c->tg != COLOR_DEFAULT) {
+            printf("\033[%dm", 30 + c->tg);
+        }
+
+        if (c->bg != COLOR_DEFAULT) {
+            printf("\033[%dm", 40 + c->bg);
+        }
+
+        *c_tg = c->tg;
+        *c_bg = c->bg;
+        *c_fl = c->fl;
+    }
+}
+
 int buffer_init(Buffer** buffer, size_t* window_cols, size_t* window_rows) {
+    if (!window_cols || !window_rows) return 0;
+
     Buffer* temp = malloc(sizeof(Buffer));
     if (!temp) {
-        errlog(ERR_MALLOC_NULL, "buffer:init:buffer");
-        return 0;
-    }
-    size_t size = *window_cols * *window_rows;
-    temp->actual = malloc(size * sizeof(char));
-    temp->old = malloc(size * sizeof(char));
-    if (!temp->actual || !temp->old) {
-        errlog(ERR_MALLOC_NULL, "buffer:init:buffer_arrays");
+        errlog(ERR_MALLOC_NULL, "buffer:init:temp");
         return 0;
     }
 
-    memset(temp->actual, ' ', size);
-    memset(temp->old, ' ', size);
+    size_t size = *window_cols * *window_rows;
+    temp->size = size;
+
+    temp->actual = malloc(size * sizeof(Cell));
+    if (!temp->actual) {
+        errlog(ERR_MALLOC_NULL, "buffer:init:actual");
+        free(temp);
+        return 0;
+    }
+    temp->old = malloc(size * sizeof(Cell));
+    if (!temp->old) {
+        errlog(ERR_MALLOC_NULL, "buffer:init:old");
+        free(temp->actual);
+        free(temp);
+        return 0;
+    }
 
     temp->window_cols = *window_cols;
     temp->window_rows = *window_rows;
+
+    buffer_clear(*buffer);
+    for (size_t i = 0; i < size; i++) {
+        cell_reset(&temp->old[i]);
+    }
 
     *buffer = temp;
     return 1;
 }
 
 void buffer_clear(Buffer* buffer) {
-    memset(buffer->actual, ' ', buffer->window_cols * buffer->window_rows);
+    if (!buffer) return;
+
+    for (size_t i = 0; i < buffer->size; i++) {
+        cell_reset(&buffer->actual[i]);
+    }
 }
 
 void buffer_destroy(Buffer* buffer) {
+    if (!buffer) return;
+
     if (buffer->actual) {
         free(buffer->actual);
         buffer->actual = NULL;
@@ -47,39 +107,40 @@ void buffer_destroy(Buffer* buffer) {
 }
 
 void buffer_render(Buffer* buffer) {
+    i32 c_tg = 0;
+    i32 c_bg = 0;
+    u8  c_fl = 0;
+
     for (size_t y = 0; y < buffer->window_rows; y++) {
         for (size_t x = 0; x < buffer->window_cols; x++) {
             size_t i = to_index(buffer, (Vec){x, y});
 
-            if (buffer->actual[i] != buffer->old[i]) {
+            if (!cell_eq(&buffer->actual[i], &buffer->old[i])) {
                 printf("\033[%zu;%zuH", y + 1, x + 1);
-                putchar(buffer->actual[i]);
+                cell_cmpl(&buffer->actual[i], &c_tg, &c_bg, &c_fl);
+
+                putchar(buffer->actual[i].c);
                 buffer->old[i] = buffer->actual[i];
             }
         }
     }
 
-    fflush(stdout);
-}
-
-void buffer_render_full(Buffer* buffer) {
-    printf("\033[H");
-
-    for (size_t y = 0; y < buffer->window_rows; y++) {
-        for (size_t x = 0; x < buffer->window_cols; x++) {
-            size_t i = to_index(buffer, (Vec){x, y});
-            putchar(buffer->actual[i]);
-            buffer->old[i] = buffer->actual[i];
-        }
-    }
-
+    printf("\033[0m");
     fflush(stdout);
 }
 
 void buffer_set_char(Buffer* buffer, Vec v, char ch) {
+    buffer_set_cell(buffer, v, ch, COLOR_DEFAULT, COLOR_DEFAULT, STYLE_NONE);
+}
+
+void buffer_set_cell(Buffer* buffer, Vec v, char ch, i32 tg, i32 bg, u8 fl) {
     if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
 
-    buffer->actual[to_index(buffer, v)] = ch;
+    size_t i = to_index(buffer, v);
+    buffer->actual[i].c = ch;
+    buffer->actual[i].tg = tg;
+    buffer->actual[i].bg = bg;
+    buffer->actual[i].fl = fl;
 }
 
 void buffer_append_line(Buffer* buffer, Vec v, const char* line) {
@@ -87,10 +148,27 @@ void buffer_append_line(Buffer* buffer, Vec v, const char* line) {
         return;
 
     size_t len = strlen(line);
-    if (v.x + len > buffer->window_cols) return;
+    if (v.x + len > buffer->window_cols) {
+        len = buffer->window_cols - v.x;
+    }
 
     for (size_t i = 0; i < len; i++) {
-        buffer->actual[to_index(buffer, (Vec){i + v.x, v.y})] = line[i];
+        buffer_set_char(buffer, (Vec){i + v.x, v.y}, line[i]);
+    }
+}
+
+void buffer_append_line_styled(Buffer* buffer, Vec v, const char* line, i32 tg,
+                               i32 bg, u8 fl) {
+    if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
+        return;
+
+    size_t len = strlen(line);
+    if (v.x + len > buffer->window_cols) {
+        len = buffer->window_cols - v.x;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        buffer_set_cell(buffer, (Vec){i + v.x, v.y}, line[i], tg, bg, fl);
     }
 }
 
@@ -102,7 +180,22 @@ void buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line) {
     if (v.y + len > buffer->window_rows) return;
 
     for (size_t i = 0; i < len; i++) {
-        buffer->actual[to_index(buffer, (Vec){v.x, v.y + i})] = line[i];
+        buffer_set_char(buffer, (Vec){v.x, v.y + i}, line[i]);
+    }
+}
+
+void buffer_append_line_vertical_styled(Buffer* buffer, Vec v, const char* line,
+                                        i32 tg, i32 bg, u8 fl) {
+    if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
+        return;
+
+    size_t len = strlen(line);
+    if (v.y + len > buffer->window_rows) {
+        len = buffer->window_rows - v.y;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        buffer_set_cell(buffer, (Vec){v.x, v.y + i}, line[i], tg, bg, fl);
     }
 }
 
@@ -156,8 +249,8 @@ void buffer_clear_line(Buffer* buffer, Vec range, size_t y) {
 
     for (size_t i = range.x; i <= range.y; i++) {
         size_t index = to_index(buffer, (Vec){i, y});
-        if (buffer->actual[index] != ' ') {
-            buffer->actual[index] = ' ';
+        if (buffer->actual[index].c != ' ') {
+            cell_reset(&buffer->actual[index]);
         }
     }
 }
@@ -167,8 +260,8 @@ void buffer_clear_vertical_line(Buffer* buffer, Vec range, size_t x) {
 
     for (size_t i = range.x; i <= range.y; i++) {
         size_t index = to_index(buffer, (Vec){x, i});
-        if (buffer->actual[index] != ' ') {
-            buffer->actual[index] = ' ';
+        if (buffer->actual[index].c != ' ') {
+            cell_reset(&buffer->actual[index]);
         }
     }
 }

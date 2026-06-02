@@ -142,7 +142,8 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
     // top side
     snprintf(buf, BUFFER_BASE_SIZE, "%s %s", config->general.name,
              config->general.version);
-    buffer_append_line(buffer, (Vec){0, 0}, buf);
+    buffer_append_line_styled(buffer, (Vec){0, 0}, buf, COLOR_CYAN,
+                              COLOR_DEFAULT, STYLE_BOLD);
 
     snprintf(buf, BUFFER_BASE_SIZE,
              "help -> super: %c; select: %c; add: %c; remove: %c; song: %c; "
