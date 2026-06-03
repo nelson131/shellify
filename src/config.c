@@ -51,6 +51,7 @@ int config_load(Config** config) {
         if (sscanf(line, "remove=%c", &temp->keys.remove) == 1) continue;
         if (sscanf(line, "song=%c", &temp->keys.song) == 1) continue;
         if (sscanf(line, "playlist=%c", &temp->keys.playlist) == 1) continue;
+        if (sscanf(line, "shuffle=%c", &temp->keys.shuffle) == 1) continue;
     }
 
     free(line);
@@ -102,10 +103,11 @@ int config_save(Config* config) {
     fprintf(file,
             "[keys]\nquit=%c\nsuper=%c\nselect=%c\ninc=%c\ndec=%c\nadd=%"
             "c\nremove=%c\nsong=%"
-            "c\nplaylist=%c\n",
+            "c\nplaylist=%c\nshuffle=%c\n",
             config->keys.quit, config->keys.super, config->keys.select,
             config->keys.inc, config->keys.dec, config->keys.add,
-            config->keys.remove, config->keys.song, config->keys.playlist);
+            config->keys.remove, config->keys.song, config->keys.playlist,
+            config->keys.shuffle);
 
     fclose(file);
     slog(INFO, "config has been saved successfully");
@@ -120,7 +122,7 @@ void config_default(Config* config) {
     strcpy(config->general.desc, CONFIG_APP_DESC);
 
     config->player.volume = CONFIG_DEF_VOLUME;
-    config->player.shuffle = CONFIG_DEF_SHUFFLE;
+    config->player.shuffle = CONFIG_DEF_SHUFFLE_VALUE;
 
     config->keys.quit = CONFIG_DEF_QUIT;
     config->keys.super = CONFIG_DEF_SUPER;
@@ -131,6 +133,7 @@ void config_default(Config* config) {
     config->keys.remove = CONFIG_DEF_REMOVE;
     config->keys.song = CONFIG_DEF_SONG;
     config->keys.playlist = CONFIG_DEF_PLAYLIST;
+    config->keys.shuffle = CONFIG_DEF_SHUFFLE;
 }
 
 char* get_config_path() {

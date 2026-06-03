@@ -23,11 +23,13 @@ typedef struct Audio {
 void audio_init(Audio** audio);
 void audio_close(Audio** audio);
 
-void audio_update(Audio* audio, Config* config);
+void audio_volume(Audio* audio, Config* config);
 
 void audio_play(Audio* audio, const char* path);
 void audio_pause(Audio* audio);
 void audio_stop(Audio* audio);
 void audio_unload(Audio* audio);
+
+int audio_is_ended(Audio* audio);
 
 #endif

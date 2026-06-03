@@ -24,6 +24,7 @@ void rem_plist(TUI* tui, Storage* stg);
 
 // >>> audio contoller
 void handle_audio(TUI* tui, Storage* stg, Audio* audio);
+void handle_next(TUI* tui, Storage* stg, Audio* audio, Config* config);
 
 // >>> utils
 void handle_idx(size_t* idx);

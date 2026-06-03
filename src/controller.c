@@ -172,6 +172,26 @@ rock:
         stg->lib->playlists[tui->idx_plists]->songs[tui->idx_songs]->path);
 }
 
+void handle_next(TUI* tui, Storage* stg, Audio* audio, Config* config) {
+    if (!tui || !stg || !audio || !config) return;
+
+    Playlist* playlist = stg->lib->playlists[tui->idx_plists];
+    if (playlist->song_count == 0) return;
+
+    size_t idx = 0;
+    if (config->player.shuffle) {
+        idx = rand() % playlist->song_count;
+    } else {
+        idx = tui->idx_songs + 1;
+        if (idx >= playlist->song_count) idx = 0;
+    }
+
+    tui->idx_songs = idx;
+
+    Song* s = playlist->songs[idx];
+    audio_play(audio, s->path);
+}
+
 void handle_idx(size_t* idx) {
     if (!idx) return;
 

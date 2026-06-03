@@ -64,14 +64,14 @@ void handle_volume(int key, Audio* audio, Config* config) {
         if (vol > 1.0f) vol = 1.0f;
 
         config->player.volume = vol;
-        audio_update(audio, config);
+        audio_volume(audio, config);
     } else if (key == config->keys.dec) {
         float vol = config->player.volume;
         vol -= 0.05f;
         if (vol < 0.0f) vol = 0.0f;
 
         config->player.volume = vol;
-        audio_update(audio, config);
+        audio_volume(audio, config);
     }
 }
 

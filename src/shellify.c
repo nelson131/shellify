@@ -63,7 +63,7 @@ void shellify_init() {
     }
 
     audio_init(&shellify->audio);
-    audio_update(shellify->audio, shellify->config);
+    audio_volume(shellify->audio, shellify->config);
 
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -115,7 +115,13 @@ void shellify_destroy() {
     slog(INFO, "shellify has been closed successfully.");
 }
 
-void shellify_update() { tui_sync(shellify->tui, shellify->stg); }
+void shellify_update() {
+    tui_sync(shellify->tui, shellify->stg);
+    if (audio_is_ended(shellify->audio)) {
+        handle_next(shellify->tui, shellify->stg, shellify->audio,
+                    shellify->config);
+    }
+}
 
 void shellify_draw() {
     shellify_draw_state();
@@ -191,8 +197,12 @@ void shellify_handle_input() {
                         shellify->input_state = INPUT_STATE_ADD;
                     } else if (key == shellify->config->keys.remove) {
                         shellify->input_state = INPUT_STATE_REMOVE;
+                    } else if (key == shellify->config->keys.shuffle) {
+                        shellify->config->player.shuffle =
+                            !shellify->config->player.shuffle;
+                    } else {
+                        handle_volume(key, shellify->audio, shellify->config);
                     }
-                    handle_volume(key, shellify->audio, shellify->config);
 
                     break;
                 case INPUT_STATE_ADD:

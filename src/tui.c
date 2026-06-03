@@ -147,12 +147,17 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
 
     snprintf(buf, BUFFER_BASE_SIZE,
              "help -> super: %c; select: %c; add: %c; remove: %c; song: %c; "
-             "playlist: %c;",
+             "playlist: %c; increase vol: %c; decrease vol: %c;",
              config->keys.super, config->keys.select, config->keys.add,
-             config->keys.remove, config->keys.song, config->keys.playlist);
+             config->keys.remove, config->keys.song, config->keys.playlist,
+             config->keys.inc, config->keys.dec);
     buffer_append_line(buffer, (Vec){0, 1}, buf);
 
     snprintf(buf, BUFFER_BASE_SIZE, "Volume -> %.2f", config->player.volume);
+    buffer_append_line_styled(buffer, (Vec){buffer->window_cols - 40, 1}, buf,
+                              COLOR_DEFAULT, COLOR_DEFAULT, STYLE_BOLD);
+
+    snprintf(buf, BUFFER_BASE_SIZE, "Shuffle -> %zu", config->player.shuffle);
     buffer_append_line_styled(buffer, (Vec){buffer->window_cols - 20, 1}, buf,
                               COLOR_DEFAULT, COLOR_DEFAULT, STYLE_BOLD);
 

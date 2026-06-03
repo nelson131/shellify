@@ -45,7 +45,7 @@ void audio_close(Audio** audio) {
     slog(INFO, "audio has been closed");
 }
 
-void audio_update(Audio* audio, Config* config) {
+void audio_volume(Audio* audio, Config* config) {
     if (!audio) return;
 
     ma_engine_set_volume(&audio->engine, config->player.volume);
@@ -106,4 +106,10 @@ void audio_unload(Audio* audio) {
     ma_sound_stop(&audio->cur_sound);
     ma_sound_uninit(&audio->cur_sound);
     audio->is_sound = 0;
+}
+
+int audio_is_ended(Audio* audio) {
+    if (!audio || !audio->is_init) return 0;
+
+    return ma_sound_at_end(&audio->cur_sound);
 }
