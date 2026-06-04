@@ -133,7 +133,8 @@ void shellify_draw_state() {
     buffer_clear(shellify->buffer);
 
     if (shellify->state != SHELLIFY_STATE_WELCOME) {
-        make_header(shellify->tui, shellify->buffer, shellify->config,
+        make_header(shellify->tui, shellify->stg, shellify->buffer,
+                    shellify->audio, shellify->config,
                     instate_char(shellify->input_state));
     }
 

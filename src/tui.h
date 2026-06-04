@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "audio.h"
 #include "buffer.h"
 #include "config.h"
 #include "logger.h"
@@ -66,7 +67,8 @@ void tui_clear(TUI* tui);
 // >>> tui elements and interfaces
 // bosses
 void make_welcome(TUI* tui, Buffer* buffer, Config* config);
-void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode);
+void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
+                 Config* config, const char* mode);
 void make_player(TUI* tui, Storage* stg, Buffer* buffer, Config* config,
                  int focus);
 // views

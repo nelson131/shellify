@@ -16,6 +16,7 @@ typedef struct Audio {
 
     ma_sound cur_sound;
     int      is_sound;
+    int      is_stopped;
 
     char* music_dir;
 } Audio;

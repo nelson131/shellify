@@ -130,8 +130,9 @@ void make_welcome(TUI* tui, Buffer* buffer, Config* config) {
     free(buf);
 }
 
-void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
-    if (!tui || !buffer || !config) return;
+void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
+                 Config* config, const char* mode) {
+    if (!tui || !buffer || !audio || !config) return;
 
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) {
@@ -145,12 +146,13 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
     buffer_append_line_styled(buffer, (Vec){0, 0}, buf, COLOR_CYAN,
                               COLOR_DEFAULT, STYLE_BOLD);
 
-    snprintf(buf, BUFFER_BASE_SIZE,
-             "help -> super: %c; select: %c; add: %c; remove: %c; song: %c; "
-             "playlist: %c; increase vol: %c; decrease vol: %c;",
-             config->keys.super, config->keys.select, config->keys.add,
-             config->keys.remove, config->keys.song, config->keys.playlist,
-             config->keys.inc, config->keys.dec);
+    snprintf(
+        buf, BUFFER_BASE_SIZE,
+        "help -> super: %c; select: %c; add: %c; remove: %c; song: %c; "
+        "playlist: %c; increase vol: %c; decrease vol: %c; shuffle on/off: %c;",
+        config->keys.super, config->keys.select, config->keys.add,
+        config->keys.remove, config->keys.song, config->keys.playlist,
+        config->keys.inc, config->keys.dec, config->keys.shuffle);
     buffer_append_line(buffer, (Vec){0, 1}, buf);
 
     snprintf(buf, BUFFER_BASE_SIZE, "Volume -> %.2f", config->player.volume);
@@ -168,13 +170,25 @@ void make_header(TUI* tui, Buffer* buffer, Config* config, const char* mode) {
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border},
                        tui->separator);
 
+    Playlist* playlist = stg->lib->playlists[tui->idx_plists];
+    if (playlist && audio->is_sound && playlist->songs[tui->idx_songs]) {
+        if (!audio->is_stopped) {
+            snprintf(tui->song_name, MAX_LEN_SONG, "%s",
+                     playlist->songs[tui->idx_songs]->title);
+        } else {
+            snprintf(tui->song_name, MAX_LEN_SONG, "%s [ STOPPED ]",
+                     playlist->songs[tui->idx_songs]->title);
+        }
+    }
+
     snprintf(buf, BUFFER_BASE_SIZE, "%s %s", PREFIX_PLAYING, tui->song_name);
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border + 1}, buf);
-    size_t len = strlen(buf);
 
     snprintf(buf, BUFFER_BASE_SIZE, "Mode = [ %s ]", mode);
-    buffer_append_line(buffer, (Vec){len + 10, tui->header_bottom_border + 1},
-                       buf);
+    buffer_append_line(
+        buffer, (Vec){buffer->window_cols - 20, tui->header_bottom_border + 1},
+        buf);
+
     free(buf);
 }
 

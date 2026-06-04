@@ -16,6 +16,7 @@ void audio_init(Audio** audio) {
     }
     (*audio)->is_init = 1;
     (*audio)->is_sound = 0;
+    (*audio)->is_stopped = 0;
 
 #define MUSIC_DIR_SIZE strlen(MUSIC_DIR_AU) + 64
     (*audio)->music_dir = malloc(MUSIC_DIR_SIZE);
@@ -77,6 +78,7 @@ void audio_play(Audio* audio, const char* path) {
     }
 
     audio->is_sound = 1;
+    audio->is_stopped = 0;
     ma_sound_start(&audio->cur_sound);
     alog(INFO, path, "playing the song");
 }
@@ -86,9 +88,11 @@ void audio_pause(Audio* audio) {
 
     if (ma_sound_is_playing(&audio->cur_sound)) {
         ma_sound_stop(&audio->cur_sound);
+        audio->is_stopped = 1;
         slog(INFO, "audio sound stopped");
     } else {
         ma_sound_start(&audio->cur_sound);
+        audio->is_stopped = 0;
         slog(INFO, "audio sound resumed");
     }
 }
@@ -110,6 +114,5 @@ void audio_unload(Audio* audio) {
 
 int audio_is_ended(Audio* audio) {
     if (!audio || !audio->is_init) return 0;
-
     return ma_sound_at_end(&audio->cur_sound);
 }
