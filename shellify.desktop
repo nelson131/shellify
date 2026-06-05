@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=shellify
+Comment=terminal based audio player written in C
+Exec=shellify
+Terminal=true
+Categories=Audio;
+Keywords=music;player;tui;

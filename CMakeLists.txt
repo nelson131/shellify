@@ -27,3 +27,9 @@ target_link_libraries(shellify
     SQLite::SQLite3
     PkgConfig::MINIAUDIO
 )
+
+install(TARGETS shellify
+    RUNTIME DESTINATION bin)
+
+install(FILES shellify.desktop 
+        DESTINATION share/applications)

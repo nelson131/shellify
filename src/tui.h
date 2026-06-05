@@ -40,6 +40,7 @@ typedef struct TUI_ChoiceForm {
 typedef struct TUI {
     size_t header_top_border;
     size_t header_bottom_border;
+    size_t offset;
 
     char* separator;
     char* song_name;

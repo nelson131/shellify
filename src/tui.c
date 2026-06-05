@@ -43,6 +43,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
 
     temp->idx_plists = 0, temp->idx_songs = 0;
     temp->scroll_plists = 0, temp->scroll_songs = 0;
+    temp->offset = 0;
     temp->input_form = NULL;
     temp->choice_form = NULL;
     tui_update(temp, window_cols, window_rows);
@@ -155,13 +156,20 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
         config->keys.inc, config->keys.dec, config->keys.shuffle);
     buffer_append_line(buffer, (Vec){0, 1}, buf);
 
+    if (strlen(buf) >= buffer->window_cols && !tui->offset) {
+        tui->offset = 1;
+        tui->header_top_border += tui->offset;
+    }
+
     snprintf(buf, BUFFER_BASE_SIZE, "Volume -> %.2f", config->player.volume);
-    buffer_append_line_styled(buffer, (Vec){buffer->window_cols - 40, 1}, buf,
-                              COLOR_DEFAULT, COLOR_DEFAULT, STYLE_BOLD);
+    buffer_append_line_styled(buffer,
+                              (Vec){buffer->window_cols - 30, 1 + tui->offset},
+                              buf, COLOR_DEFAULT, COLOR_DEFAULT, STYLE_BOLD);
 
     snprintf(buf, BUFFER_BASE_SIZE, "Shuffle -> %zu", config->player.shuffle);
-    buffer_append_line_styled(buffer, (Vec){buffer->window_cols - 20, 1}, buf,
-                              COLOR_DEFAULT, COLOR_DEFAULT, STYLE_BOLD);
+    buffer_append_line_styled(buffer,
+                              (Vec){buffer->window_cols - 13, 1 + tui->offset},
+                              buf, COLOR_DEFAULT, COLOR_DEFAULT, STYLE_BOLD);
 
     buffer_append_line(buffer, (Vec){0, tui->header_top_border},
                        tui->separator);
@@ -217,7 +225,7 @@ void make_player(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
 
 void view_plists(TUI* tui, Storage* stg, Buffer* buffer) {
     size_t x = tui->x_playlists;
-    size_t y = tui->y_playlists;
+    size_t y = tui->y_playlists + tui->offset;
 
     buffer_append_line(buffer, (Vec){x, y}, "[ PLAYLISTS ]");
 
@@ -242,7 +250,7 @@ void view_plists(TUI* tui, Storage* stg, Buffer* buffer) {
 
 void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio) {
     size_t x = tui->x_songs;
-    size_t y = tui->y_songs;
+    size_t y = tui->y_songs + tui->offset;
 
     buffer_append_line(buffer, (Vec){x, y}, "[ SONGS ]");
 
