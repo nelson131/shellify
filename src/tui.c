@@ -170,17 +170,6 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border},
                        tui->separator);
 
-    Playlist* playlist = stg->lib->playlists[tui->idx_plists];
-    if (playlist && audio->is_sound && playlist->songs[tui->idx_songs]) {
-        if (!audio->is_stopped) {
-            snprintf(tui->song_name, MAX_LEN_SONG, "%s",
-                     playlist->songs[tui->idx_songs]->title);
-        } else {
-            snprintf(tui->song_name, MAX_LEN_SONG, "%s [ STOPPED ]",
-                     playlist->songs[tui->idx_songs]->title);
-        }
-    }
-
     snprintf(buf, BUFFER_BASE_SIZE, "%s %s", PREFIX_PLAYING, tui->song_name);
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border + 1}, buf);
 

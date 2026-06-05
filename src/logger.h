@@ -32,8 +32,9 @@ typedef enum ErrorCode {
 extern FILE*       log_file;
 extern const char* log_msgs[];
 extern const char* err_msgs[];
+extern size_t**    logging;
 
-void logger_init(const char* file_name);
+void logger_init(const char* file_name, size_t* log);
 void logger_close();
 
 void slog(LogLevel log_level, const char* msg);

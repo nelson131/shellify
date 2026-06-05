@@ -20,8 +20,9 @@ const char* err_msgs[] = {"FAILED",
                           "ERR_SONG_ALREADY_EXISTS",
                           "ERR_PLAYLIST_NOT_FOUND",
                           "ERR_PLAYLIST_ALREADY_EXISTS"};
+size_t**    logging = NULL;
 
-void logger_init(const char* file_name) {
+void logger_init(const char* file_name, size_t* log) {
     if (!file_name) return;
 
 #define BUF_BASE_SIZE 128
@@ -38,6 +39,10 @@ void logger_init(const char* file_name) {
     log_file = fopen(buf, "a");
     if (!log_file) {
         log_file = stdout;
+    }
+
+    if (!logging) {
+        logging = &log;
     }
 
     free(buf);

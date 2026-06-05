@@ -38,6 +38,7 @@ int config_load(Config** config) {
             temp->general.desc[sizeof(temp->general.desc) - 1] = '\0';
             continue;
         }
+        if (sscanf(line, "logging=%zu", &temp->general.logging) == 1) continue;
 
         if (sscanf(line, "volume=%f", &temp->player.volume) == 1) continue;
         if (sscanf(line, "shuffle=%zu", &temp->player.shuffle) == 1) continue;
@@ -45,6 +46,7 @@ int config_load(Config** config) {
         if (sscanf(line, "quit=%c", &temp->keys.quit) == 1) continue;
         if (sscanf(line, "super=%c", &temp->keys.super) == 1) continue;
         if (sscanf(line, "select=%c", &temp->keys.select) == 1) continue;
+        if (sscanf(line, "pause=%c", &temp->keys.pause) == 1) continue;
         if (sscanf(line, "inc=%c", &temp->keys.inc) == 1) continue;
         if (sscanf(line, "dec=%c", &temp->keys.dec) == 1) continue;
         if (sscanf(line, "add=%c", &temp->keys.add) == 1) continue;
@@ -96,18 +98,20 @@ int config_save(Config* config) {
     fputs(header, file);
     free(header);
 
-    fprintf(file, "[general]\ndesc=%s\n\n", config->general.desc);
+    fprintf(file, "[general]\ndesc=%s\nlogging=%zu\n\n", config->general.desc,
+            config->general.logging);
 
     fprintf(file, "[player]\nvolume=%f\nshuffle=%zu\n\n", config->player.volume,
             config->player.shuffle);
-    fprintf(file,
-            "[keys]\nquit=%c\nsuper=%c\nselect=%c\ninc=%c\ndec=%c\nadd=%"
-            "c\nremove=%c\nsong=%"
-            "c\nplaylist=%c\nshuffle=%c\n",
-            config->keys.quit, config->keys.super, config->keys.select,
-            config->keys.inc, config->keys.dec, config->keys.add,
-            config->keys.remove, config->keys.song, config->keys.playlist,
-            config->keys.shuffle);
+    fprintf(
+        file,
+        "[keys]\nquit=%c\nsuper=%c\nselect=%c\npause=%c\ninc=%c\ndec=%c\nadd=%"
+        "c\nremove=%c\nsong=%"
+        "c\nplaylist=%c\nshuffle=%c\n",
+        config->keys.quit, config->keys.super, config->keys.select,
+        config->keys.pause, config->keys.inc, config->keys.dec,
+        config->keys.add, config->keys.remove, config->keys.song,
+        config->keys.playlist, config->keys.shuffle);
 
     fclose(file);
     slog(INFO, "config has been saved successfully");
@@ -120,6 +124,7 @@ void config_default(Config* config) {
     strcpy(config->general.name, CONFIG_APP_NAME);
     strcpy(config->general.version, CONFIG_APP_VERSION);
     strcpy(config->general.desc, CONFIG_APP_DESC);
+    config->general.logging = CONFIG_DEF_LOGGING;
 
     config->player.volume = CONFIG_DEF_VOLUME;
     config->player.shuffle = CONFIG_DEF_SHUFFLE_VALUE;
@@ -127,6 +132,7 @@ void config_default(Config* config) {
     config->keys.quit = CONFIG_DEF_QUIT;
     config->keys.super = CONFIG_DEF_SUPER;
     config->keys.select = CONFIG_DEF_SELECT;
+    config->keys.pause = CONFIG_DEF_PAUSE;
     config->keys.inc = CONFIG_DEF_INCREASE;
     config->keys.dec = CONFIG_DEF_DECREASE;
     config->keys.add = CONFIG_DEF_ADD;

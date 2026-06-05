@@ -18,11 +18,8 @@ void shellify_init() {
     printf("\033[?25l");
     fflush(stdout);
 
-    logger_init("shellify.log");
-
     shellify = malloc(sizeof(Shellify));
     if (!shellify) {
-        errlog(ERR_MALLOC_NULL, "shellify:init:shellify");
         shellify_stop();
     }
 
@@ -41,6 +38,8 @@ void shellify_init() {
         errlog(FAILED, "shellify:init:config_load");
         shellify_stop();
     }
+    logger_init("shellify.log", &shellify->config->general.logging);
+
     slog(INFO, "-----------");
     alog(INFO, shellify->config->general.version, "SHELLIFY launched");
 
