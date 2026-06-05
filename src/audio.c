@@ -18,6 +18,9 @@ void audio_init(Audio** audio) {
     (*audio)->is_sound = 0;
     (*audio)->is_stopped = 0;
 
+    (*audio)->sng_idx = -1;
+    (*audio)->plist_idx = -1;
+
 #define MUSIC_DIR_SIZE strlen(MUSIC_DIR_AU) + 64
     (*audio)->music_dir = malloc(MUSIC_DIR_SIZE);
     const char* home = getenv("HOME");
@@ -52,7 +55,7 @@ void audio_volume(Audio* audio, Config* config) {
     ma_engine_set_volume(&audio->engine, config->player.volume);
 }
 
-void audio_play(Audio* audio, const char* path) {
+void audio_play(Audio* audio, const char* path, Vec idxes) {
     if (!audio) {
         errlog(ERR_NULL_OBJECT, "audio:play:audio");
         return;
@@ -76,6 +79,9 @@ void audio_play(Audio* audio, const char* path) {
         alog(ERROR, path, "failed to play audio");
         return;
     }
+
+    audio->plist_idx = idxes.x;
+    audio->sng_idx = idxes.y;
 
     audio->is_sound = 1;
     audio->is_stopped = 0;

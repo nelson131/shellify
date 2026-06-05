@@ -69,11 +69,11 @@ void tui_clear(TUI* tui);
 void make_welcome(TUI* tui, Buffer* buffer, Config* config);
 void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
                  Config* config, const char* mode);
-void make_player(TUI* tui, Storage* stg, Buffer* buffer, Config* config,
-                 int focus);
+void make_player(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
+                 Config* config, int focus);
 // views
 void view_plists(TUI* tui, Storage* stg, Buffer* buffer);
-void view_songs(TUI* tui, Storage* stg, Buffer* buffer);
+void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio);
 // ADD song
 void make_add_sn(TUI* tui, Buffer* buffer, Config* config);
 void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config);
@@ -97,5 +97,8 @@ void clear_choice_form(TUI* tui);
 void put_chform(TUI_ChoiceForm* form, size_t idx, const char* msg);
 
 void make_choice_form(TUI* tui, Buffer* buffer, Rect rect, const char* msg);
+
+// >>> utils
+void updating_cur_song(TUI* tui, Storage* stg, Audio* audio);
 
 #endif

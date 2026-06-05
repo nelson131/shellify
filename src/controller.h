@@ -6,6 +6,8 @@
 #include <time.h>
 
 #include "audio.h"
+#include "config.h"
+#include "input.h"
 #include "library.h"
 #include "logger.h"
 #include "storage.h"
@@ -23,7 +25,8 @@ void rem_song_abs(TUI* tui, Storage* stg, Audio* audio);
 void rem_plist(TUI* tui, Storage* stg);
 
 // >>> audio contoller
-void handle_audio(TUI* tui, Storage* stg, Audio* audio);
+void handle_audio(int key, TUI* tui, Storage* stg, Audio* audio,
+                  Config* config);
 void handle_next(TUI* tui, Storage* stg, Audio* audio, Config* config);
 
 // >>> utils

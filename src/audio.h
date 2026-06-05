@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include "logger.h"
+#include "vec.h"
 
 #define MUSIC_DIR_AU "%s/Music/shellify/"
 
@@ -18,6 +19,9 @@ typedef struct Audio {
     int      is_sound;
     int      is_stopped;
 
+    int sng_idx;
+    int plist_idx;
+
     char* music_dir;
 } Audio;
 
@@ -26,7 +30,7 @@ void audio_close(Audio** audio);
 
 void audio_volume(Audio* audio, Config* config);
 
-void audio_play(Audio* audio, const char* path);
+void audio_play(Audio* audio, const char* path, Vec idxes);
 void audio_pause(Audio* audio);
 void audio_stop(Audio* audio);
 void audio_unload(Audio* audio);

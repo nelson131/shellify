@@ -143,7 +143,8 @@ void shellify_draw_state() {
             break;
         case SHELLIFY_STATE_PLAYER:
             make_player(shellify->tui, shellify->stg, shellify->buffer,
-                        shellify->config, shellify->focus_state);
+                        shellify->audio, shellify->config,
+                        shellify->focus_state);
             break;
         case SHELLIFY_STATE_ADD_SONG:
             make_add_sn(shellify->tui, shellify->buffer, shellify->config);
@@ -248,11 +249,16 @@ void shellify_handle_input() {
                           ->song_count;
             }
 
-            if (handle_player(key, index, max, shellify->config) >= 0) {
-                if (shellify->focus_state == SHELLIFY_SONGS) {
-                    handle_audio(shellify->tui, shellify->stg, shellify->audio);
+            handle_player(key, index, max, shellify->config);
+
+            if (shellify->focus_state == SHELLIFY_SONGS) {
+                if (key == shellify->config->keys.select ||
+                    key == shellify->config->keys.pause) {
+                    handle_audio(key, shellify->tui, shellify->stg,
+                                 shellify->audio, shellify->config);
                 }
             }
+
             break;
         case SHELLIFY_STATE_ADD_SONG:
             if (key == KEY_ARROW_LEFT) {

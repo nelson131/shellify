@@ -56,7 +56,7 @@ void logger_close() {
 }
 
 void slog(LogLevel log_level, const char* msg) {
-    if (!log_file) return;
+    if (!log_file || !(*logging)) return;
 
     const char* level_msg = log_msgs[log_level];
     if (!level_msg) return;
@@ -69,7 +69,7 @@ void slog(LogLevel log_level, const char* msg) {
 }
 
 void alog(LogLevel log_level, const char* s1, const char* msg) {
-    if (!s1 || !msg) return;
+    if (!s1 || !(*logging) || !msg) return;
 
     char buf[BUF_BASE_SIZE];
     snprintf(buf, BUF_BASE_SIZE, "arg: %s -> msg: %s", s1, msg);
@@ -77,7 +77,7 @@ void alog(LogLevel log_level, const char* s1, const char* msg) {
 }
 
 void errlog(ErrorCode err_code, const char* msg) {
-    if (!msg) return;
+    if (!msg || !(*logging)) return;
 
     const char* err_msg = err_msgs[err_code];
 

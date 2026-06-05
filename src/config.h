@@ -17,7 +17,7 @@
 #define CONFIG_LINE_SIZE 128
 
 #define CONFIG_APP_NAME "shellify"
-#define CONFIG_APP_VERSION "v0.12.4"
+#define CONFIG_APP_VERSION "v0.12.6"
 #define CONFIG_APP_DESC "terminal based audio player"
 
 #define CONFIG_DEF_LOGGING 0
@@ -26,7 +26,7 @@
 #define CONFIG_DEF_QUIT 'q'
 #define CONFIG_DEF_SUPER 'x'
 #define CONFIG_DEF_SELECT 'e'
-#define CONFIG_DEF_PAUSE 32
+#define CONFIG_DEF_PAUSE 'f'
 #define CONFIG_DEF_INCREASE ']'
 #define CONFIG_DEF_DECREASE '['
 #define CONFIG_DEF_ADD 'a'

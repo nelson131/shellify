@@ -135,32 +135,29 @@ void rem_plist(TUI* tui, Storage* stg) {
 
 // >>> audio contoller
 
-void handle_audio(TUI* tui, Storage* stg, Audio* audio) {
+void handle_audio(int key, TUI* tui, Storage* stg, Audio* audio,
+                  Config* config) {
     if (!tui || !audio) {
         errlog(ERR_NULL_OBJECT, "contoller:handle_audio:args");
         return;
     }
 
-    if (audio->is_sound) {
-        if (ma_sound_at_end(&audio->cur_sound)) {
-            tui->idx_songs += 1;
-            if (tui->idx_songs >=
-                stg->lib->playlists[tui->idx_plists]->song_count) {
-                tui->idx_songs = 0;
-            }
+    if (audio->is_sound && key == config->keys.pause) {
+        audio_pause(audio);
+        return;
+    }
 
-            goto rock;
+    if (audio->is_sound && ma_sound_at_end(&audio->cur_sound)) {
+        tui->idx_songs++;
+        if (tui->idx_songs >=
+            stg->lib->playlists[tui->idx_plists]->song_count) {
+            tui->idx_songs = 0;
         }
-        if (tui->idx_songs != last_song_id) {
-            last_song_id = tui->idx_songs;
-            goto rock;
-        } else if (tui->idx_plists != last_playlist_id) {
-            last_playlist_id = tui->idx_plists;
-            goto rock;
-        } else {
-            audio_pause(audio);
-        }
-    } else {
+
+        goto rock;
+    }
+
+    if (key == config->keys.select) {
         goto rock;
     }
 
@@ -169,7 +166,8 @@ void handle_audio(TUI* tui, Storage* stg, Audio* audio) {
 rock:
     audio_play(
         audio,
-        stg->lib->playlists[tui->idx_plists]->songs[tui->idx_songs]->path);
+        stg->lib->playlists[tui->idx_plists]->songs[tui->idx_songs]->path,
+        (Vec){tui->idx_plists, tui->idx_songs});
 }
 
 void handle_next(TUI* tui, Storage* stg, Audio* audio, Config* config) {
@@ -189,7 +187,7 @@ void handle_next(TUI* tui, Storage* stg, Audio* audio, Config* config) {
     tui->idx_songs = idx;
 
     Song* s = playlist->songs[idx];
-    audio_play(audio, s->path);
+    audio_play(audio, s->path, (Vec){tui->idx_plists, idx});
 }
 
 void handle_idx(size_t* idx) {

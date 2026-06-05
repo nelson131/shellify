@@ -170,6 +170,8 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border},
                        tui->separator);
 
+    updating_cur_song(tui, stg, audio);
+
     snprintf(buf, BUFFER_BASE_SIZE, "%s %s", PREFIX_PLAYING, tui->song_name);
     buffer_append_line(buffer, (Vec){0, tui->header_bottom_border + 1}, buf);
 
@@ -181,14 +183,14 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
     free(buf);
 }
 
-void make_player(TUI* tui, Storage* stg, Buffer* buffer, Config* config,
-                 int focus) {
+void make_player(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
+                 Config* config, int focus) {
     buffer_set_ver_range_char(
         buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
         (Vec){tui->playlist_wall, tui->header_top_border - 1}, '|');
 
     view_plists(tui, stg, buffer);
-    view_songs(tui, stg, buffer);
+    view_songs(tui, stg, buffer, audio);
 
     Rect rect = (Rect){(Vec){0, 0}, 0, 0};
     switch (focus) {
@@ -238,7 +240,7 @@ void view_plists(TUI* tui, Storage* stg, Buffer* buffer) {
     free(buf);
 }
 
-void view_songs(TUI* tui, Storage* stg, Buffer* buffer) {
+void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio) {
     size_t x = tui->x_songs;
     size_t y = tui->y_songs;
 
@@ -263,15 +265,24 @@ void view_songs(TUI* tui, Storage* stg, Buffer* buffer) {
     for (size_t i = tui->scroll_songs; i < playlist->song_count; i++) {
         if (i - tui->scroll_songs >= max) break;
 
-        Song* song = playlist->songs[i];
-        if (i == tui->idx_songs) {
-            snprintf(buf, BUFFER_BASE_SIZE, "> [%zu] %s - %s", i + 1,
-                     song->artist, song->title);
+        const char* format = NULL;
+        Song*       song = playlist->songs[i];
+        if (tui->idx_songs != audio->sng_idx && i == audio->sng_idx &&
+            tui->idx_plists == audio->plist_idx) {
+            format = "& [%zu] %s - %s  -  %s";
         } else {
-            snprintf(buf, BUFFER_BASE_SIZE, "  [%zu] %s - %s", i + 1,
-                     song->artist, song->title);
+            if (i == tui->idx_songs) {
+                format = "> [%zu] %s - %s  -  %s";
+            } else {
+                format = "  [%zu] %s - %s  -  %s";
+            }
         }
 
+        char       time[20];
+        struct tm* t = localtime(&song->time);
+        strftime(time, sizeof(time), "%b %d %H:%M", t);
+        snprintf(buf, BUFFER_BASE_SIZE, format, i + 1, song->artist,
+                 song->title, song->album, time);
         buffer_append_line(buffer, (Vec){x, y + (i - tui->scroll_songs) + 3},
                            buf);
     }
@@ -528,4 +539,22 @@ void make_choice_form(TUI* tui, Buffer* buffer, Rect rect, const char* msg) {
     }
 
     free(buf);
+}
+
+// >>> utils
+
+void updating_cur_song(TUI* tui, Storage* stg, Audio* audio) {
+    if (!tui || !stg || !audio || !audio->is_init || !audio->is_sound) return;
+    if (audio->plist_idx >= stg->lib->playlist_count ||
+        audio->sng_idx >= stg->lib->song_count)
+        return;
+
+#define MSG_PAUSED "[ PAUSED ]"
+    const char* n =
+        stg->lib->playlists[audio->plist_idx]->songs[audio->sng_idx]->title;
+    if (audio->is_stopped) {
+        snprintf(tui->song_name, MAX_LEN_SONG, "%s %s", n, MSG_PAUSED);
+    } else {
+        snprintf(tui->song_name, MAX_LEN_SONG, "%s", n);
+    }
 }
