@@ -13,9 +13,6 @@
 #include "storage.h"
 #include "tui.h"
 
-extern size_t last_playlist_id;
-extern size_t last_song_id;
-
 // >>> stg contoller
 void add_song(TUI* tui, Storage* stg);
 void add_plist(TUI* tui, Storage* stg);

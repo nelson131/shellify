@@ -119,6 +119,6 @@ void audio_unload(Audio* audio) {
 }
 
 int audio_is_ended(Audio* audio) {
-    if (!audio || !audio->is_init) return 0;
+    if (!audio || !audio->is_init || !audio->is_sound) return 0;
     return ma_sound_at_end(&audio->cur_sound);
 }

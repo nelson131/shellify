@@ -75,7 +75,7 @@ int buffer_init(Buffer** buffer, size_t* window_cols, size_t* window_rows) {
     temp->window_cols = *window_cols;
     temp->window_rows = *window_rows;
 
-    buffer_clear(*buffer);
+    buffer_clear(temp);
     for (size_t i = 0; i < size; i++) {
         cell_reset(&temp->old[i]);
     }
@@ -85,7 +85,7 @@ int buffer_init(Buffer** buffer, size_t* window_cols, size_t* window_rows) {
 }
 
 void buffer_clear(Buffer* buffer) {
-    if (!buffer) return;
+    if (!buffer || !buffer->actual) return;
 
     for (size_t i = 0; i < buffer->size; i++) {
         cell_reset(&buffer->actual[i]);
