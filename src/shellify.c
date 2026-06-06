@@ -189,7 +189,14 @@ void shellify_handle_input() {
                 shellify->focus_state = SHELLIFY_PLAYLISTS;
             } else if (key == KEY_ARROW_RIGHT &&
                        shellify->focus_state != SHELLIFY_SONGS) {
-                shellify->focus_state = SHELLIFY_SONGS;
+                if (shellify->stg->lib->playlist_count != 0) {
+                    Playlist* plist =
+                        shellify->stg->lib
+                            ->playlists[shellify->tui->idx_plists];
+                    if (plist && plist->song_count != 0) {
+                        shellify->focus_state = SHELLIFY_SONGS;
+                    }
+                }
             }
 
             switch (shellify->input_state) {
@@ -302,6 +309,9 @@ void shellify_handle_input() {
                 shellify->tui->input_form = NULL;
             } else if (handle_input_form(key, shellify->tui->input_form,
                                          shellify->config)) {
+                add_plist(shellify->tui, shellify->stg);
+                clear_input_form(shellify->tui);
+                shellify->state = SHELLIFY_STATE_PLAYER;
             }
             break;
         default:

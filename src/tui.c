@@ -348,7 +348,7 @@ void make_add_plist(TUI* tui, Buffer* buffer, Config* config) {
     Rect rect = (Rect){(Vec){0, 0}, 60, 20};
     rect_center(&rect, buffer->window_cols, buffer->window_rows);
 
-    make_input_form(tui, buffer, rect, "SELECT to choose, LEFT to leave");
+    make_input_form(tui, buffer, rect, "RIGHT to apply, LEFT to leave");
 }
 
 // >>> input form handler
