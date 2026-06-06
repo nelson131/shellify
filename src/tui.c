@@ -119,10 +119,15 @@ void make_welcome(TUI* tui, Buffer* buffer, Config* config) {
 
     size_t text_x = rect.vec.x + (rect.w - strlen(buf)) / 2;
     size_t desc_x = rect.vec.x + (rect.w - strlen(config->general.desc)) / 2;
+    size_t git_x = rect.vec.x + (rect.w - GIT_MSG_LEN) / 2;
 
-    buffer_append_line(buffer, (Vec){text_x, rect.vec.y + 3}, buf);
-    buffer_append_line(buffer, (Vec){desc_x, rect.vec.y + 5},
-                       config->general.desc);
+    buffer_append_line_styled(buffer, (Vec){text_x, rect.vec.y + 3}, buf,
+                              COLOR_CYAN, COLOR_DEFAULT, STYLE_BOLD);
+    buffer_append_line_styled(buffer, (Vec){desc_x, rect.vec.y + 5},
+                              config->general.desc, COLOR_DEFAULT,
+                              COLOR_DEFAULT, STYLE_UNDERLINE);
+    buffer_append_line_styled(buffer, (Vec){git_x, rect.vec.y + 9}, GIT_MSG,
+                              COLOR_RED, COLOR_DEFAULT, STYLE_BOLD);
 
     snprintf(buf, BUFFER_BASE_SIZE,
              "Press SELECT-BUTTON (%c) to start shellify", config->keys.select);

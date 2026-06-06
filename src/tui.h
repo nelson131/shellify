@@ -14,6 +14,9 @@
 #define PREFIX_PLAYING " Now playing: "
 #define PREFIX_PLAYLING_LEN strlen(PREFIX_PLAYING)
 
+#define GIT_MSG "github.com/nelson131/shellify"
+#define GIT_MSG_LEN strlen(GIT_MSG)
+
 #define UNICODE_VER_LINE "|"
 
 typedef struct TUI_InputForm {
