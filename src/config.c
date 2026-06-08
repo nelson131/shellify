@@ -11,9 +11,13 @@ int config_load(Config** config) {
 
     FILE* file = get_config_file("r");
     if (!file) {
-        free(temp);
-        errlog(ERR_NULL_OBJECT, "config:config_load:file");
-        return 0;
+        config_save(temp);
+        file = get_config_file("r");
+        if (!file) {
+            free(temp);
+            errlog(ERR_NULL_OBJECT, "config:config_load:file");
+            return 0;
+        }
     }
 
     char* line = malloc(CONFIG_LINE_SIZE * sizeof(char));
