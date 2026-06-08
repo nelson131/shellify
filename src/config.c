@@ -1,7 +1,5 @@
 #include "config.h"
 
-#include <unistd.h>
-
 int config_load(Config** config) {
     Config* temp = malloc(sizeof(Config));
     if (!temp) {
