@@ -56,8 +56,6 @@ void logger_close() {
 }
 
 void slog(LogLevel log_level, const char* msg) {
-    if (!log_file || logging || !(*logging)) return;
-
     const char* level_msg = log_msgs[log_level];
     if (!level_msg) return;
 
@@ -65,11 +63,14 @@ void slog(LogLevel log_level, const char* msg) {
     time_t t = time(NULL);
     strftime(tstr, sizeof(tstr), "%c", localtime(&t));
 
-    fprintf(log_file, "[%s]: {%s} -> %s\n", tstr, level_msg, msg);
+    FILE* __restrict stream = log_file;
+    if (!log_file || !logging || !(*logging)) stream = stdout;
+
+    fprintf(stream, "[%s]: {%s} -> %s\n", tstr, level_msg, msg);
 }
 
 void alog(LogLevel log_level, const char* s1, const char* msg) {
-    if (!s1 || logging || !(*logging) || !msg) return;
+    if (!s1 || !msg) return;
 
     char buf[BUF_BASE_SIZE];
     snprintf(buf, BUF_BASE_SIZE, "arg: %s -> msg: %s", s1, msg);
@@ -77,8 +78,6 @@ void alog(LogLevel log_level, const char* s1, const char* msg) {
 }
 
 void errlog(ErrorCode err_code, const char* msg) {
-    if (!msg || logging || !(*logging)) return;
-
     const char* err_msg = err_msgs[err_code];
 
     char buf[BUF_BASE_SIZE];

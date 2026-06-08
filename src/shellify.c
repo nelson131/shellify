@@ -37,6 +37,7 @@ void shellify_init() {
     if (!config_load(&shellify->config)) {
         errlog(FAILED, "shellify:init:config_load");
         shellify_stop();
+        exit(1);
     }
     logger_init("shellify.log", &shellify->config->general.logging);
 
