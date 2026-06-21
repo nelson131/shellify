@@ -1,4 +1,4 @@
-# shellify v1.0.2
+# shellify v1.1.0
 
 shellify is a terminal based audio player written in god-chosen lang C for Linux.<br>
 Built with sqlite3, [miniaudio](https://github.com/mackron/miniaudio) under the GPL-3.0 License.<br>

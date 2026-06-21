@@ -81,6 +81,9 @@ void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio);
 // ADD song
 void make_add_sn(TUI* tui, Buffer* buffer, Config* config);
 void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config);
+
+void make_add_ytdlp_sn_link(TUI* tui, Buffer* buffer, Config* config);
+void make_add_ytdlp_sn_search(TUI* tui, Buffer* buffer, Config* config);
 // ADD playlist
 void make_add_plist(TUI* tui, Buffer* buffer, Config* config);
 

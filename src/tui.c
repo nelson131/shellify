@@ -305,10 +305,11 @@ void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio) {
 // ADD song
 
 void make_add_sn(TUI* tui, Buffer* buffer, Config* config) {
-    size_t size = 2;
+    size_t size = 3;
     if (!tui->choice_form) {
-        const char* options[2] = {"load from local files",
-                                  "download from youtube using yt-dlp"};
+        const char* options[3] = {"load from local files",
+                                  "from youtube (yt-dlp, forward link)",
+                                  "from youtube (yt-dlp, search)"};
 
         set_choice_form(tui, options, size);
     }
@@ -339,6 +340,23 @@ void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config) {
     make_input_form(tui, buffer, rect,
                     "UP/DOWN: moving, RIGHT to choose, LEFT to leave");
 }
+
+void make_add_ytdlp_sn_link(TUI* tui, Buffer* buffer, Config* config) {
+    size_t size = 4;
+    if (!tui->input_form) {
+        const char* options[4] = {"URL: ", "Title: ", "Artist: ", "Album: "};
+
+        set_input_form(tui, options, size);
+    }
+
+    Rect rect = (Rect){(Vec){0, 0}, 60, 20};
+    rect_center(&rect, buffer->window_cols, buffer->window_rows);
+
+    make_input_form(tui, buffer, rect,
+                    "UP/DOWN: moving, RIGHT to choose, LEFT to leave");
+}
+
+void make_add_ytdlp_sn_search(TUI* tui, Buffer* buffer, Config* config) {}
 
 // ADD playlist
 

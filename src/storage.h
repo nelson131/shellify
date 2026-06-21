@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "db_handler.h"
+#include "dl_queue.h"
 #include "library.h"
 #include "logger.h"
 
@@ -19,6 +20,7 @@
 typedef struct Storage {
     Library* lib;
     sqlite3* db;
+    DLQueue* dlq;
 } Storage;
 
 // >>> main funcs

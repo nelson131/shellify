@@ -154,7 +154,11 @@ void shellify_draw_state() {
             make_add_local_sn(shellify->tui, shellify->buffer,
                               shellify->config);
             break;
-        case SHELLIFY_STATE_ADD_SONG_YTDLP:
+        case SHELLIFY_STATE_ADD_SONG_YTDLP_LINK:
+            make_add_ytdlp_sn_link(shellify->tui, shellify->buffer,
+                                   shellify->config);
+            break;
+        case SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH:
             break;
         case SHELLIFY_STATE_ADD_PLAYLIST:
             make_add_plist(shellify->tui, shellify->buffer, shellify->config);
@@ -282,6 +286,10 @@ void shellify_handle_input() {
                         shellify->state = SHELLIFY_STATE_ADD_SONG_LOCAL;
                         break;
                     case 1:
+                        shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP_LINK;
+                        break;
+                    case 2:
+                        shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH;
                         break;
                     default:
                         break;
@@ -292,7 +300,6 @@ void shellify_handle_input() {
             if (key == KEY_ARROW_LEFT) {
                 shellify->state = SHELLIFY_STATE_ADD_SONG;
                 clear_input_form(shellify->tui);
-                return;
             } else if (handle_input_form(key, shellify->tui->input_form,
                                          shellify->config)) {
                 add_song(shellify->tui, shellify->stg);
@@ -301,7 +308,15 @@ void shellify_handle_input() {
             }
 
             break;
-        case SHELLIFY_STATE_ADD_SONG_YTDLP:
+        case SHELLIFY_STATE_ADD_SONG_YTDLP_LINK:
+            if (key == KEY_ARROW_LEFT) {
+                shellify->state = SHELLIFY_STATE_ADD_SONG;
+                clear_input_form(shellify->tui);
+            } else if (handle_input_form(key, shellify->tui->input_form,
+                                         shellify->config)) {
+            }
+            break;
+        case SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH:
             break;
         case SHELLIFY_STATE_ADD_PLAYLIST:
             if (key == KEY_ARROW_LEFT) {

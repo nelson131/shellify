@@ -57,6 +57,8 @@ Storage* stg_init() {
         goto db_error;
     }
 
+    storage->dlq = dlq_init();
+
     init_music_dir();
 
     slog(INFO, "storage has been init");
@@ -85,6 +87,10 @@ void stg_close(Storage* stg) {
 
     if (stg->db) {
         db_close(stg->db);
+    }
+
+    if (stg->dlq) {
+        dlq_close(stg->dlq);
     }
 
     slog(INFO, "storage has been closed");
