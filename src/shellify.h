@@ -8,6 +8,7 @@
 #include "buffer.h"
 #include "config.h"
 #include "controller.h"
+#include "dl_handler.h"
 #include "input.h"
 #include "logger.h"
 #include "storage.h"
@@ -30,6 +31,7 @@ typedef struct Shellify {
     ShellifyState state;
     InputState    input_state;
     FocusState    focus_state;
+    DLState       dl_state;
 
     size_t window_cols;
     size_t window_rows;
