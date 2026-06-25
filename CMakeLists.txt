@@ -21,6 +21,8 @@ add_executable(shellify
     src/logger.c
     src/audio.c
     src/library.c
+    src/dl_queue.c
+    src/dl_handler.c
 )
 
 target_link_libraries(shellify

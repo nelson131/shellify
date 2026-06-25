@@ -6,6 +6,7 @@
 #include <threads.h>
 
 #include "audio.h"
+#include "controller.h"
 #include "dl_queue.h"
 #include "logger.h"
 #include "storage.h"
@@ -14,7 +15,7 @@ typedef enum DLState { DLSTATE_BUSY, DLSTATE_FREE } DLState;
 
 typedef struct DLThread {
     DLState* state;
-    DLTask*  task;
+    DLTask   task;
     Storage* stg;
     Audio*   audio;
 } DLThread;

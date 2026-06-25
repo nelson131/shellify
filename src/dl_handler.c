@@ -8,18 +8,25 @@ void dlh_run(Storage* stg, Audio* audio, DLState* dl_state) {
 
     DLQueue* q = stg->dlq;
     if (q->size == 0) return;
-
     if (*dl_state != DLSTATE_FREE) return;
 
-    *dl_state = DLSTATE_BUSY;
-    DLTask task;
-    if (!pop(q, &task)) {
-        *dl_state = DLSTATE_FREE;
-        errlog(FAILED, "dl_handler:pop:queue");
+    DLThread* dl_thread = malloc(sizeof(DLThread));
+    if (!dl_thread) {
+        errlog(ERR_MALLOC_NULL, "dl_handler:thread");
         return;
     }
 
-    DLThread dl_thread = {dl_state, &task, stg, audio};
+    *dl_state = DLSTATE_BUSY;
+    dl_thread->state = dl_state;
+    dl_thread->stg = stg;
+    dl_thread->audio = audio;
+
+    if (!pop(q, &dl_thread->task)) {
+        *dl_state = DLSTATE_FREE;
+        free(dl_thread);
+        errlog(FAILED, "dl_handler:pop:queue");
+        return;
+    }
 
     pthread_t thr;
     pthread_create(&thr, NULL, dlh_exec, &dl_thread);
@@ -34,20 +41,44 @@ void* dlh_exec(void* thr) {
     char* buf = malloc(BUF_BASE_SIZE);
     if (!buf) goto thread_exit;
 
-    snprintf(buf, BUF_BASE_SIZE, "downloading started -> %s",
-             dl_thread->task->url);
-    slog(INFO, buf);
-
-    snprintf(buf, BUF_BASE_SIZE,
-             "yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "
-             "-o \"%s/%%(title)s.%%(ext)s\" \"%s\" 2>&1",
-             dl_thread->audio->music_dir, dl_thread->task->url);
-
-    FILE* pipe = popen(buf, "r");
-    if (!pipe) {
-        errlog(ERR_FILE_OPENING, "dl_exec:popen");
+    char* cmd = malloc(BUF_BASE_SIZE);
+    if (!cmd) {
         free(buf);
         goto thread_exit;
+    }
+
+    snprintf(cmd, BUF_BASE_SIZE,
+             "yt-dlp --get-filename -o \"%%(title)s.mp3\" \"%s\"",
+             dl_thread->task.url);
+
+    char  filename[256] = {0};
+    FILE* npipe = popen(cmd, "r");
+    if (npipe) {
+        if (fgets(filename, sizeof(filename), npipe) != NULL) {
+            filename[strcspn(filename, "\n")] = '\0';
+        }
+        pclose(npipe);
+    }
+
+    if (strlen(filename) == 0) {
+        strncpy(filename, "unknown.mp3", sizeof(filename));
+    }
+
+    snprintf(cmd, BUF_BASE_SIZE,
+             "yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "
+             "-o \"%s/%%(title)s.%%(ext)s\" \"%s\" 2>&1",
+             dl_thread->audio->music_dir, dl_thread->task.url);
+
+    FILE* pipe = popen(cmd, "r");
+    if (!pipe) {
+        errlog(ERR_FILE_OPENING, "dl_exec:popen");
+        free(cmd);
+        free(buf);
+        goto thread_exit;
+    }
+
+    char garbage[128];
+    while (fgets(garbage, sizeof(garbage), pipe) != NULL) {
     }
 
     int status = pclose(pipe);
@@ -58,8 +89,10 @@ void* dlh_exec(void* thr) {
     }
 
     free(buf);
+    free(cmd);
 
 thread_exit:
     *dl_thread->state = DLSTATE_FREE;
+    free(dl_thread);
     pthread_exit(NULL);
 }
