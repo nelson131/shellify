@@ -9,6 +9,7 @@
 #include "config.h"
 #include "controller.h"
 #include "dl_handler.h"
+#include "dl_queue.h"
 #include "input.h"
 #include "logger.h"
 #include "storage.h"

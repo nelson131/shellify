@@ -33,7 +33,7 @@ void dlq_close(DLQueue* q) {
     slog(INFO, "download queue has been closed");
 }
 
-void push(DLQueue* q, DLTask* t) {
+void dlq_push(DLQueue* q, DLTask* t) {
     if (!q) return;
 
     if (q->size >= q->cap) {
@@ -61,7 +61,7 @@ void push(DLQueue* q, DLTask* t) {
     q->size++;
 }
 
-int pop(DLQueue* q, DLTask* t) {
+int dlq_pop(DLQueue* q, DLTask* t) {
     if (!q || !t) return 0;
     if (q->size == 0) return 0;
 
@@ -72,7 +72,20 @@ int pop(DLQueue* q, DLTask* t) {
     return 1;
 }
 
-DLTask* peek(DLQueue* q) {
+DLTask* dlq_peek(DLQueue* q) {
     if (!q || q->size == 0) return NULL;
     return &q->tasks[q->front];
+}
+
+DLTask* dlq_task(DLQueue* q, const char* url, const char* title,
+                 const char* artist, const char* album) {
+    DLTask* t = malloc(sizeof(DLTask));
+    if (!t) return NULL;
+
+    snprintf(t->url, sizeof(t->url), "%s", url);
+    snprintf(t->title, sizeof(t->title), "%s", title);
+    snprintf(t->artist, sizeof(t->artist), "%s", artist);
+    snprintf(t->album, sizeof(t->album), "%s", album);
+
+    return t;
 }

@@ -14,7 +14,9 @@
 #include "tui.h"
 
 // >>> stg contoller
-void add_song(TUI* tui, Storage* stg);
+void add_song_tui(TUI* tui, Storage* stg);
+void add_song(TUI* tui, Storage* stg, const char* path, const char* title,
+              const char* artist, const char* album);
 void add_plist(TUI* tui, Storage* stg);
 
 void rem_song(TUI* tui, Storage* stg, Audio* audio);

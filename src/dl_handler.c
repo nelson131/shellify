@@ -1,7 +1,7 @@
 #include "dl_handler.h"
 
-void dlh_run(Storage* stg, Audio* audio, DLState* dl_state) {
-    if (!stg || !stg->dlq || !dl_state) {
+void dlh_run(TUI* tui, Storage* stg, Audio* audio, DLState* dl_state) {
+    if (!tui || !stg || !stg->dlq || !audio || !dl_state) {
         errlog(ERR_NULL_OBJECT, "dl_handler:args");
         return;
     }
@@ -18,10 +18,11 @@ void dlh_run(Storage* stg, Audio* audio, DLState* dl_state) {
 
     *dl_state = DLSTATE_BUSY;
     dl_thread->state = dl_state;
+    dl_thread->tui = tui;
     dl_thread->stg = stg;
     dl_thread->audio = audio;
 
-    if (!pop(q, &dl_thread->task)) {
+    if (!dlq_pop(q, &dl_thread->task)) {
         *dl_state = DLSTATE_FREE;
         free(dl_thread);
         errlog(FAILED, "dl_handler:pop:queue");
@@ -29,7 +30,7 @@ void dlh_run(Storage* stg, Audio* audio, DLState* dl_state) {
     }
 
     pthread_t thr;
-    pthread_create(&thr, NULL, dlh_exec, &dl_thread);
+    pthread_create(&thr, NULL, dlh_exec, dl_thread);
     pthread_detach(thr);
 }
 
@@ -84,6 +85,9 @@ void* dlh_exec(void* thr) {
     int status = pclose(pipe);
     if (status == 0) {
         slog(INFO, "downloading finished goood");
+        DLTask* task = &dl_thread->task;
+        add_song(dl_thread->tui, dl_thread->stg, filename, task->title,
+                 task->artist, task->album);
     } else {
         errlog(ERR_DL_FAILED, "dl_exec:status");
     }

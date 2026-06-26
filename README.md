@@ -1,4 +1,4 @@
-# shellify v1.2.0
+# shellify v2.0.0
 
 shellify is a terminal based audio player written in god-chosen lang C for Linux.<br>
 Built with sqlite3, [miniaudio](https://github.com/mackron/miniaudio) under the GPL-3.0 License.<br>
@@ -7,8 +7,13 @@ Built with sqlite3, [miniaudio](https://github.com/mackron/miniaudio) under the 
 
 ## Dependencies
 - `miniaudio` - audio engine by [mackron](https://github.com/mackron/miniaudio)
+- `yt-dlp` - downloading from web ([yt-dlp](https://github.com/yt-dlp/yt-dlp))
 - `sqlite3` - saving the data
 - `ffmpeg` - you know
+
+## Current ways of downloading music
+- load from local files
+- download from web using forward link ([yt-dlp](https://github.com/yt-dlp/yt-dlp))
 
 ## Installation (Linux)
 ### Downloading the dependencies

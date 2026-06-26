@@ -8,19 +8,19 @@ size_t last_song_id = 0;
 
 // >>> stg contoller
 
-void add_song(TUI* tui, Storage* stg) {
+void add_song_tui(TUI* tui, Storage* stg) {
     if (!tui || !stg) {
-        errlog(ERR_NULL_OBJECT, "controller:add_song:args");
+        errlog(ERR_NULL_OBJECT, "controller:add_song_tui:args");
         return;
     }
 
-    if (!tui->input_form) {
-        errlog(ERR_NULL_OBJECT, "controller:add_song:input_form");
-        return;
-    }
-
-    Playlist*      playlist = stg->lib->playlists[tui->idx_plists];
     TUI_InputForm* form = tui->input_form;
+    if (!form || form->size < 4) {
+        errlog(ERR_NULL_OBJECT, "controller:add_song_tui:input_form");
+        return;
+    }
+
+    Playlist* playlist = stg->lib->playlists[tui->idx_plists];
     for (size_t i = 0; i < form->size; i++) {
         if (!form->values[i]) {
             errlog(ERR_NULL_OBJECT, "some value in input form is null");
@@ -35,6 +35,30 @@ void add_song(TUI* tui, Storage* stg) {
         if (stg_add_sng(stg, song)) {
             if (stg_conn(stg, song, playlist))
                 alog(INFO, song->path, "song has been added successfully");
+        } else {
+            errlog(ERR_SQLITE_FAILED, "failed to add the song");
+        }
+    } else {
+        errlog(ERR_NULL_OBJECT, "add_song_tui:song");
+    }
+}
+
+void add_song(TUI* tui, Storage* stg, const char* path, const char* title,
+              const char* artist, const char* album) {
+    if (!stg || !path || !title || !artist || !album) {
+        errlog(ERR_NULL_OBJECT, "add_song:args");
+        return;
+    }
+
+    Playlist* playlist = stg->lib->playlists[tui->idx_plists];
+    time_t    t = time(NULL);
+
+    Song* song = lib_new_sng(stg->lib, 0, path, title, artist, album, 200, t);
+    if (song) {
+        if (stg_add_sng(stg, song)) {
+            if (stg_conn(stg, song, playlist)) {
+                alog(INFO, path, "song has been added successfully");
+            }
         } else {
             errlog(ERR_SQLITE_FAILED, "failed to add the song");
         }

@@ -4,11 +4,10 @@
 #include "logger.h"
 
 typedef struct DLTask {
-    char   url[512];
-    char   title[64];
-    char   artist[64];
-    char   album[64];
-    size_t status;
+    char url[512];
+    char title[64];
+    char artist[64];
+    char album[64];
 } DLTask;
 
 typedef struct DLQueue {
@@ -22,8 +21,12 @@ typedef struct DLQueue {
 DLQueue* dlq_init();
 void     dlq_close(DLQueue* q);
 
-void    push(DLQueue* q, DLTask* t);
-int     pop(DLQueue* q, DLTask* t);
-DLTask* peek(DLQueue* q);
+void    dlq_push(DLQueue* q, DLTask* t);
+int     dlq_pop(DLQueue* q, DLTask* t);
+DLTask* dlq_peek(DLQueue* q);
+
+DLTask* dlq_task(DLQueue* q, const char* url, const char* title,
+                 const char* artist, const char* album);
+void    dlq_free_task(DLTask* t);
 
 #endif

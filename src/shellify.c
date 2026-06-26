@@ -7,6 +7,7 @@
 #include "audio.h"
 #include "buffer.h"
 #include "controller.h"
+#include "dl_queue.h"
 #include "input.h"
 #include "logger.h"
 #include "storage.h"
@@ -27,6 +28,7 @@ void shellify_init() {
     shellify->state = SHELLIFY_STATE_WELCOME;
     shellify->input_state = INPUT_STATE_NONE;
     shellify->focus_state = SHELLIFY_PLAYLISTS;
+    shellify->dl_state = DLSTATE_FREE;
     shellify->audio = NULL;
 
     struct winsize winsize;
@@ -121,6 +123,8 @@ void shellify_update() {
         handle_next(shellify->tui, shellify->stg, shellify->audio,
                     shellify->config);
     }
+
+    dlh_run(shellify->tui, shellify->stg, shellify->audio, &shellify->dl_state);
 }
 
 void shellify_draw() {
@@ -302,7 +306,7 @@ void shellify_handle_input() {
                 clear_input_form(shellify->tui);
             } else if (handle_input_form(key, shellify->tui->input_form,
                                          shellify->config)) {
-                add_song(shellify->tui, shellify->stg);
+                add_song_tui(shellify->tui, shellify->stg);
                 clear_input_form(shellify->tui);
                 shellify->state = SHELLIFY_STATE_PLAYER;
             }
@@ -314,6 +318,19 @@ void shellify_handle_input() {
                 clear_input_form(shellify->tui);
             } else if (handle_input_form(key, shellify->tui->input_form,
                                          shellify->config)) {
+                TUI_InputForm* form = shellify->tui->input_form;
+                DLTask*        t =
+                    dlq_task(shellify->stg->dlq, form->values[0],
+                             form->values[1], form->values[2], form->values[3]);
+                if (!t) {
+                    clear_input_form(shellify->tui);
+                    return;
+                }
+
+                dlq_push(shellify->stg->dlq, t);
+                free(t);
+                clear_input_form(shellify->tui);
+                shellify->state = SHELLIFY_STATE_PLAYER;
             }
             break;
         case SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH:
