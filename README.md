@@ -1,4 +1,4 @@
-# shellify v2.1.0
+# shellify v2.1.1
 
 shellify is a terminal based audio player written in god-chosen lang C for Linux.<br>
 Built with sqlite3, [miniaudio](https://github.com/mackron/miniaudio), [yt-dlp](https://github.com/yt-dlp/yt-dlp) under the GPL-3.0 License.<br>
@@ -44,6 +44,7 @@ If .desktop doesnt opening shellify, try to install xdg-terminal-exec
 | `]` | Increase the volume |
 | `[` | Decrease the volume |
 | `u` | Enable/Disable the shuffle |
+| `d` | Dashboard menu |
 | `q` | Quit |
 
 ## Configuration
