@@ -57,7 +57,8 @@ void buffer_set_cell(Buffer* buffer, Vec v, char ch, i32 tg, i32 bg, u8 fl);
 void buffer_append_line(Buffer* buffer, Vec v, const char* line);
 void buffer_append_line_styled(Buffer* buffer, Vec v, const char* line, i32 tg,
                                i32 bg, u8 fl);
-void buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line);
+size_t buffer_append_line_offset(Buffer* buffer, Vec v, const char* line);
+void   buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line);
 void buffer_append_vertical_line_styled(Buffer* buffer, Vec v, const char* line,
                                         i32 tg, i32 bg, u8 fl);
 

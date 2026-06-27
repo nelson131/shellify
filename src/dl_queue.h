@@ -18,6 +18,12 @@ typedef struct DLQueue {
     size_t  rear;
 } DLQueue;
 
+typedef struct DLIterator {
+    DLQueue** dlq;
+    size_t    idx;
+} DLIterator;
+
+// DLQueue >>>
 DLQueue* dlq_init();
 void     dlq_close(DLQueue* q);
 
@@ -28,5 +34,12 @@ DLTask* dlq_peek(DLQueue* q);
 DLTask* dlq_task(DLQueue* q, const char* url, const char* title,
                  const char* artist, const char* album);
 void    dlq_free_task(DLTask* t);
+
+// DLIterator >>
+DLIterator* dli_init(DLQueue* q);
+void        dli_close(DLIterator* dli);
+
+int     dli_has_next(DLIterator* dli);
+DLTask* dli_next(DLIterator* dli);
 
 #endif

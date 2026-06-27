@@ -172,6 +172,24 @@ void buffer_append_line_styled(Buffer* buffer, Vec v, const char* line, i32 tg,
     }
 }
 
+size_t buffer_append_line_offset(Buffer* buffer, Vec v, const char* line) {
+    if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
+        return 0;
+
+    size_t len = strlen(line);
+    size_t offset = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (v.x >= buffer->window_cols) {
+            v.y++;
+            v.x = 0;
+            offset++;
+        }
+        buffer_set_char(buffer, (Vec){v.x++, v.y}, line[i]);
+    }
+
+    return offset;
+}
+
 void buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line) {
     if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
         return;

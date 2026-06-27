@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+// DLQueue >>>
 DLQueue* dlq_init() {
     DLQueue* dlq = malloc(sizeof(DLQueue));
     if (!dlq) {
@@ -88,4 +89,46 @@ DLTask* dlq_task(DLQueue* q, const char* url, const char* title,
     snprintf(t->album, sizeof(t->album), "%s", album);
 
     return t;
+}
+
+// DLIterator >>>
+DLIterator* dli_init(DLQueue* q) {
+    if (!q) {
+        errlog(ERR_MALLOC_NULL, "dli_init:q");
+        return NULL;
+    }
+
+    DLIterator* dli = malloc(sizeof(DLIterator));
+    if (!dli) {
+        errlog(ERR_MALLOC_NULL, "dli_init:dli");
+        return NULL;
+    }
+
+    dli->dlq = &q;
+    dli->idx = 0;
+
+    return dli;
+}
+
+void dli_close(DLIterator* dli) {
+    if (!dli) return;
+
+    free(dli);
+}
+
+int dli_has_next(DLIterator* dli) { return dli->idx < (*dli->dlq)->size; }
+
+DLTask* dli_next(DLIterator* dli) {
+    if (!dli) {
+        errlog(ERR_NULL_OBJECT, "dli_next:dli");
+        return NULL;
+    }
+
+    if (!dli_has_next(dli)) return NULL;
+
+    DLQueue* q = *dli->dlq;
+    size_t   idx = (q->front + dli->idx) % q->cap;
+    dli->idx++;
+
+    return &q->tasks[idx];
 }

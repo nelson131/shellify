@@ -44,6 +44,7 @@ typedef struct TUI {
     size_t header_top_border;
     size_t header_bottom_border;
     size_t offset;
+    size_t changed;
 
     char* separator;
     char* song_name;
@@ -86,7 +87,8 @@ void make_add_ytdlp_sn_link(TUI* tui, Buffer* buffer, Config* config);
 void make_add_ytdlp_sn_search(TUI* tui, Buffer* buffer, Config* config);
 // ADD playlist
 void make_add_plist(TUI* tui, Buffer* buffer, Config* config);
-
+// MAKE dashboard
+void make_dashboard(TUI* tui, Storage* stg, Buffer* buffer, Config* config);
 // >>> input form handler
 void create_input_form(TUI* tui, size_t cap);
 void set_input_form(TUI* tui, const char* options[], size_t cap);

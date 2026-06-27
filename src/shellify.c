@@ -167,6 +167,10 @@ void shellify_draw_state() {
         case SHELLIFY_STATE_ADD_PLAYLIST:
             make_add_plist(shellify->tui, shellify->buffer, shellify->config);
             break;
+        case SHELLIFY_STATE_DASHBOARD:
+            make_dashboard(shellify->tui, shellify->stg, shellify->buffer,
+                           shellify->config);
+            break;
         default:
             break;
     }
@@ -217,10 +221,11 @@ void shellify_handle_input() {
                     } else if (key == shellify->config->keys.shuffle) {
                         shellify->config->player.shuffle =
                             !shellify->config->player.shuffle;
+                    } else if (key == shellify->config->keys.dashboard) {
+                        shellify->state = SHELLIFY_STATE_DASHBOARD;
                     } else {
                         handle_volume(key, shellify->audio, shellify->config);
                     }
-
                     break;
                 case INPUT_STATE_ADD:
                     if (key == shellify->config->keys.song) {
@@ -344,6 +349,11 @@ void shellify_handle_input() {
                                          shellify->config)) {
                 add_plist(shellify->tui, shellify->stg);
                 clear_input_form(shellify->tui);
+                shellify->state = SHELLIFY_STATE_PLAYER;
+            }
+            break;
+        case SHELLIFY_STATE_DASHBOARD:
+            if (key == KEY_ARROW_LEFT) {
                 shellify->state = SHELLIFY_STATE_PLAYER;
             }
             break;

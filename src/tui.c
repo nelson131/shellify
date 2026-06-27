@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "buffer.h"
+#include "dl_queue.h"
 #include "rect.h"
 
 int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
@@ -44,6 +45,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     temp->idx_plists = 0, temp->idx_songs = 0;
     temp->scroll_plists = 0, temp->scroll_songs = 0;
     temp->offset = 0;
+    temp->changed = 0;
     temp->input_form = NULL;
     temp->choice_form = NULL;
     tui_update(temp, window_cols, window_rows);
@@ -152,18 +154,18 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
     buffer_append_line_styled(buffer, (Vec){0, 0}, buf, COLOR_CYAN,
                               COLOR_DEFAULT, STYLE_BOLD);
 
-    snprintf(
-        buf, BUFFER_BASE_SIZE,
-        "help -> super: %c; select: %c; add: %c; remove: %c; song: %c; "
-        "playlist: %c; increase vol: %c; decrease vol: %c; shuffle on/off: %c;",
-        config->keys.super, config->keys.select, config->keys.add,
-        config->keys.remove, config->keys.song, config->keys.playlist,
-        config->keys.inc, config->keys.dec, config->keys.shuffle);
-    buffer_append_line(buffer, (Vec){0, 1}, buf);
-
-    if (strlen(buf) >= buffer->window_cols && !tui->offset) {
-        tui->offset = 1;
+    snprintf(buf, BUFFER_BASE_SIZE,
+             "help -> super: %c; select: %c; add: %c; remove: %c; song: %c; "
+             "playlist: %c; increase vol: %c; decrease vol: %c; shuffle "
+             "on/off: %c; dashboard: %c",
+             config->keys.super, config->keys.select, config->keys.add,
+             config->keys.remove, config->keys.song, config->keys.playlist,
+             config->keys.inc, config->keys.dec, config->keys.shuffle,
+             config->keys.dashboard);
+    tui->offset = buffer_append_line_offset(buffer, (Vec){0, 1}, buf);
+    if (!tui->changed) {
         tui->header_top_border += tui->offset;
+        tui->changed = 1;
     }
 
     snprintf(buf, BUFFER_BASE_SIZE, "Volume -> %.2f", config->player.volume);
@@ -372,6 +374,48 @@ void make_add_plist(TUI* tui, Buffer* buffer, Config* config) {
     rect_center(&rect, buffer->window_cols, buffer->window_rows);
 
     make_input_form(tui, buffer, rect, "RIGHT to apply, LEFT to leave");
+}
+
+// MAKE dashboard
+void make_dashboard(TUI* tui, Storage* stg, Buffer* buffer, Config* config) {
+    if (!tui || !stg || !buffer) return;
+
+    char* buf = malloc(BUFFER_BASE_SIZE);
+    if (!buf) return;
+
+    size_t y = tui->header_top_border + 1;
+    size_t x = 2;
+    // >>
+    const char* sign = " [ DASHBOARD ]";
+    size_t      dx = (buffer->window_cols / 2) - (strlen(sign) / 2) - 1;
+    buffer_append_line_styled(buffer, (Vec){dx, y++}, sign, COLOR_BLUE,
+                              COLOR_DEFAULT, STYLE_BOLD);
+    // >>
+    Rect rect = (Rect){0, y++, buffer->window_cols,
+                       buffer->window_rows - tui->header_top_border - 5};
+    draw_rect(buffer, rect);
+    // >>
+    buffer_append_line_styled(buffer, (Vec){x, y++}, config->general.name,
+                              COLOR_CYAN, COLOR_DEFAULT, STYLE_BOLD);
+
+    snprintf(buf, BUFFER_BASE_SIZE, "current version: %s",
+             config->general.version);
+    buffer_append_line_styled(buffer, (Vec){x, y++}, buf, COLOR_DEFAULT,
+                              COLOR_DEFAULT, STYLE_BOLD);
+    // >>
+    buffer_append_line(buffer, (Vec){0, y++}, tui->separator);
+    // >>
+    size_t firewall = (size_t)(buffer->window_cols * 0.3);
+    buffer_set_ver_range_char(
+        buffer, (Vec){0, buffer->window_rows - tui->header_top_border - 10},
+        (Vec){firewall, y}, '|');
+    // >>
+    DLIterator* it = dli_init(stg->dlq);
+    for (size_t i = 0; i < stg->dlq->size; i++) {
+        snprintf(buf, BUFFER_BASE_SIZE, ">%zu -> %s", i, dli_next(it)->title);
+        buffer_append_line(buffer, (Vec){x, y++}, buf);
+    }
+    dli_close(it);
 }
 
 // >>> input form handler
