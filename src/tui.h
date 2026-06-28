@@ -66,6 +66,7 @@ typedef struct TUI {
 
 int  tui_init(TUI** tui, size_t* window_cols, size_t* window_rows);
 void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows);
+void tui_up_sep(TUI* tui, size_t* window_cols);
 void tui_sync(TUI* tui, Storage* stg);
 void tui_clear(TUI* tui);
 

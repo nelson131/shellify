@@ -36,6 +36,8 @@ void shellify_init() {
     shellify->window_cols = winsize.ws_col;
     shellify->window_rows = winsize.ws_row;
 
+    init_signals();
+
     if (!config_load(&shellify->config)) {
         errlog(FAILED, "shellify:init:config_load");
         shellify_stop();
@@ -117,7 +119,30 @@ void shellify_destroy() {
     slog(INFO, "shellify has been closed successfully.");
 }
 
+int shellify_screen_size() {
+    if (window_resized) {
+        window_resized = 0;
+        if (buffer_resize(shellify->buffer)) {
+            buffer_clear(shellify->buffer);
+            tui_update(shellify->tui, &shellify->buffer->window_cols,
+                       &shellify->buffer->window_rows);
+            tui_up_sep(shellify->tui, &shellify->buffer->window_cols);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 void shellify_update() {
+    if (window_resized) {
+        window_resized = 0;
+        if (buffer_resize(shellify->buffer)) {
+            tui_update(shellify->tui, &shellify->buffer->window_cols,
+                       &shellify->buffer->window_rows);
+        }
+    }
+
     tui_sync(shellify->tui, shellify->stg);
     if (audio_is_ended(shellify->audio)) {
         handle_next(shellify->tui, shellify->stg, shellify->audio,

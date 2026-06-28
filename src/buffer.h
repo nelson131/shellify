@@ -2,6 +2,8 @@
 #define NEW_BUFFER_H
 
 #include <stdint.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "logger.h"
 #include "vec.h"
@@ -49,7 +51,8 @@ void buffer_clear(Buffer* buffer);
 void buffer_destroy(Buffer* buffer);
 
 void buffer_render(Buffer* buffer);
-void buffer_render_full(Buffer* buffer);
+
+int buffer_resize(Buffer* buffer);
 
 void buffer_set_char(Buffer* buffer, Vec v, char line);
 void buffer_set_cell(Buffer* buffer, Vec v, char ch, i32 tg, i32 bg, u8 fl);

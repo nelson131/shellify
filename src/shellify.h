@@ -12,6 +12,7 @@
 #include "dl_queue.h"
 #include "input.h"
 #include "logger.h"
+#include "signal.h"
 #include "storage.h"
 #include "tui.h"
 
@@ -54,6 +55,7 @@ extern Shellify* shellify;
 void shellify_init();
 void shellify_destroy();
 
+int  shellify_screen_size();
 void shellify_update();
 void shellify_draw();
 void shellify_draw_state();

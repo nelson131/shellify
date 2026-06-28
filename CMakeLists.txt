@@ -23,6 +23,7 @@ add_executable(shellify
     src/library.c
     src/dl_queue.c
     src/dl_handler.c
+    src/signal.c
 )
 
 target_link_libraries(shellify

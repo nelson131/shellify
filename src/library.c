@@ -313,7 +313,7 @@ void lib_clear(Library* library) {
 void lib_clear_sng(Song* song) {
     if (!song) return;
 
-    alog(INFO, song->path, "clearing the song");
+    if (song->path) alog(INFO, song->path, "clearing the song");
 
     if (song->path) free(song->path);
     if (song->title) free(song->title);
@@ -330,7 +330,7 @@ void lib_clear_sng(Song* song) {
 void lib_clear_plist(Playlist* plist) {
     if (!plist) return;
 
-    alog(INFO, plist->name, "clearing the playlist");
+    if (plist->name) alog(INFO, plist->name, "clearing the playlist");
 
     if (plist->name) free(plist->name);
     if (plist->songs) free(plist->songs);

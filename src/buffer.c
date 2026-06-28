@@ -129,6 +129,42 @@ void buffer_render(Buffer* buffer) {
     fflush(stdout);
 }
 
+int buffer_resize(Buffer* buffer) {
+    if (!buffer) return 0;
+
+    struct winsize w;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
+        if (buffer->window_cols == w.ws_col && buffer->window_rows == w.ws_row)
+            return 1;
+
+        buffer->window_rows = w.ws_row;
+        buffer->window_cols = w.ws_col;
+
+        if (buffer->old) free(buffer->old);
+        if (buffer->actual) free(buffer->actual);
+
+        size_t size = buffer->window_cols * buffer->window_rows;
+        buffer->size = size;
+        buffer->actual = malloc(size * sizeof(Cell));
+        if (!buffer->actual) {
+            errlog(ERR_MALLOC_NULL, "buffer:buffer_resize:actual");
+            return 0;
+        }
+        memset(buffer->actual, 0, size * sizeof(Cell));
+
+        buffer->old = malloc(size * sizeof(Cell));
+        if (!buffer->old) {
+            errlog(ERR_MALLOC_NULL, "buffer:buffer_resize:old");
+            free(buffer->actual);
+            return 0;
+        }
+        memset(buffer->old, 0, size * sizeof(Cell));
+        return 1;
+    }
+
+    return 0;
+}
+
 void buffer_set_char(Buffer* buffer, Vec v, char ch) {
     buffer_set_cell(buffer, v, ch, COLOR_DEFAULT, COLOR_DEFAULT, STYLE_NONE);
 }
@@ -228,7 +264,7 @@ void buffer_set_range_char(Buffer* buffer, Vec range, Vec v, char ch) {
 
 void buffer_set_ver_range_char(Buffer* buffer, Vec range, Vec v, char ch) {
     if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
-    if (range.y + v.y > buffer->window_cols) return;
+    if (range.y + v.y > buffer->window_rows) return;
 
     for (size_t i = range.x; i < range.y - range.x; i++) {
         buffer_set_char(buffer, (Vec){v.x, v.y + i}, ch);

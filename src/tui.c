@@ -66,7 +66,18 @@ void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
     tui->y_playlists = tui->header_top_border + 2;
     tui->x_songs = tui->playlist_wall + 3;
     tui->y_songs = tui->header_top_border + 2;
-    slog(INFO, "tui parameters has been updated");
+}
+
+void tui_up_sep(TUI* tui, size_t* window_cols) {
+    if (!tui || !window_cols) return;
+
+    char* temp = malloc((*window_cols + 1) * sizeof(char));
+    if (!temp) return;
+
+    memset(temp, '_', (*window_cols + 1) * sizeof(char));
+
+    if (tui->separator) free(tui->separator);
+    tui->separator = temp;
 }
 
 void tui_sync(TUI* tui, Storage* stg) {
