@@ -135,14 +135,6 @@ int shellify_screen_size() {
 }
 
 void shellify_update() {
-    if (window_resized) {
-        window_resized = 0;
-        if (buffer_resize(shellify->buffer)) {
-            tui_update(shellify->tui, &shellify->buffer->window_cols,
-                       &shellify->buffer->window_rows);
-        }
-    }
-
     tui_sync(shellify->tui, shellify->stg);
     if (audio_is_ended(shellify->audio)) {
         handle_next(shellify->tui, shellify->stg, shellify->audio,
