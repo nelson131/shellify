@@ -21,9 +21,9 @@ const char* err_msgs[] = {"FAILED",
                           "ERR_PLAYLIST_NOT_FOUND",
                           "ERR_PLAYLIST_ALREADY_EXISTS",
                           "ERR_DL_FAILED"};
-size_t**    logging = NULL;
+size_t      logging = 0;
 
-void logger_init(const char* file_name, size_t* log) {
+void logger_init(const char* file_name, size_t log) {
     if (!file_name) return;
 
 #define BUF_BASE_SIZE 128
@@ -42,9 +42,7 @@ void logger_init(const char* file_name, size_t* log) {
         log_file = stdout;
     }
 
-    if (!logging) {
-        logging = &log;
-    }
+    logging = log;
 
     free(buf);
 }
@@ -57,7 +55,7 @@ void logger_close() {
 }
 
 void slog(LogLevel log_level, const char* msg) {
-    if (!msg) return;
+    if (!msg || !logging) return;
 
     const char* level_msg = log_msgs[log_level];
     if (!level_msg) return;
@@ -67,7 +65,7 @@ void slog(LogLevel log_level, const char* msg) {
     strftime(tstr, sizeof(tstr), "%c", localtime(&t));
 
     FILE* __restrict stream = log_file;
-    if (!log_file || !logging || !(*logging)) stream = stdout;
+    if (!log_file) stream = stdout;
 
     fprintf(stream, "[%s]: {%s} -> %s\n", tstr, level_msg, msg);
 }

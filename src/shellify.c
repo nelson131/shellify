@@ -43,7 +43,7 @@ void shellify_init() {
         shellify_stop();
         exit(1);
     }
-    logger_init("shellify.log", &shellify->config->general.logging);
+    logger_init("shellify.log", shellify->config->general.logging);
 
     slog(INFO, "-----------");
     alog(INFO, shellify->config->general.version, "SHELLIFY launched");
