@@ -108,6 +108,8 @@ void tui_clear(TUI* tui) {
         clear_choice_form(tui);
     }
 
+    free(tui);
+
     slog(INFO, "tui has been cleaned");
 }
 

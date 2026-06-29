@@ -104,6 +104,8 @@ void buffer_destroy(Buffer* buffer) {
         free(buffer->old);
         buffer->old = NULL;
     }
+
+    free(buffer);
 }
 
 void buffer_render(Buffer* buffer) {

@@ -9,7 +9,7 @@ int main() {
         shellify_handle_input();
         shellify_update();
         shellify_draw();
-        usleep(10000);
+        shellify_sleep();
     }
 
     shellify_destroy();

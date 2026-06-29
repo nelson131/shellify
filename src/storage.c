@@ -93,6 +93,7 @@ void stg_close(Storage* stg) {
         dlq_close(stg->dlq);
     }
 
+    free(stg);
     slog(INFO, "storage has been closed");
 }
 

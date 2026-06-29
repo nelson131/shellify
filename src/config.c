@@ -41,6 +41,7 @@ int config_load(Config** config) {
             continue;
         }
         if (sscanf(line, "logging=%zu", &temp->general.logging) == 1) continue;
+        if (sscanf(line, "usleep=%zu", &temp->general.usleep) == 1) continue;
 
         if (sscanf(line, "volume=%f", &temp->player.volume) == 1) continue;
         if (sscanf(line, "shuffle=%zu", &temp->player.shuffle) == 1) continue;
@@ -101,8 +102,9 @@ int config_save(Config* config) {
     fputs(header, file);
     free(header);
 
-    fprintf(file, "[general]\ndesc=%s\nlogging=%zu\n\n", config->general.desc,
-            config->general.logging);
+    fprintf(file, "[general]\ndesc=%s\nlogging=%zu\nusleep=%zu\n\n",
+            config->general.desc, config->general.logging,
+            config->general.usleep);
 
     fprintf(file, "[player]\nvolume=%f\nshuffle=%zu\n\n", config->player.volume,
             config->player.shuffle);
@@ -128,6 +130,7 @@ void config_default(Config* config) {
     strcpy(config->general.version, CONFIG_APP_VERSION);
     strcpy(config->general.desc, CONFIG_APP_DESC);
     config->general.logging = CONFIG_DEF_LOGGING;
+    config->general.usleep = CONFIG_DEF_USLEEP;
 
     config->player.volume = CONFIG_DEF_VOLUME;
     config->player.shuffle = CONFIG_DEF_SHUFFLE_VALUE;

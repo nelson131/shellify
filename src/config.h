@@ -21,6 +21,7 @@
 #define CONFIG_APP_DESC "terminal based audio player"
 
 #define CONFIG_DEF_LOGGING 0
+#define CONFIG_DEF_USLEEP 10000
 #define CONFIG_DEF_VOLUME 50
 #define CONFIG_DEF_SHUFFLE_VALUE 0
 #define CONFIG_DEF_QUIT 'q'
@@ -41,6 +42,7 @@ typedef struct cfg_general {
     char   version[CONFIG_GENERAL_SIZE];
     char   desc[CONFIG_PATH_SIZE];
     size_t logging;
+    size_t usleep;
 } cfg_general;
 
 typedef struct cfg_player {

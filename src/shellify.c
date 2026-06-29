@@ -97,14 +97,8 @@ void shellify_destroy() {
     free(shellify->config);
 
     buffer_destroy(shellify->buffer);
-    free(shellify->buffer);
-
     tui_clear(shellify->tui);
-    free(shellify->tui);
-
     stg_close(shellify->stg);
-    free(shellify->stg);
-
     audio_close(&shellify->audio);
 
     free(shellify);
@@ -379,6 +373,8 @@ void shellify_handle_input() {
             break;
     }
 }
+
+void shellify_sleep() { usleep(shellify->config->general.usleep); }
 
 void shellify_stop() {
     slog(WARNING, "shellify is forced to close.");
