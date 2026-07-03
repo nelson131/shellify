@@ -27,7 +27,8 @@ typedef enum ErrorCode {
     ERR_PLAYLIST_ALREADY_EXISTS,
     ERR_AUDIO_INIT,
     ERR_AUDIO_FAILED,
-    ERR_DL_FAILED
+    ERR_DL_FAILED,
+    ERR_CLIPBOARD_FAILED
 } ErrorCode;
 
 extern FILE*       log_file;

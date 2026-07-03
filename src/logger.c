@@ -20,7 +20,8 @@ const char* err_msgs[] = {"FAILED",
                           "ERR_SONG_ALREADY_EXISTS",
                           "ERR_PLAYLIST_NOT_FOUND",
                           "ERR_PLAYLIST_ALREADY_EXISTS",
-                          "ERR_DL_FAILED"};
+                          "ERR_DL_FAILED",
+                          "ERR_CLIPBOARD_FAILED"};
 size_t      logging = 0;
 
 void logger_init(const char* file_name, size_t log) {
