@@ -132,6 +132,8 @@ const char* instate_char(InputState input_state) {
             return "add";
         case INPUT_STATE_REMOVE:
             return "remove";
+        case INPUT_STATE_WRITING:
+            return "writing";
         default:
             return "unknown";
     }

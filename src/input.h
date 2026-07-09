@@ -11,7 +11,8 @@
 typedef enum InputState {
     INPUT_STATE_NONE,
     INPUT_STATE_ADD,
-    INPUT_STATE_REMOVE
+    INPUT_STATE_REMOVE,
+    INPUT_STATE_WRITING
 } InputState;
 
 typedef enum KeyCode {

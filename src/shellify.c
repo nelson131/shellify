@@ -191,8 +191,14 @@ void shellify_handle_input() {
     int key = input_poll();
     if (key == -1) return;
 
-    if (key == shellify->config->keys.quit) {
+    if (key == shellify->config->keys.quit &&
+        shellify->input_state != INPUT_STATE_WRITING) {
         shellify_stop();
+        return;
+    }
+
+    if (key == KEY_ESC && shellify->input_state != INPUT_STATE_NONE) {
+        shellify->input_state = INPUT_STATE_NONE;
         return;
     }
 
@@ -245,10 +251,8 @@ void shellify_handle_input() {
                         return;
                     } else if (key == shellify->config->keys.playlist) {
                         shellify->state = SHELLIFY_STATE_ADD_PLAYLIST;
-                        shellify->input_state = INPUT_STATE_NONE;
+                        shellify->input_state = INPUT_STATE_WRITING;
                         return;
-                    } else if (key == KEY_ESC) {
-                        shellify->input_state = INPUT_STATE_NONE;
                     }
                     break;
                 case INPUT_STATE_REMOVE:
@@ -262,8 +266,6 @@ void shellify_handle_input() {
                         shellify->input_state = INPUT_STATE_NONE;
                         rem_song_abs(shellify->tui, shellify->stg,
                                      shellify->audio);
-                    } else if (key == KEY_ESC) {
-                        shellify->input_state = INPUT_STATE_NONE;
                     }
                     break;
                 default:
@@ -304,9 +306,11 @@ void shellify_handle_input() {
                 switch (idx) {
                     case 0:
                         shellify->state = SHELLIFY_STATE_ADD_SONG_LOCAL;
+                        shellify->input_state = INPUT_STATE_WRITING;
                         break;
                     case 1:
                         shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP_LINK;
+                        shellify->input_state = INPUT_STATE_WRITING;
                         break;
                     case 2:
                         shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH;
@@ -317,50 +321,66 @@ void shellify_handle_input() {
             }
             break;
         case SHELLIFY_STATE_ADD_SONG_LOCAL:
-            if (key == KEY_ARROW_LEFT) {
-                shellify->state = SHELLIFY_STATE_ADD_SONG;
-                clear_input_form(shellify->tui);
-            } else if (handle_input_form(key, shellify->tui->input_form,
-                                         shellify->config)) {
-                add_song_tui(shellify->tui, shellify->stg);
-                clear_input_form(shellify->tui);
-                shellify->state = SHELLIFY_STATE_PLAYER;
+            if (shellify->input_state == INPUT_STATE_WRITING) {
+                if (handle_input_form(key, shellify->tui->input_form,
+                                      shellify->config)) {
+                    add_song_tui(shellify->tui, shellify->stg);
+                    clear_input_form(shellify->tui);
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                }
+            } else {
+                if (key == shellify->config->keys.select) {
+                    shellify->input_state = INPUT_STATE_WRITING;
+                } else if (key == KEY_ARROW_LEFT) {
+                    shellify->state = SHELLIFY_STATE_ADD_SONG;
+                    clear_input_form(shellify->tui);
+                }
             }
-
             break;
         case SHELLIFY_STATE_ADD_SONG_YTDLP_LINK:
-            if (key == KEY_ARROW_LEFT) {
-                shellify->state = SHELLIFY_STATE_ADD_SONG;
-                clear_input_form(shellify->tui);
-            } else if (handle_input_form(key, shellify->tui->input_form,
-                                         shellify->config)) {
-                TUI_InputForm* form = shellify->tui->input_form;
-                DLTask*        t =
-                    dlq_task(shellify->stg->dlq, form->values[0],
-                             form->values[1], form->values[2], form->values[3]);
-                if (!t) {
-                    clear_input_form(shellify->tui);
-                    return;
-                }
+            if (shellify->input_state == INPUT_STATE_WRITING) {
+                if (handle_input_form(key, shellify->tui->input_form,
+                                      shellify->config)) {
+                    TUI_InputForm* form = shellify->tui->input_form;
+                    DLTask* t = dlq_task(shellify->stg->dlq, form->values[0],
+                                         form->values[1], form->values[2],
+                                         form->values[3]);
+                    if (!t) {
+                        clear_input_form(shellify->tui);
+                        return;
+                    }
 
-                dlq_push(shellify->stg->dlq, t);
-                free(t);
-                clear_input_form(shellify->tui);
-                shellify->state = SHELLIFY_STATE_PLAYER;
+                    dlq_push(shellify->stg->dlq, t);
+                    free(t);
+                    clear_input_form(shellify->tui);
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                }
+            } else {
+                if (key == shellify->config->keys.select) {
+                    shellify->input_state = INPUT_STATE_WRITING;
+                } else if (key == KEY_ARROW_LEFT) {
+                    shellify->state = SHELLIFY_STATE_ADD_SONG;
+                    clear_input_form(shellify->tui);
+                }
             }
             break;
         case SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH:
             break;
         case SHELLIFY_STATE_ADD_PLAYLIST:
-            if (key == KEY_ARROW_LEFT) {
-                shellify->state = SHELLIFY_STATE_PLAYER;
-                clear_input_form(shellify->tui);
-                shellify->tui->input_form = NULL;
-            } else if (handle_input_form(key, shellify->tui->input_form,
-                                         shellify->config)) {
-                add_plist(shellify->tui, shellify->stg);
-                clear_input_form(shellify->tui);
-                shellify->state = SHELLIFY_STATE_PLAYER;
+            if (shellify->input_state == INPUT_STATE_WRITING) {
+                if (handle_input_form(key, shellify->tui->input_form,
+                                      shellify->config)) {
+                    add_plist(shellify->tui, shellify->stg);
+                    clear_input_form(shellify->tui);
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                }
+            } else {
+                if (key == shellify->config->keys.select) {
+                    shellify->input_state = INPUT_STATE_WRITING;
+                } else if (key == KEY_ARROW_LEFT) {
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                    clear_input_form(shellify->tui);
+                }
             }
             break;
         case SHELLIFY_STATE_DASHBOARD:
