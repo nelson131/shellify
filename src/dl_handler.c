@@ -6,6 +6,8 @@ void dlh_run(TUI* tui, Storage* stg, Audio* audio, DLState* dl_state) {
         return;
     }
 
+    if (!stg->enable_dlq) return;
+
     DLQueue* q = stg->dlq;
     if (q->size == 0) return;
     if (*dl_state != DLSTATE_FREE) return;

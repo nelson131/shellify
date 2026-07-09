@@ -58,6 +58,7 @@ Storage* stg_init() {
     }
 
     storage->dlq = dlq_init();
+    storage->enable_dlq = 1;
 
     init_music_dir();
 

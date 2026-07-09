@@ -42,6 +42,8 @@ int config_load(Config** config) {
         }
         if (sscanf(line, "logging=%zu", &temp->general.logging) == 1) continue;
         if (sscanf(line, "usleep=%zu", &temp->general.usleep) == 1) continue;
+        if (sscanf(line, "enable-dlq=%zu", &temp->general.enable_dlq) == 1)
+            continue;
 
         if (sscanf(line, "volume=%f", &temp->player.volume) == 1) continue;
         if (sscanf(line, "shuffle=%zu", &temp->player.shuffle) == 1) continue;
@@ -102,9 +104,10 @@ int config_save(Config* config) {
     fputs(header, file);
     free(header);
 
-    fprintf(file, "[general]\ndesc=%s\nlogging=%zu\nusleep=%zu\n\n",
+    fprintf(file,
+            "[general]\ndesc=%s\nlogging=%zu\nusleep=%zu\nenable-dlq=%zu\n\n",
             config->general.desc, config->general.logging,
-            config->general.usleep);
+            config->general.usleep, config->general.enable_dlq);
 
     fprintf(file, "[player]\nvolume=%f\nshuffle=%zu\n\n", config->player.volume,
             config->player.shuffle);
@@ -131,6 +134,7 @@ void config_default(Config* config) {
     strcpy(config->general.desc, CONFIG_APP_DESC);
     config->general.logging = CONFIG_DEF_LOGGING;
     config->general.usleep = CONFIG_DEF_USLEEP;
+    config->general.enable_dlq = CONFIG_DEF_ENABLE_DLQ;
 
     config->player.volume = CONFIG_DEF_VOLUME;
     config->player.shuffle = CONFIG_DEF_SHUFFLE_VALUE;

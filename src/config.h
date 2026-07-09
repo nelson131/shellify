@@ -17,11 +17,12 @@
 #define CONFIG_LINE_SIZE 128
 
 #define CONFIG_APP_NAME "shellify"
-#define CONFIG_APP_VERSION "v2.2.2"
+#define CONFIG_APP_VERSION "v2.2.3"
 #define CONFIG_APP_DESC "terminal based audio player"
 
 #define CONFIG_DEF_LOGGING 0
 #define CONFIG_DEF_USLEEP 10000
+#define CONFIG_DEF_ENABLE_DLQ 1
 #define CONFIG_DEF_VOLUME 0.5
 #define CONFIG_DEF_SHUFFLE_VALUE 0
 #define CONFIG_DEF_QUIT 'q'
@@ -43,6 +44,7 @@ typedef struct cfg_general {
     char   desc[CONFIG_PATH_SIZE];
     size_t logging;
     size_t usleep;
+    size_t enable_dlq;
 } cfg_general;
 
 typedef struct cfg_player {

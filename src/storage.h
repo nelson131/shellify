@@ -21,6 +21,7 @@ typedef struct Storage {
     Library* lib;
     sqlite3* db;
     DLQueue* dlq;
+    int      enable_dlq;
 } Storage;
 
 // >>> main funcs

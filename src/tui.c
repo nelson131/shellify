@@ -422,13 +422,14 @@ void make_dashboard(TUI* tui, Storage* stg, Buffer* buffer, Config* config) {
     buffer_set_ver_range_char(
         buffer, (Vec){0, buffer->window_rows - tui->header_top_border - 10},
         (Vec){firewall, y}, '|');
-    // >>
+    // >> left side relative to wall
     DLIterator* it = dli_init(stg->dlq);
     for (size_t i = 0; i < stg->dlq->size; i++) {
         snprintf(buf, BUFFER_BASE_SIZE, ">%zu -> %s", i, dli_next(it)->title);
         buffer_append_line(buffer, (Vec){x, y++}, buf);
     }
     dli_close(it);
+    // >> right side relative to wall
 }
 
 // >>> input form handler
