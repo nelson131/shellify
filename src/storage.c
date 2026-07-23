@@ -198,7 +198,26 @@ int stg_load(Storage* stg) {
     slog(INFO, "connection songs->playlists loaded");
 
     // >>> LOADING DLQ TASKS
-    query = "SELECT";
+    query = "SELECT url, title, artist, album FROM download_queue";
+    stmt = db_prepare(stg->db, query);
+    if (!stmt) goto stmt_error;
+
+    DLTask task;
+    size_t sf = sizeof(task.url);
+    size_t dlq_len = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        snprintf(task.url, sf, "%s", sqlite3_column_text(stmt, 0));
+        snprintf(task.title, sf, "%s", sqlite3_column_text(stmt, 1));
+        snprintf(task.artist, sf, "%s", sqlite3_column_text(stmt, 2));
+        snprintf(task.album, sf, "%s", sqlite3_column_text(stmt, 3));
+        dlq_push(stg->dlq, &task);
+        dlq_len++;
+    }
+
+    sqlite3_finalize(stmt);
+    slog(INFO, "download queue has been loaded");
+    snprintf(task.url, sf, "%s: %zu", "download queue len", dlq_len);
+    slog(INFO, task.url);
 
     slog(INFO, "storage data has been loaded");
     return 1;
