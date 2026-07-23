@@ -334,6 +334,8 @@ void shellify_handle_input() {
                 } else if (key == KEY_ARROW_LEFT) {
                     shellify->state = SHELLIFY_STATE_ADD_SONG;
                     clear_input_form(shellify->tui);
+                } else if (key == shellify->config->keys.super) {
+                    handle_form_clipboard(shellify->tui->input_form);
                 }
             }
             break;
@@ -361,6 +363,8 @@ void shellify_handle_input() {
                 } else if (key == KEY_ARROW_LEFT) {
                     shellify->state = SHELLIFY_STATE_ADD_SONG;
                     clear_input_form(shellify->tui);
+                } else if (key == shellify->config->keys.super) {
+                    handle_form_clipboard(shellify->tui->input_form);
                 }
             }
             break;
@@ -380,6 +384,8 @@ void shellify_handle_input() {
                 } else if (key == KEY_ARROW_LEFT) {
                     shellify->state = SHELLIFY_STATE_PLAYER;
                     clear_input_form(shellify->tui);
+                } else if (key == shellify->config->keys.super) {
+                    handle_form_clipboard(shellify->tui->input_form);
                 }
             }
             break;

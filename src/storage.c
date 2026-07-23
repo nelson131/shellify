@@ -57,6 +57,14 @@ Storage* stg_init() {
         goto db_error;
     }
 
+    query =
+        "CREATE TABLE IF NOT EXISTS download_queue(dlq_id INTEGER PRIMARY KEY, "
+        "url TEXT UNIQUE, title TEXT UNIQUE, artist TEXT, album TEXT)";
+
+    if (!db_execute(storage->db, query)) {
+        goto db_error;
+    }
+
     storage->dlq = dlq_init();
     storage->enable_dlq = 1;
 
@@ -188,6 +196,9 @@ int stg_load(Storage* stg) {
 
     sqlite3_finalize(stmt);
     slog(INFO, "connection songs->playlists loaded");
+
+    // >>> LOADING DLQ TASKS
+    query = "SELECT";
 
     slog(INFO, "storage data has been loaded");
     return 1;

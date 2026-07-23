@@ -1,6 +1,7 @@
 #include "input.h"
 
 #include "audio.h"
+#include "clipboard.h"
 
 int input_pause() {
     char c;
@@ -108,6 +109,20 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
     }
 
     return 0;
+}
+
+void handle_form_clipboard(TUI_InputForm* form) {
+    if (!form || form->size == 0) return;
+
+    char* cb = clipboard_get();
+    if (!cb) return;
+
+    size_t len = strlen(cb);
+    if (cb[len - 1] == ' ') cb[len - 1] = '\0';
+
+    size_t idx = form->selected_option;
+    snprintf(form->values[idx], form->str_len, "%s", cb);
+    free(cb);
 }
 
 int handle_choice_form(int key, TUI_ChoiceForm* form, Config* config) {
