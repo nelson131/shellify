@@ -97,7 +97,8 @@ int handle_input_form(int key, TUI_InputForm* form, Config* config) {
         // checking fields filling
         for (size_t i = 0; i < form->size; i++) {
             size_t len = strlen(form->values[i]);
-            if (!len) return 0;
+            if (len == 0)
+                snprintf(form->values[i], form->str_len, "%s", "Unknown");
         }
         return 1;
     } else if (key >= 32 && key <= 126) {

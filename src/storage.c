@@ -292,13 +292,13 @@ int stg_rem_sng_abs(Storage* stg, Song* sng) {
     }
 
     bind_int(stmt, 1, sng->id);
-    if (sqlite3_step(stmt) != SQLITE_DONE) {
-        sqlite3_finalize(stmt);
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (rc != SQLITE_DONE) {
         errlog(ERR_SQLITE_FAILED, "stg:rem_sng_abs:step");
         return 0;
     }
-
-    sqlite3_finalize(stmt);
 
     alog(INFO, sng->title, "song has been deleted from conn and db");
     return 1;
@@ -323,13 +323,12 @@ int stg_rem_sng(Storage* stg, Song* sng, Playlist* plist) {
     bind_int(stmt, 1, plist->id);
     bind_int(stmt, 2, sng->id);
 
-    if (sqlite3_step(stmt) != SQLITE_DONE) {
-        sqlite3_finalize(stmt);
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (rc != SQLITE_DONE) {
         errlog(ERR_SQLITE_FAILED, "stg:rem_song:step");
         return 0;
     }
-
-    sqlite3_finalize(stmt);
 
     alog(INFO, sng->title, "song has been removed from the playlist");
     return 1;
@@ -378,12 +377,13 @@ int stg_rem_plist(Storage* stg, Playlist* plist) {
     }
 
     bind_int(stmt, 1, plist->id);
-    if (sqlite3_step(stmt) != SQLITE_DONE) {
-        sqlite3_finalize(stmt);
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (rc != SQLITE_DONE) {
         errlog(ERR_SQLITE_FAILED, "stg:rem_plist:step:conn");
         return 0;
     }
-    sqlite3_finalize(stmt);
 
     query = "DELETE FROM playlists WHERE id = ?";
     stmt = db_prepare(stg->db, query);
@@ -393,12 +393,13 @@ int stg_rem_plist(Storage* stg, Playlist* plist) {
     }
 
     bind_int(stmt, 1, plist->id);
-    if (sqlite3_step(stmt) != SQLITE_DONE) {
-        sqlite3_finalize(stmt);
+
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (rc != SQLITE_DONE) {
         errlog(ERR_SQLITE_FAILED, "stg:rem_plist:step:plist");
         return 0;
     }
-    sqlite3_finalize(stmt);
 
     alog(INFO, plist->name, "playlist has been deleted from conn and db");
     return 1;
