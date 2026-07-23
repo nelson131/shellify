@@ -98,6 +98,7 @@ void shellify_destroy() {
 
     buffer_destroy(shellify->buffer);
     tui_clear(shellify->tui);
+    dlh_save_stg(shellify->stg);
     stg_close(shellify->stg);
     audio_close(&shellify->audio);
 
@@ -135,7 +136,8 @@ void shellify_update() {
                     shellify->config);
     }
 
-    dlh_run(shellify->tui, shellify->stg, shellify->audio, &shellify->dl_state);
+    dlh_run(shellify->tui, shellify->stg, shellify->audio, &shellify->dl_state,
+            shellify->config);
 }
 
 void shellify_draw() {

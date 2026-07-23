@@ -21,7 +21,10 @@ typedef struct DLThread {
     TUI*     tui;
 } DLThread;
 
-void  dlh_run(TUI* tui, Storage* stg, Audio* audio, DLState* dl_state);
+void  dlh_run(TUI* tui, Storage* stg, Audio* audio, DLState* dl_state,
+              Config* config);
 void* dlh_exec(void* thr);
+
+void dlh_save_stg(Storage* stg);
 
 #endif

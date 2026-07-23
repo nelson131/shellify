@@ -21,7 +21,6 @@ typedef struct Storage {
     Library* lib;
     sqlite3* db;
     DLQueue* dlq;
-    int      enable_dlq;
 } Storage;
 
 // >>> main funcs
@@ -41,6 +40,10 @@ int stg_rem_plist(Storage* stg, Playlist* plist);
 
 // >>> connections
 int stg_conn(Storage* stg, Song* sng, Playlist* plist);
+
+// >>> dlq
+int stg_clear_dlq(Storage* stg);
+int stg_add_dlq_task(Storage* stg, DLTask* task);
 
 // >>> utils
 void  init_music_dir();

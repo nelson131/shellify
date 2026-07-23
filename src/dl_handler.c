@@ -1,12 +1,15 @@
 #include "dl_handler.h"
 
-void dlh_run(TUI* tui, Storage* stg, Audio* audio, DLState* dl_state) {
+#include "storage.h"
+
+void dlh_run(TUI* tui, Storage* stg, Audio* audio, DLState* dl_state,
+             Config* config) {
     if (!tui || !stg || !stg->dlq || !audio || !dl_state) {
         errlog(ERR_NULL_OBJECT, "dl_handler:args");
         return;
     }
 
-    if (!stg->enable_dlq) return;
+    if (!config->general.enable_dlq) return;
 
     DLQueue* q = stg->dlq;
     if (q->size == 0) return;
@@ -101,4 +104,29 @@ thread_exit:
     *dl_thread->state = DLSTATE_FREE;
     free(dl_thread);
     pthread_exit(NULL);
+}
+
+void dlh_save_stg(Storage* stg) {
+    if (!stg || !stg->dlq) return;
+
+    if (stg_clear_dlq(stg) != 1) {
+        errlog(ERR_DL_FAILED, "dlh:save_stg:clear_dlq");
+        return;
+    }
+
+    DLTask task;
+    size_t count = stg->dlq->size;
+    for (size_t i = 0; i < count; i++) {
+        if (dlq_pop(stg->dlq, &task) != 1) {
+            errlog(ERR_DL_FAILED, "dlh:save_stg:pop");
+            return;
+        }
+
+        if (stg_add_dlq_task(stg, &task) != 1) {
+            errlog(ERR_DL_FAILED, "dlh:save_stg:add_dlq_task");
+            return;
+        }
+    }
+
+    slog(INFO, "dlq has been saved");
 }

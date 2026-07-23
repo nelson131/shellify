@@ -66,7 +66,6 @@ Storage* stg_init() {
     }
 
     storage->dlq = dlq_init();
-    storage->enable_dlq = 1;
 
     init_music_dir();
 
@@ -447,6 +446,59 @@ int stg_conn(Storage* stg, Song* sng, Playlist* plist) {
     plist->songs[plist->song_count++] = sng;
     alog(INFO, sng->path, "created connection with a playlist");
     alog(INFO, plist->name, "created connection with a song");
+    return 1;
+}
+
+// >>> dlq
+
+int stg_clear_dlq(Storage* stg) {
+    if (!stg || !stg->dlq) return 0;
+
+    const char*   query = "DELETE FROM download_queue";
+    sqlite3_stmt* stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:clear_dlq:stmt");
+        return 0;
+    }
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        errlog(ERR_SQLITE_FAILED, "stg:clear_dlq:step");
+        return 0;
+    }
+
+    slog(INFO, "dlq table has been cleared");
+    return 1;
+}
+
+int stg_add_dlq_task(Storage* stg, DLTask* task) {
+    if (!stg || !stg->dlq || !task) return 0;
+
+    const char* query =
+        "INSERT INTO download_queue (url, title, artist, album) VALUES (?, ?, "
+        "?, ?)";
+
+    sqlite3_stmt* stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:add_dlq_task:stmt");
+        return 0;
+    }
+
+    bind_str(stmt, 1, task->url);
+    bind_str(stmt, 2, task->title);
+    bind_str(stmt, 3, task->artist);
+    bind_str(stmt, 4, task->album);
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        errlog(ERR_SQLITE_FAILED, "stg:add_dlq_task:step");
+        return 0;
+    }
+
     return 1;
 }
 

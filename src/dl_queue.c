@@ -104,7 +104,7 @@ DLIterator* dli_init(DLQueue* q) {
         return NULL;
     }
 
-    dli->dlq = &q;
+    dli->dlq = q;
     dli->idx = 0;
 
     return dli;
@@ -116,7 +116,7 @@ void dli_close(DLIterator* dli) {
     free(dli);
 }
 
-int dli_has_next(DLIterator* dli) { return dli->idx < (*dli->dlq)->size; }
+int dli_has_next(DLIterator* dli) { return dli->idx < dli->dlq->size; }
 
 DLTask* dli_next(DLIterator* dli) {
     if (!dli) {
@@ -126,7 +126,7 @@ DLTask* dli_next(DLIterator* dli) {
 
     if (!dli_has_next(dli)) return NULL;
 
-    DLQueue* q = *dli->dlq;
+    DLQueue* q = dli->dlq;
     size_t   idx = (q->front + dli->idx) % q->cap;
     dli->idx++;
 

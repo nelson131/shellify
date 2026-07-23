@@ -19,8 +19,8 @@ typedef struct DLQueue {
 } DLQueue;
 
 typedef struct DLIterator {
-    DLQueue** dlq;
-    size_t    idx;
+    DLQueue* dlq;
+    size_t   idx;
 } DLIterator;
 
 // DLQueue >>>
