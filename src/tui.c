@@ -423,9 +423,13 @@ void make_dashboard(TUI* tui, Storage* stg, Buffer* buffer, Config* config) {
         buffer, (Vec){0, buffer->window_rows - tui->header_top_border - 10},
         (Vec){firewall, y}, '|');
     // >> left side relative to wall
+    buffer_append_line_styled(buffer, (Vec){x, y++}, "DLQ content",
+                              COLOR_DEFAULT, COLOR_MAGENTA, STYLE_BOLD);
+
+    // list of dlq content
     DLIterator* it = dli_init(stg->dlq);
     for (size_t i = 0; i < stg->dlq->size; i++) {
-        snprintf(buf, BUFFER_BASE_SIZE, ">%zu -> %s", i, dli_next(it)->title);
+        snprintf(buf, BUFFER_BASE_SIZE, "> %zu -> %s", i, dli_next(it)->title);
         buffer_append_line(buffer, (Vec){x, y++}, buf);
     }
     dli_close(it);
