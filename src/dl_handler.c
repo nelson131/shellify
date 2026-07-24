@@ -39,6 +39,8 @@ void dlh_run(TUI* tui, Storage* stg, Audio* audio, DLState* dl_state,
     pthread_detach(thr);
 }
 
+// thread function
+// exec yt-dlp command
 void* dlh_exec(void* thr) {
     DLThread* dl_thread = (DLThread*)thr;
     if (!dl_thread) goto thread_exit;

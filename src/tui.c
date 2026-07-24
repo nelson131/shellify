@@ -6,6 +6,9 @@
 #include "dl_queue.h"
 #include "rect.h"
 
+// initialization of tui struct
+// allocating separator, song name line,
+// initizalition tui local variables
 int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     if (!tui || !window_cols || !window_rows) {
         errlog(ERR_NULL_OBJECT, "tui:init_tui:args");
@@ -55,6 +58,8 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     return 1;
 }
 
+// updating tui local variables, like
+// position of playlist-songs separator and others
 void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
     if (!tui || !window_cols || !window_rows) return;
 
@@ -68,6 +73,8 @@ void tui_update(TUI* tui, size_t* window_cols, size_t* window_rows) {
     tui->y_songs = tui->header_top_border + 2;
 }
 
+// updating the length of separator string
+// when the size of window updates
 void tui_up_sep(TUI* tui, size_t* window_cols) {
     if (!tui || !window_cols) return;
 
@@ -80,6 +87,7 @@ void tui_up_sep(TUI* tui, size_t* window_cols) {
     tui->separator = temp;
 }
 
+// synchronization in scrolling
 void tui_sync(TUI* tui, Storage* stg) {
     if (!tui || !stg) return;
 
@@ -95,6 +103,7 @@ void tui_sync(TUI* tui, Storage* stg) {
     }
 }
 
+// destroying all allocating variables
 void tui_clear(TUI* tui) {
     if (!tui) return;
 
