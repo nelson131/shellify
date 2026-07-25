@@ -12,15 +12,17 @@
 #include "dl_queue.h"
 #include "library.h"
 #include "logger.h"
+#include "search.h"
 
 #define STG_DIR_NAME "shellify"
 #define MUSIC_DIR "%s/Music"
 #define STG_DIR "%s/Music/%s"
 
 typedef struct Storage {
-    Library* lib;
-    sqlite3* db;
-    DLQueue* dlq;
+    Library*    lib;
+    sqlite3*    db;
+    DLQueue*    dlq;
+    SearchCore* sr_core;
 } Storage;
 
 // >>> main funcs

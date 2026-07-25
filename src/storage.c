@@ -69,6 +69,8 @@ Storage* stg_init() {
 
     init_music_dir();
 
+    storage->sr_core = init_search_core();
+
     slog(INFO, "storage has been init");
     return storage;
 
@@ -99,6 +101,10 @@ void stg_close(Storage* stg) {
 
     if (stg->dlq) {
         dlq_close(stg->dlq);
+    }
+
+    if (stg->sr_core) {
+        close_search_core(stg->sr_core);
     }
 
     free(stg);
