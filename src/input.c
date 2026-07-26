@@ -140,6 +140,23 @@ int handle_choice_form(int key, TUI_ChoiceForm* form, Config* config) {
     return -1;
 }
 
+void handle_search_form_typing(int key, TUI_SearchForm* form) {
+    if (!form) return;
+
+    char* cur_value = form->query_line;
+
+    if (key == KEY_BACKSPACE || key == 127) {
+        size_t len = strlen(cur_value);
+        if (len > 0) cur_value[len - 1] = '\0';
+    } else if (key >= 32 && key <= 126) {
+        size_t len = strlen(cur_value);
+        if (len < form->form->str_len - 1) {
+            cur_value[len] = (char)key;
+            cur_value[len + 1] = '\0';
+        }
+    }
+}
+
 const char* instate_char(InputState input_state) {
     switch (input_state) {
         case INPUT_STATE_NONE:

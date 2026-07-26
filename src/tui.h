@@ -40,6 +40,11 @@ typedef struct TUI_ChoiceForm {
     size_t str_len;
 } TUI_ChoiceForm;
 
+typedef struct TUI_SearchForm {
+    char*           query_line;
+    TUI_ChoiceForm* form;
+} TUI_SearchForm;
+
 typedef struct TUI {
     size_t header_top_border;
     size_t header_bottom_border;
@@ -62,6 +67,7 @@ typedef struct TUI {
 
     TUI_InputForm*  input_form;
     TUI_ChoiceForm* choice_form;
+    TUI_SearchForm* search_form;
 } TUI;
 
 int  tui_init(TUI** tui, size_t* window_cols, size_t* window_rows);
@@ -85,7 +91,8 @@ void make_add_sn(TUI* tui, Buffer* buffer, Config* config);
 void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config);
 
 void make_add_ytdlp_sn_link(TUI* tui, Buffer* buffer, Config* config);
-void make_add_ytdlp_sn_search(TUI* tui, Buffer* buffer, Config* config);
+void make_add_ytdlp_sn_search(TUI* tui, Storage* stg, Buffer* buffer,
+                              Config* config);
 // ADD playlist
 void make_add_plist(TUI* tui, Buffer* buffer, Config* config);
 // MAKE dashboard
@@ -100,13 +107,21 @@ void put_inform(TUI_InputForm* form, size_t idx, const char* msg);
 void make_input_form(TUI* tui, Buffer* buffer, Rect rect, const char* msg);
 
 // >>> choice form handler
-void create_choice_form(TUI* tui, size_t cap);
+void create_choice_form(TUI_ChoiceForm** form, size_t cap);
 void set_choice_form(TUI* tui, const char* options[], size_t cap);
 
-void clear_choice_form(TUI* tui);
+void clear_choice_form(TUI_ChoiceForm* form);
 void put_chform(TUI_ChoiceForm* form, size_t idx, const char* msg);
 
 void make_choice_form(TUI* tui, Buffer* buffer, Rect rect, const char* msg);
+
+// >>> search form handler
+void create_search_form(TUI* tui, size_t cap);
+void clear_search_form(TUI* tui);
+
+void put_srform(TUI_SearchForm* form, Storage* stg);
+
+void make_search_form(TUI* tui, Buffer* buffer, Rect* rect);
 
 // >>> utils
 void updating_cur_song(TUI* tui, Storage* stg, Audio* audio);

@@ -176,6 +176,8 @@ void shellify_draw_state() {
                                    shellify->config);
             break;
         case SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH:
+            make_add_ytdlp_sn_search(shellify->tui, shellify->stg,
+                                     shellify->buffer, shellify->config);
             break;
         case SHELLIFY_STATE_ADD_PLAYLIST:
             make_add_plist(shellify->tui, shellify->buffer, shellify->config);
@@ -201,6 +203,10 @@ void shellify_handle_input() {
 
     if (key == KEY_ESC && shellify->input_state != INPUT_STATE_NONE) {
         shellify->input_state = INPUT_STATE_NONE;
+        if (shellify->state == SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH) {
+            search_run(shellify->stg->sr_core,
+                       shellify->tui->search_form->query_line);
+        }
         return;
     }
 
@@ -299,7 +305,7 @@ void shellify_handle_input() {
         case SHELLIFY_STATE_ADD_SONG:
             if (key == KEY_ARROW_LEFT) {
                 shellify->state = SHELLIFY_STATE_PLAYER;
-                clear_choice_form(shellify->tui);
+                clear_choice_form(shellify->tui->choice_form);
                 return;
             }
             int idx = handle_choice_form(key, shellify->tui->choice_form,
@@ -371,6 +377,19 @@ void shellify_handle_input() {
             }
             break;
         case SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH:
+            if (shellify->input_state == INPUT_STATE_WRITING) {
+                handle_search_form_typing(key, shellify->tui->search_form);
+            } else {
+                if (key == shellify->config->keys.super) {
+                    shellify->input_state = INPUT_STATE_WRITING;
+                } else if (key == KEY_ARROW_LEFT) {
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                    clear_search_form(shellify->tui);
+                } else if (handle_choice_form(key,
+                                              shellify->tui->search_form->form,
+                                              shellify->config) >= 0) {
+                }
+            }
             break;
         case SHELLIFY_STATE_ADD_PLAYLIST:
             if (shellify->input_state == INPUT_STATE_WRITING) {

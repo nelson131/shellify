@@ -51,6 +51,7 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
     temp->changed = 0;
     temp->input_form = NULL;
     temp->choice_form = NULL;
+    temp->search_form = NULL;
     tui_update(temp, window_cols, window_rows);
 
     *tui = temp;
@@ -113,8 +114,13 @@ void tui_clear(TUI* tui) {
     if (tui->input_form) {
         clear_input_form(tui);
     }
+
     if (tui->choice_form) {
-        clear_choice_form(tui);
+        clear_choice_form(tui->choice_form);
+    }
+
+    if (tui->search_form) {
+        clear_search_form(tui);
     }
 
     free(tui);
@@ -380,7 +386,22 @@ void make_add_ytdlp_sn_link(TUI* tui, Buffer* buffer, Config* config) {
                     "UP/DOWN: moving, RIGHT to choose, LEFT to leave");
 }
 
-void make_add_ytdlp_sn_search(TUI* tui, Buffer* buffer, Config* config) {}
+void make_add_ytdlp_sn_search(TUI* tui, Storage* stg, Buffer* buffer,
+                              Config* config) {
+    size_t cap = 5;
+    if (!tui->search_form) {
+        create_search_form(tui, cap);
+    }
+
+    Rect rect = (Rect){(Vec){0, 0}, 60, 20};
+    rect_center(&rect, buffer->window_cols, buffer->window_rows);
+
+    if (stg->sr_core->state == SEARCH_STATE_FREE) {
+        put_srform(tui->search_form, stg);
+    }
+
+    make_search_form(tui, buffer, &rect);
+}
 
 // ADD playlist
 
@@ -549,56 +570,51 @@ void make_input_form(TUI* tui, Buffer* buffer, Rect rect, const char* msg) {
 
 // >>> choice form handler
 
-void create_choice_form(TUI* tui, size_t cap) {
-    if (tui->choice_form) {
-        clear_choice_form(tui);
-        tui->choice_form = NULL;
-    }
+void create_choice_form(TUI_ChoiceForm** form, size_t cap) {
+    if (form && *form) return;
 
-    TUI_ChoiceForm* form = malloc(sizeof(TUI_ChoiceForm));
-    if (!form) {
+    TUI_ChoiceForm* temp = malloc(sizeof(TUI_ChoiceForm));
+    if (!temp) {
         errlog(ERR_MALLOC_NULL, "tui:create_choice_form:form");
         return;
     }
 
-    form->cap = cap;
-    form->size = 0;
-    form->selected_option = 0;
-    form->str_len = BUFFER_BASE_SIZE;
+    temp->cap = cap;
+    temp->size = 0;
+    temp->selected_option = 0;
+    temp->str_len = BUFFER_BASE_SIZE;
 
-    form->options = malloc(cap * sizeof(char*));
+    temp->options = malloc(cap * sizeof(char*));
 
     for (size_t i = 0; i < cap; i++) {
-        form->options[i] = malloc(form->str_len * sizeof(char));
-        form->options[i][0] = '\0';
+        temp->options[i] = malloc(temp->str_len * sizeof(char));
+        temp->options[i][0] = '\0';
     }
 
-    tui->choice_form = form;
+    *form = temp;
 }
 
 void set_choice_form(TUI* tui, const char* options[], size_t cap) {
     if (tui->choice_form) {
-        clear_choice_form(tui);
+        clear_choice_form(tui->choice_form);
         tui->choice_form = NULL;
     }
 
-    create_choice_form(tui, cap);
+    create_choice_form(&tui->choice_form, cap);
     for (size_t i = 0; i < cap; i++) {
         put_chform(tui->choice_form, i, options[i]);
     }
 }
 
-void clear_choice_form(TUI* tui) {
-    if (!tui->choice_form) return;
+void clear_choice_form(TUI_ChoiceForm* form) {
+    if (!form) return;
 
-    for (size_t i = 0; i < tui->choice_form->cap; i++) {
-        free(tui->choice_form->options[i]);
+    for (size_t i = 0; i < form->cap; i++) {
+        free(form->options[i]);
     }
 
-    free(tui->choice_form->options);
-    free(tui->choice_form);
-
-    tui->choice_form = NULL;
+    free(form->options);
+    free(form);
 }
 
 void put_chform(TUI_ChoiceForm* form, size_t idx, const char* msg) {
@@ -641,6 +657,82 @@ void make_choice_form(TUI* tui, Buffer* buffer, Rect rect, const char* msg) {
     }
 
     free(buf);
+}
+
+// >>> search form handler
+
+void create_search_form(TUI* tui, size_t cap) {
+    if (!tui) {
+        clear_search_form(tui);
+        tui->search_form = NULL;
+    }
+
+    TUI_SearchForm* form = malloc(sizeof(TUI_SearchForm));
+    if (!form) {
+        errlog(ERR_MALLOC_NULL, "tui:create_search_form:form");
+        return;
+    }
+
+    form->query_line = malloc(form->form->str_len);
+    if (!form->query_line) {
+        errlog(ERR_MALLOC_NULL, "tui:create_search_form:line");
+        free(form);
+        return;
+    }
+
+    create_choice_form(&form->form, cap);
+
+    tui->search_form = form;
+}
+
+void clear_search_form(TUI* tui) {
+    if (!tui) return;
+
+    TUI_SearchForm* form = tui->search_form;
+    if (!form) return;
+    clear_choice_form(form->form);
+    free(form->query_line);
+    free(form);
+}
+
+void put_srform(TUI_SearchForm* form, Storage* stg) {
+    if (!form || !form->form || !stg->sr_core || !stg->sr_core->results) return;
+
+    for (size_t i = 0; i < form->form->size; i++) {
+        if (!stg->sr_core->results) continue;
+        strcpy(form->form->options[i], stg->sr_core->results[i].title);
+    }
+}
+
+void make_search_form(TUI* tui, Buffer* buffer, Rect* rect) {
+    if (!tui || !tui->search_form || !rect) return;
+
+    draw_rect(buffer, *rect);
+    const char* msg = "[ SEARCH YT-DLP ]";
+    buffer_append_line(
+        buffer, (Vec){(rect->vec.x / 2) - strlen(msg), rect->vec.y + 1}, msg);
+
+    char* buf = malloc(BUFFER_BASE_SIZE);
+    if (!buf) return;
+    snprintf(buf, BUFFER_BASE_SIZE, "query: %s", tui->search_form->query_line);
+
+    buffer_append_line(buffer, (Vec){rect->vec.x + 1, rect->vec.y + 3}, buf);
+
+    buffer_append_line(buffer, (Vec){rect->vec.x + 1, rect->vec.y + 4},
+                       "* by search:");
+
+    for (size_t i = 0; i < tui->search_form->form->size; i++) {
+        if (i == tui->choice_form->selected_option) {
+            snprintf(buf, BUFFER_BASE_SIZE, " > %s ",
+                     tui->search_form->form->options[i]);
+        } else {
+            snprintf(buf, BUFFER_BASE_SIZE, "   %s ",
+                     tui->search_form->form->options[i]);
+        }
+
+        buffer_append_line(buffer, (Vec){rect->vec.x + 3, rect->vec.y + 5 + i},
+                           buf);
+    }
 }
 
 // >>> utils
