@@ -65,7 +65,8 @@ void* search_exec(void* thr) {
     }
 
     snprintf(cmd, BUF_BASE_SIZE,
-             "yt-dlp --print '%%(title)s|%%(id)s|%%(channel)s' 'ytsearch5:%s'",
+             "yt-dlp --flat-playlist --print '%%(title)s|%%(id)s|%%(channel)s' "
+             "'ytsearch5:%s'",
              sr_thr->query);
 
     FILE* npipe = popen(cmd, "r");

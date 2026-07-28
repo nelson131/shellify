@@ -704,12 +704,16 @@ void clear_search_form(TUI* tui) {
 void put_srform(TUI_SearchForm* form, Storage* stg) {
     if (!form || !form->form || !stg->sr_core || !stg->sr_core->results) return;
 
-    size_t count = form->form->size;
+    SearchCore* core = stg->sr_core;
+    if (!core->results) return;
+
+    size_t count = core->size;
     if (count > form->form->cap) count = form->form->cap;
 
     form->form->size = 0;
 
     for (size_t i = 0; i < count; i++) {
+        alog(DEBUG, stg->sr_core->results[i].title, "LOOOOL");
         put_chform(form->form, i, stg->sr_core->results[i].title);
     }
 }
@@ -721,7 +725,8 @@ void make_search_form(TUI* tui, Buffer* buffer, Rect* rect) {
     const char* msg = "[ SEARCH YT-DLP ]";
     buffer_append_line(
         buffer,
-        (Vec){(rect->w / 2) + rect->vec.x - strlen(msg), rect->vec.y + 1}, msg);
+        (Vec){(rect->w / 2) + rect->vec.x - (strlen(msg) / 2), rect->vec.y + 1},
+        msg);
 
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) return;
