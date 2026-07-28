@@ -400,7 +400,7 @@ void make_add_ytdlp_sn_search(TUI* tui, Storage* stg, Buffer* buffer,
         put_srform(tui->search_form, stg);
     }
 
-    make_search_form(tui, buffer, &rect);
+    make_search_form(tui, buffer, &rect, stg->sr_core->state);
 }
 
 // ADD playlist
@@ -692,20 +692,19 @@ void create_search_form(TUI* tui, size_t cap) {
 }
 
 void clear_search_form(TUI* tui) {
-    if (!tui) return;
+    if (!tui || !tui->search_form) return;
 
-    TUI_SearchForm* form = tui->search_form;
-    if (!form) return;
-    clear_choice_form(form->form);
-    free(form->query_line);
-    free(form);
+    clear_choice_form(tui->search_form->form);
+    free(tui->search_form->query_line);
+    free(tui->search_form);
+    tui->search_form = NULL;
 }
 
 void put_srform(TUI_SearchForm* form, Storage* stg) {
     if (!form || !form->form || !stg->sr_core || !stg->sr_core->results) return;
 
     SearchCore* core = stg->sr_core;
-    if (!core->results) return;
+    if (!core->updated || !core->results) return;
 
     size_t count = core->size;
     if (count > form->form->cap) count = form->form->cap;
@@ -713,12 +712,13 @@ void put_srform(TUI_SearchForm* form, Storage* stg) {
     form->form->size = 0;
 
     for (size_t i = 0; i < count; i++) {
-        alog(DEBUG, stg->sr_core->results[i].title, "LOOOOL");
         put_chform(form->form, i, stg->sr_core->results[i].title);
     }
+
+    core->updated = 0;
 }
 
-void make_search_form(TUI* tui, Buffer* buffer, Rect* rect) {
+void make_search_form(TUI* tui, Buffer* buffer, Rect* rect, size_t state) {
     if (!tui || !tui->search_form || !rect) return;
 
     draw_rect(buffer, *rect);
@@ -734,8 +734,12 @@ void make_search_form(TUI* tui, Buffer* buffer, Rect* rect) {
 
     buffer_append_line(buffer, (Vec){rect->vec.x + 1, rect->vec.y + 3}, buf);
 
-    buffer_append_line(buffer, (Vec){rect->vec.x + 1, rect->vec.y + 4},
-                       "* by search:");
+    if (state == SEARCH_STATE_FREE) {
+        snprintf(buf, BUFFER_BASE_SIZE, "* by search -> FOUND:");
+    } else {
+        snprintf(buf, BUFFER_BASE_SIZE, "* by search -> SEARCHING...");
+    }
+    buffer_append_line(buffer, (Vec){rect->vec.x + 1, rect->vec.y + 4}, buf);
 
     for (size_t i = 0; i < tui->search_form->form->size; i++) {
         if (i == tui->search_form->form->selected_option) {
@@ -749,6 +753,8 @@ void make_search_form(TUI* tui, Buffer* buffer, Rect* rect) {
         buffer_append_line(buffer, (Vec){rect->vec.x + 3, rect->vec.y + 5 + i},
                            buf);
     }
+
+    free(buf);
 }
 
 // >>> utils

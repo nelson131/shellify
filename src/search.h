@@ -20,6 +20,7 @@ typedef struct SearchResult {
 
 typedef struct SearchCore {
     SearchState   state;
+    size_t        updated;
     size_t        size;
     SearchResult* results;
 } SearchCore;

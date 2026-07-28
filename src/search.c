@@ -9,6 +9,7 @@ SearchCore* init_search_core() {
 
     core->state = SEARCH_STATE_FREE;
     core->size = 0;
+    core->updated = 0;
     core->results = NULL;
 
     slog(INFO, "search core initialized");
@@ -30,6 +31,7 @@ void search_run(SearchCore* core, const char* query) {
     }
 
     core->state = SEARCH_STATE_BUSY;
+    core->updated = 1;
 
     sr_thr->core = core;
     sr_thr->query = strdup(query);
@@ -108,6 +110,7 @@ void* search_exec(void* thr) {
 
 thread_exit:
     sr_thr->core->state = SEARCH_STATE_FREE;
+    free(sr_thr->query);
     free(sr_thr);
     pthread_exit(NULL);
 }
