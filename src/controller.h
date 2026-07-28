@@ -7,6 +7,7 @@
 
 #include "audio.h"
 #include "config.h"
+#include "dl_queue.h"
 #include "input.h"
 #include "library.h"
 #include "logger.h"
@@ -17,6 +18,7 @@
 void add_song_tui(TUI* tui, Storage* stg);
 void add_song(TUI* tui, Storage* stg, const char* path, const char* title,
               const char* artist, const char* album);
+void add_song_search(TUI* tui, Storage* stg, size_t idx);
 void add_plist(TUI* tui, Storage* stg);
 
 void rem_song(TUI* tui, Storage* stg, Audio* audio);

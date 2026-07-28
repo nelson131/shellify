@@ -1,5 +1,6 @@
 #include "controller.h"
 
+#include "dl_queue.h"
 #include "library.h"
 #include "storage.h"
 
@@ -65,6 +66,22 @@ void add_song(TUI* tui, Storage* stg, const char* path, const char* title,
     } else {
         errlog(ERR_NULL_OBJECT, "add_song:song");
     }
+}
+
+void add_song_search(TUI* tui, Storage* stg, size_t idx) {
+    if (!tui || !stg) {
+        errlog(ERR_NULL_OBJECT, "add_song_search:args");
+        return;
+    }
+
+    SearchResult res = stg->sr_core->results[idx];
+
+    char buf[512];
+    snprintf(buf, sizeof(buf), "https://youtube.com/watch?v=%s", res.id);
+
+    DLTask* task = dlq_task(stg->dlq, buf, res.title, res.title, "Unknown");
+    dlq_push(stg->dlq, task);
+    free(task);
 }
 
 void add_plist(TUI* tui, Storage* stg) {

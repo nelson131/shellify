@@ -386,9 +386,14 @@ void shellify_handle_input() {
                 } else if (key == KEY_ARROW_LEFT) {
                     shellify->state = SHELLIFY_STATE_PLAYER;
                     clear_search_form(shellify->tui);
-                } else if (handle_choice_form(key,
-                                              shellify->tui->search_form->form,
-                                              shellify->config) >= 0) {
+                }
+
+                int idx = handle_choice_form(
+                    key, shellify->tui->search_form->form, shellify->config);
+                if (idx >= 0) {
+                    add_song_search(shellify->tui, shellify->stg, idx);
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                    clear_search_form(shellify->tui);
                 }
             }
             break;
