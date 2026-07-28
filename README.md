@@ -14,6 +14,8 @@ Built with sqlite3, [miniaudio](https://github.com/mackron/miniaudio), [yt-dlp](
 ## Current ways of downloading music
 - load from local files
 - download from web using forward link ([yt-dlp](https://github.com/yt-dlp/yt-dlp))
+- by searhing inside shellify using ([yt-dlp](https://github.com/yt-dlp/yt-dlp))
+(if you cant find something using the shellify search, blame yt-dlp because of zero fck results or google because of cookies idk)
 
 ## Installation (Linux)
 ### Downloading the dependencies
