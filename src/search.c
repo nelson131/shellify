@@ -11,6 +11,7 @@ SearchCore* init_search_core() {
     core->size = 0;
     core->results = NULL;
 
+    slog(INFO, "search core initialized");
     return core;
 }
 
@@ -30,12 +31,14 @@ void search_run(SearchCore* core, const char* query) {
 
     core->state = SEARCH_STATE_BUSY;
 
-    sr_thr->core = &core;
-    sr_thr->query = query;
+    sr_thr->core = core;
+    sr_thr->query = strdup(query);
 
     pthread_t thr;
     pthread_create(&thr, NULL, search_exec, sr_thr);
     pthread_detach(thr);
+
+    alog(INFO, query, "search stared");
 }
 
 void close_search_core(SearchCore* core) {
@@ -43,6 +46,8 @@ void close_search_core(SearchCore* core) {
 
     free(core->results);
     free(core);
+
+    slog(INFO, "search core closed");
 }
 
 void* search_exec(void* thr) {
@@ -59,10 +64,9 @@ void* search_exec(void* thr) {
         goto thread_exit;
     }
 
-    snprintf(
-        cmd, BUF_BASE_SIZE,
-        "yt-dlp --print '%(title)s|%(id)s|%(channel)s' 'ytsearch5:beatles'",
-        sr_thr->query);
+    snprintf(cmd, BUF_BASE_SIZE,
+             "yt-dlp --print '%%(title)s|%%(id)s|%%(channel)s' 'ytsearch5:%s'",
+             sr_thr->query);
 
     FILE* npipe = popen(cmd, "r");
     if (!npipe) {
@@ -71,7 +75,7 @@ void* search_exec(void* thr) {
         goto thread_exit;
     }
 
-    SearchCore* core = *sr_thr->core;
+    SearchCore* core = sr_thr->core;
     core->size = 5;
     core->results = malloc(core->size * sizeof(SearchResult));
     if (!core->results) {
@@ -82,7 +86,7 @@ void* search_exec(void* thr) {
     }
 
     size_t idx = 0;
-    while (fgets(buf, BUF_BASE_SIZE, npipe) != NULL) {
+    while (idx < core->size && fgets(buf, BUF_BASE_SIZE, npipe) != NULL) {
         char* token = strtok(buf, "|");
         if (token != NULL) {
             strcpy(core->results[idx].title, token);
@@ -91,14 +95,18 @@ void* search_exec(void* thr) {
             token = strtok(NULL, "|");
             strcpy(core->results[idx].artist, token);
         }
+        idx++;
     }
+
+    snprintf(buf, BUF_BASE_SIZE, "found by search thread: %zu", idx);
+    slog(INFO, buf);
 
     pclose(npipe);
     free(cmd);
     free(buf);
 
 thread_exit:
-    (*sr_thr->core)->state = SEARCH_STATE_FREE;
+    sr_thr->core->state = SEARCH_STATE_FREE;
     free(sr_thr);
     pthread_exit(NULL);
 }

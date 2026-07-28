@@ -322,6 +322,7 @@ void shellify_handle_input() {
                         break;
                     case 2:
                         shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH;
+                        shellify->input_state = INPUT_STATE_WRITING;
                         break;
                     default:
                         break;

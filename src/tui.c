@@ -662,25 +662,31 @@ void make_choice_form(TUI* tui, Buffer* buffer, Rect rect, const char* msg) {
 // >>> search form handler
 
 void create_search_form(TUI* tui, size_t cap) {
-    if (!tui) {
-        clear_search_form(tui);
-        tui->search_form = NULL;
-    }
+    if (!tui || tui->search_form) return;
 
     TUI_SearchForm* form = malloc(sizeof(TUI_SearchForm));
     if (!form) {
         errlog(ERR_MALLOC_NULL, "tui:create_search_form:form");
         return;
     }
+    form->form = NULL;
+    form->query_line = NULL;
 
-    form->query_line = malloc(form->form->str_len);
-    if (!form->query_line) {
-        errlog(ERR_MALLOC_NULL, "tui:create_search_form:line");
+    create_choice_form(&form->form, cap);
+    if (!form->form) {
+        errlog(ERR_MALLOC_NULL, "tui:create_search_form:choice_form");
         free(form);
         return;
     }
 
-    create_choice_form(&form->form, cap);
+    form->query_line = malloc(form->form->str_len);
+    if (!form->query_line) {
+        errlog(ERR_MALLOC_NULL, "tui:create_search_form:line");
+        clear_choice_form(form->form);
+        free(form);
+        return;
+    }
+    form->query_line[0] = '\0';
 
     tui->search_form = form;
 }
@@ -698,9 +704,13 @@ void clear_search_form(TUI* tui) {
 void put_srform(TUI_SearchForm* form, Storage* stg) {
     if (!form || !form->form || !stg->sr_core || !stg->sr_core->results) return;
 
-    for (size_t i = 0; i < form->form->size; i++) {
-        if (!stg->sr_core->results) continue;
-        strcpy(form->form->options[i], stg->sr_core->results[i].title);
+    size_t count = form->form->size;
+    if (count > form->form->cap) count = form->form->cap;
+
+    form->form->size = 0;
+
+    for (size_t i = 0; i < count; i++) {
+        put_chform(form->form, i, stg->sr_core->results[i].title);
     }
 }
 
@@ -710,7 +720,8 @@ void make_search_form(TUI* tui, Buffer* buffer, Rect* rect) {
     draw_rect(buffer, *rect);
     const char* msg = "[ SEARCH YT-DLP ]";
     buffer_append_line(
-        buffer, (Vec){(rect->vec.x / 2) - strlen(msg), rect->vec.y + 1}, msg);
+        buffer,
+        (Vec){(rect->w / 2) + rect->vec.x - strlen(msg), rect->vec.y + 1}, msg);
 
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) return;
@@ -722,7 +733,7 @@ void make_search_form(TUI* tui, Buffer* buffer, Rect* rect) {
                        "* by search:");
 
     for (size_t i = 0; i < tui->search_form->form->size; i++) {
-        if (i == tui->choice_form->selected_option) {
+        if (i == tui->search_form->form->selected_option) {
             snprintf(buf, BUFFER_BASE_SIZE, " > %s ",
                      tui->search_form->form->options[i]);
         } else {

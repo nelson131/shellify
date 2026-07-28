@@ -25,8 +25,8 @@ typedef struct SearchCore {
 } SearchCore;
 
 typedef struct SearchThread {
-    SearchCore** core;
-    const char*  query;
+    SearchCore* core;
+    const char* query;
 } SearchThread;
 
 SearchCore* init_search_core();
