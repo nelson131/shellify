@@ -19,6 +19,8 @@
 
 #define UNICODE_VER_LINE "|"
 
+#define PROGRESS_BAR_WIDTH 20
+
 typedef struct TUI_InputForm {
     char** options;
     char** values;
@@ -53,6 +55,7 @@ typedef struct TUI {
 
     char* separator;
     char* song_name;
+    char* progess_bar;
 
     size_t playlist_wall;
     size_t x_songs;

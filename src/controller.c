@@ -30,8 +30,9 @@ void add_song_tui(TUI* tui, Storage* stg) {
     }
     time_t t = time(NULL);
 
+    int   seconds = audio_get_duration(form->values[0]);
     Song* song = lib_new_sng(stg->lib, 0, form->values[0], form->values[1],
-                             form->values[2], form->values[3], 200, t);
+                             form->values[2], form->values[3], seconds, t);
     if (song) {
         if (stg_add_sng(stg, song)) {
             if (stg_conn(stg, song, playlist))
@@ -54,7 +55,9 @@ void add_song(TUI* tui, Storage* stg, const char* path, const char* title,
     Playlist* playlist = stg->lib->playlists[tui->idx_plists];
     time_t    t = time(NULL);
 
-    Song* song = lib_new_sng(stg->lib, 0, path, title, artist, album, 200, t);
+    int   seconds = audio_get_duration(path);
+    Song* song =
+        lib_new_sng(stg->lib, 0, path, title, artist, album, seconds, t);
     if (song) {
         if (stg_add_sng(stg, song)) {
             if (stg_conn(stg, song, playlist)) {

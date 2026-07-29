@@ -42,8 +42,21 @@ int tui_init(TUI** tui, size_t* window_cols, size_t* window_rows) {
         free(temp);
         return 0;
     }
-
     temp->song_name[0] = '\0';
+
+    // creating the progress bar line
+    temp->progess_bar = malloc((PROGRESS_BAR_WIDTH + 1) * sizeof(char));
+    if (!temp->progess_bar) {
+        errlog(ERR_MALLOC_NULL, "tui:init_tui:progress_bar");
+        free(temp->separator);
+        free(temp->song_name);
+        free(temp);
+        return 0;
+    }
+    memset(temp->progess_bar, ' ', (PROGRESS_BAR_WIDTH + 1) * sizeof(char));
+    temp->progess_bar[PROGRESS_BAR_WIDTH] = '\0';
+    temp->progess_bar[0] = '[';
+    temp->progess_bar[PROGRESS_BAR_WIDTH - 1] = ']';
 
     temp->idx_plists = 0, temp->idx_songs = 0;
     temp->scroll_plists = 0, temp->scroll_songs = 0;
@@ -222,6 +235,19 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
     buffer_append_line(
         buffer, (Vec){buffer->window_cols - 20, tui->header_bottom_border + 1},
         buf);
+
+    Playlist* plist = stg->lib->playlists[tui->idx_plists];
+    int       filled =
+        (int)(audio_get_progress(audio, plist->songs[tui->idx_songs]->path) *
+              (PROGRESS_BAR_WIDTH - 2));
+    for (size_t i = 1; i < filled; i++) {
+        tui->progess_bar[i] = '=';
+    }
+
+    buffer_append_line(buffer,
+                       (Vec){buffer->window_cols - 25 - PROGRESS_BAR_WIDTH,
+                             tui->header_bottom_border + 1},
+                       tui->progess_bar);
 
     free(buf);
 }

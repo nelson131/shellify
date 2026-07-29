@@ -23,6 +23,8 @@ typedef struct Audio {
     int plist_idx;
 
     char* music_dir;
+
+    ma_uint64 cur_duration;
 } Audio;
 
 void audio_init(Audio** audio);
@@ -34,6 +36,9 @@ void audio_play(Audio* audio, const char* path, Vec idxes);
 void audio_pause(Audio* audio);
 void audio_stop(Audio* audio);
 void audio_unload(Audio* audio);
+
+double audio_get_duration(const char* path);
+double audio_get_progress(Audio* audio, const char* path);
 
 int audio_is_ended(Audio* audio);
 

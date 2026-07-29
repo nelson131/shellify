@@ -21,6 +21,8 @@ void audio_init(Audio** audio) {
     (*audio)->sng_idx = -1;
     (*audio)->plist_idx = -1;
 
+    (*audio)->cur_duration = 0;
+
 #define MUSIC_DIR_SIZE strlen(MUSIC_DIR_AU) + 64
     (*audio)->music_dir = malloc(MUSIC_DIR_SIZE);
     const char* home = getenv("HOME");
@@ -86,6 +88,7 @@ void audio_play(Audio* audio, const char* path, Vec idxes) {
     audio->is_sound = 1;
     audio->is_stopped = 0;
     ma_sound_start(&audio->cur_sound);
+    ma_sound_get_length_in_pcm_frames(&audio->cur_sound, &audio->cur_duration);
     alog(INFO, path, "playing the song");
 }
 
@@ -116,6 +119,58 @@ void audio_unload(Audio* audio) {
     ma_sound_stop(&audio->cur_sound);
     ma_sound_uninit(&audio->cur_sound);
     audio->is_sound = 0;
+    audio->cur_duration = 0;
+}
+
+double audio_get_duration(const char* path) {
+    if (!path) {
+        errlog(ERR_NULL_OBJECT, "audio:get_dur:path");
+        return 0;
+    }
+
+#define BUF_BASE_SIZE 256
+    char* buf = malloc(BUF_BASE_SIZE);
+    if (!buf) {
+        errlog(ERR_MALLOC_NULL, "audio:get_dur:buf");
+        return 0;
+    }
+
+    const char* home = getenv("HOME");
+    if (!home) {
+        errlog(ERR_MALLOC_NULL, "audio:get_dur:home");
+        free(buf);
+        return 0;
+    }
+
+    snprintf(buf, BUF_BASE_SIZE, "%s/Music/shellify/%s", home, path);
+    slog(DEBUG, buf);
+
+    ma_decoder decoder;
+    ma_decoder_init_file(buf, NULL, &decoder);
+
+    ma_uint64 frames;
+    ma_decoder_get_length_in_pcm_frames(&decoder, &frames);
+
+    double seconds = (double)frames / decoder.outputSampleRate;
+
+    free(buf);
+    ma_decoder_uninit(&decoder);
+
+    return seconds;
+}
+
+double audio_get_progress(Audio* audio, const char* path) {
+    if (!audio || !audio->is_sound || !path) {
+        errlog(ERR_NULL_OBJECT, "audio:get_progress:args");
+        return 0;
+    }
+
+    if (audio->cur_duration == 0) return 0;
+
+    ma_uint64 cursor;
+    ma_sound_get_cursor_in_pcm_frames(&audio->cur_sound, &cursor);
+
+    return (double)cursor / (double)audio->cur_duration;
 }
 
 int audio_is_ended(Audio* audio) {
