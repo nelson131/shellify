@@ -693,9 +693,8 @@ void create_search_form(TUI* tui, size_t cap) {
 
 void clear_search_form(TUI* tui) {
     if (!tui || !tui->search_form) return;
-
-    clear_choice_form(tui->search_form->form);
-    free(tui->search_form->query_line);
+    if (tui->search_form->form) clear_choice_form(tui->search_form->form);
+    if (tui->search_form->query_line) free(tui->search_form->query_line);
     free(tui->search_form);
     tui->search_form = NULL;
 }

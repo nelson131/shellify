@@ -90,6 +90,7 @@ void* search_exec(void* thr) {
 
     size_t idx = 0;
     while (idx < core->size && fgets(buf, BUF_BASE_SIZE, npipe) != NULL) {
+        slog(DEBUG, buf);
         char* token = strtok(buf, "|");
         if (token != NULL) {
             strcpy(core->results[idx].title, token);

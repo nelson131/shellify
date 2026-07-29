@@ -79,7 +79,7 @@ void add_song_search(TUI* tui, Storage* stg, size_t idx) {
     char buf[512];
     snprintf(buf, sizeof(buf), "https://youtube.com/watch?v=%s", res.id);
 
-    DLTask* task = dlq_task(stg->dlq, buf, res.title, res.title, "Unknown");
+    DLTask* task = dlq_task(stg->dlq, buf, res.title, res.artist, "Unknown");
     dlq_push(stg->dlq, task);
     free(task);
 }
