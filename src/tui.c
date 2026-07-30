@@ -101,6 +101,14 @@ void tui_up_sep(TUI* tui, size_t* window_cols) {
     tui->separator = temp;
 }
 
+void tui_up_progress_bar(TUI* tui) {
+    if (!tui || !tui->progess_bar) return;
+    if (tui->progess_bar[0] == ' ') return;
+    for (size_t i = 1; i < PROGRESS_BAR_WIDTH - 1; i++) {
+        tui->progess_bar[i] = ' ';
+    }
+}
+
 // synchronization in scrolling
 void tui_sync(TUI* tui, Storage* stg) {
     if (!tui || !stg) return;
@@ -244,10 +252,11 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
         tui->progess_bar[i] = '=';
     }
 
-    buffer_append_line(buffer,
-                       (Vec){buffer->window_cols - 25 - PROGRESS_BAR_WIDTH,
-                             tui->header_bottom_border + 1},
-                       tui->progess_bar);
+    buffer_append_line_styled(
+        buffer,
+        (Vec){buffer->window_cols - 25 - PROGRESS_BAR_WIDTH,
+              tui->header_bottom_border + 1},
+        tui->progess_bar, COLOR_DEFAULT, COLOR_BLUE, STYLE_BOLD);
 
     free(buf);
 }

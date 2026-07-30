@@ -212,6 +212,7 @@ rock:
         audio,
         stg->lib->playlists[tui->idx_plists]->songs[tui->idx_songs]->path,
         (Vec){tui->idx_plists, tui->idx_songs});
+    tui_up_progress_bar(tui);
 }
 
 void handle_next(TUI* tui, Storage* stg, Audio* audio, Config* config) {

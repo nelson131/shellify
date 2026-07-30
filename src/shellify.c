@@ -134,6 +134,7 @@ void shellify_update() {
     if (audio_is_ended(shellify->audio)) {
         handle_next(shellify->tui, shellify->stg, shellify->audio,
                     shellify->config);
+        tui_up_progress_bar(shellify->tui);
     }
 
     dlh_run(shellify->tui, shellify->stg, shellify->audio, &shellify->dl_state,
