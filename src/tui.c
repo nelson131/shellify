@@ -245,9 +245,9 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
         buf);
 
     Playlist* plist = stg->lib->playlists[tui->idx_plists];
-    int       filled =
-        (int)(audio_get_progress(audio, plist->songs[tui->idx_songs]->path) *
-              (PROGRESS_BAR_WIDTH - 2));
+
+    double progress = audio_get_progress(audio);
+    int    filled = (int)(progress * (PROGRESS_BAR_WIDTH - 2));
     for (size_t i = 1; i < filled; i++) {
         tui->progess_bar[i] = '=';
     }
@@ -257,6 +257,21 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
         (Vec){buffer->window_cols - 25 - PROGRESS_BAR_WIDTH,
               tui->header_bottom_border + 1},
         tui->progess_bar, COLOR_DEFAULT, COLOR_BLUE, STYLE_BOLD);
+
+    int current = audio_get_current_time(audio);
+    int cur_min = current / 60;
+    int cur_sec = current % 60;
+
+    int total = (int)audio->total_seconds;
+    int total_min = (int)total / 60;
+    int total_sec = (int)total % 60;
+
+    snprintf(buf, BUFFER_BASE_SIZE, "%02d:%02d / %02d:%02d", cur_min, cur_sec,
+             total_min, total_sec);
+    buffer_append_line(buffer,
+                       (Vec){buffer->window_cols - 40 - PROGRESS_BAR_WIDTH,
+                             tui->header_bottom_border + 1},
+                       buf);
 
     free(buf);
 }

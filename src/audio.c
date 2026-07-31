@@ -21,7 +21,8 @@ void audio_init(Audio** audio) {
     (*audio)->sng_idx = -1;
     (*audio)->plist_idx = -1;
 
-    (*audio)->cur_duration = 0;
+    (*audio)->total_frames = 0;
+    (*audio)->total_seconds = 0;
 
 #define MUSIC_DIR_SIZE strlen(MUSIC_DIR_AU) + 64
     (*audio)->music_dir = malloc(MUSIC_DIR_SIZE);
@@ -88,7 +89,14 @@ void audio_play(Audio* audio, const char* path, Vec idxes) {
     audio->is_sound = 1;
     audio->is_stopped = 0;
     ma_sound_start(&audio->cur_sound);
-    ma_sound_get_length_in_pcm_frames(&audio->cur_sound, &audio->cur_duration);
+
+    ma_uint64 frames;
+    ma_sound_get_length_in_pcm_frames(&audio->cur_sound, &frames);
+    ma_uint32 rate = ma_engine_get_sample_rate(&audio->engine);
+
+    audio->total_frames = frames;
+    audio->total_seconds = frames / rate;
+
     alog(INFO, path, "playing the song");
 }
 
@@ -119,7 +127,8 @@ void audio_unload(Audio* audio) {
     ma_sound_stop(&audio->cur_sound);
     ma_sound_uninit(&audio->cur_sound);
     audio->is_sound = 0;
-    audio->cur_duration = 0;
+    audio->total_frames = 0;
+    audio->total_seconds = 0;
 }
 
 double audio_get_duration(const char* path) {
@@ -159,18 +168,33 @@ double audio_get_duration(const char* path) {
     return seconds;
 }
 
-double audio_get_progress(Audio* audio, const char* path) {
-    if (!audio || !audio->is_sound || !path) {
+double audio_get_progress(Audio* audio) {
+    if (!audio) {
         errlog(ERR_NULL_OBJECT, "audio:get_progress:args");
         return 0;
     }
 
-    if (audio->cur_duration == 0) return 0;
+    if (!audio->is_sound || audio->total_frames == 0) return 0;
 
     ma_uint64 cursor;
     ma_sound_get_cursor_in_pcm_frames(&audio->cur_sound, &cursor);
 
-    return (double)cursor / (double)audio->cur_duration;
+    return (double)cursor / (double)audio->total_frames;
+}
+
+int audio_get_current_time(Audio* audio) {
+    if (!audio) {
+        errlog(ERR_NULL_OBJECT, "audio:get_current_time:audio");
+        return 0;
+    }
+
+    if (!audio->is_sound) return 0;
+
+    ma_uint64 cursor;
+    ma_sound_get_cursor_in_pcm_frames(&audio->cur_sound, &cursor);
+    ma_uint32 rate = ma_engine_get_sample_rate(&audio->engine);
+
+    return (int)(cursor / rate);
 }
 
 int audio_is_ended(Audio* audio) {

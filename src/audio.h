@@ -24,7 +24,8 @@ typedef struct Audio {
 
     char* music_dir;
 
-    ma_uint64 cur_duration;
+    ma_uint64 total_frames;
+    int       total_seconds;
 } Audio;
 
 void audio_init(Audio** audio);
@@ -38,7 +39,8 @@ void audio_stop(Audio* audio);
 void audio_unload(Audio* audio);
 
 double audio_get_duration(const char* path);
-double audio_get_progress(Audio* audio, const char* path);
+double audio_get_progress(Audio* audio);
+int    audio_get_current_time(Audio* audio);
 
 int audio_is_ended(Audio* audio);
 
