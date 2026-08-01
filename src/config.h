@@ -17,7 +17,7 @@
 #define CONFIG_LINE_SIZE 128
 
 #define CONFIG_APP_NAME "shellify"
-#define CONFIG_APP_VERSION "v2.5.2"
+#define CONFIG_APP_VERSION "v2.5.3"
 #define CONFIG_APP_DESC "terminal based audio player"
 
 #define CONFIG_DEF_LOGGING 0
@@ -25,12 +25,15 @@
 #define CONFIG_DEF_ENABLE_DLQ 1
 #define CONFIG_DEF_VOLUME 0.5
 #define CONFIG_DEF_SHUFFLE_VALUE 0
+#define CONFIG_DEF_SKIP_TIME 10
 #define CONFIG_DEF_QUIT 'q'
 #define CONFIG_DEF_SUPER 'x'
 #define CONFIG_DEF_SELECT 'e'
 #define CONFIG_DEF_PAUSE 'f'
 #define CONFIG_DEF_INCREASE ']'
 #define CONFIG_DEF_DECREASE '['
+#define CONFIG_DEF_SKIP_FORWARD 'w'
+#define CONFIG_DEF_SKIP_BACKWARD 's'
 #define CONFIG_DEF_ADD 'a'
 #define CONFIG_DEF_REMOVE 'r'
 #define CONFIG_DEF_SONG 's'
@@ -50,6 +53,7 @@ typedef struct cfg_general {
 typedef struct cfg_player {
     float  volume;
     size_t shuffle;
+    size_t skip_time;
 } cfg_player;
 
 typedef struct cfg_keys {
@@ -60,6 +64,9 @@ typedef struct cfg_keys {
 
     char inc;
     char dec;
+
+    char skip_f;
+    char skip_b;
 
     char add;
     char remove;

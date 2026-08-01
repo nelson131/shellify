@@ -47,6 +47,8 @@ int config_load(Config** config) {
 
         if (sscanf(line, "volume=%f", &temp->player.volume) == 1) continue;
         if (sscanf(line, "shuffle=%zu", &temp->player.shuffle) == 1) continue;
+        if (sscanf(line, "skip_time=%zu", &temp->player.skip_time) == 1)
+            continue;
 
         if (sscanf(line, "quit=%c", &temp->keys.quit) == 1) continue;
         if (sscanf(line, "super=%c", &temp->keys.super) == 1) continue;
@@ -54,6 +56,8 @@ int config_load(Config** config) {
         if (sscanf(line, "pause=%c", &temp->keys.pause) == 1) continue;
         if (sscanf(line, "inc=%c", &temp->keys.inc) == 1) continue;
         if (sscanf(line, "dec=%c", &temp->keys.dec) == 1) continue;
+        if (sscanf(line, "skip_f=%c", &temp->keys.skip_f) == 1) continue;
+        if (sscanf(line, "skip_b=%c", &temp->keys.skip_b) == 1) continue;
         if (sscanf(line, "add=%c", &temp->keys.add) == 1) continue;
         if (sscanf(line, "remove=%c", &temp->keys.remove) == 1) continue;
         if (sscanf(line, "song=%c", &temp->keys.song) == 1) continue;
@@ -109,17 +113,19 @@ int config_save(Config* config) {
             config->general.desc, config->general.logging,
             config->general.usleep, config->general.enable_dlq);
 
-    fprintf(file, "[player]\nvolume=%f\nshuffle=%zu\n\n", config->player.volume,
-            config->player.shuffle);
-    fprintf(
-        file,
-        "[keys]\nquit=%c\nsuper=%c\nselect=%c\npause=%c\ninc=%c\ndec=%c\nadd=%"
-        "c\nremove=%c\nsong=%"
-        "c\nplaylist=%c\nshuffle=%c\ndashboard=%c\n",
-        config->keys.quit, config->keys.super, config->keys.select,
-        config->keys.pause, config->keys.inc, config->keys.dec,
-        config->keys.add, config->keys.remove, config->keys.song,
-        config->keys.playlist, config->keys.shuffle, config->keys.dashboard);
+    fprintf(file, "[player]\nvolume=%f\nshuffle=%zu\nskip_time=%zu\n\n",
+            config->player.volume, config->player.shuffle,
+            config->player.skip_time);
+    fprintf(file,
+            "[keys]\nquit=%c\nsuper=%c\nselect=%c\npause=%c\ninc=%c\ndec=%"
+            "c\nskip_f=%c\nskip_b=%c\nadd=%"
+            "c\nremove=%c\nsong=%"
+            "c\nplaylist=%c\nshuffle=%c\ndashboard=%c\n",
+            config->keys.quit, config->keys.super, config->keys.select,
+            config->keys.pause, config->keys.inc, config->keys.dec,
+            config->keys.skip_f, config->keys.skip_b, config->keys.add,
+            config->keys.remove, config->keys.song, config->keys.playlist,
+            config->keys.shuffle, config->keys.dashboard);
 
     fclose(file);
     slog(INFO, "config has been saved successfully");
@@ -138,6 +144,7 @@ void config_default(Config* config) {
 
     config->player.volume = CONFIG_DEF_VOLUME;
     config->player.shuffle = CONFIG_DEF_SHUFFLE_VALUE;
+    config->player.skip_time = CONFIG_DEF_SKIP_TIME;
 
     config->keys.quit = CONFIG_DEF_QUIT;
     config->keys.super = CONFIG_DEF_SUPER;
@@ -145,6 +152,8 @@ void config_default(Config* config) {
     config->keys.pause = CONFIG_DEF_PAUSE;
     config->keys.inc = CONFIG_DEF_INCREASE;
     config->keys.dec = CONFIG_DEF_DECREASE;
+    config->keys.skip_f = CONFIG_DEF_SKIP_FORWARD;
+    config->keys.skip_b = CONFIG_DEF_SKIP_BACKWARD;
     config->keys.add = CONFIG_DEF_ADD;
     config->keys.remove = CONFIG_DEF_REMOVE;
     config->keys.song = CONFIG_DEF_SONG;

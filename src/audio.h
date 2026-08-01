@@ -42,6 +42,8 @@ double audio_get_duration(const char* path);
 double audio_get_progress(Audio* audio);
 int    audio_get_current_time(Audio* audio);
 
+void audio_skip(Audio* audio, size_t seconds);
+
 int audio_is_ended(Audio* audio);
 
 #endif

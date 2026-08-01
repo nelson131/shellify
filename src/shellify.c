@@ -240,7 +240,13 @@ void shellify_handle_input() {
 
             switch (shellify->input_state) {
                 case INPUT_STATE_NONE:
-                    if (key == shellify->config->keys.add) {
+                    if (key == shellify->config->keys.skip_f) {
+                        audio_skip(shellify->audio,
+                                   shellify->config->player.skip_time);
+                    } else if (key == shellify->config->keys.skip_b) {
+                        audio_skip(shellify->audio,
+                                   -shellify->config->player.skip_time);
+                    } else if (key == shellify->config->keys.add) {
                         shellify->input_state = INPUT_STATE_ADD;
                     } else if (key == shellify->config->keys.remove) {
                         shellify->input_state = INPUT_STATE_REMOVE;

@@ -197,6 +197,26 @@ int audio_get_current_time(Audio* audio) {
     return (int)(cursor / rate);
 }
 
+void audio_skip(Audio* audio, size_t seconds) {
+    if (!audio) {
+        errlog(ERR_NULL_OBJECT, "audio:skip:audio");
+        return;
+    }
+
+    if (!audio->is_sound) return;
+
+    ma_uint64 cursor;
+    ma_sound_get_cursor_in_pcm_frames(&audio->cur_sound, &cursor);
+
+    ma_uint64 rate = ma_engine_get_sample_rate(&audio->engine);
+
+    int64_t final = cursor + ((int64_t)seconds * rate);
+    if (final < 0) final = 0;
+    if (final > audio->total_frames) final = audio->total_frames;
+
+    ma_sound_seek_to_pcm_frame(&audio->cur_sound, final);
+}
+
 int audio_is_ended(Audio* audio) {
     if (!audio || !audio->is_init || !audio->is_sound) return 0;
     return ma_sound_at_end(&audio->cur_sound);
