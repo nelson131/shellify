@@ -97,6 +97,8 @@ void make_add_local_sn(TUI* tui, Buffer* buffer, Config* config);
 void make_add_ytdlp_sn_link(TUI* tui, Buffer* buffer, Config* config);
 void make_add_ytdlp_sn_search(TUI* tui, Storage* stg, Buffer* buffer,
                               Config* config);
+
+void make_add_import_sn(TUI* tui, Storage* stg, Buffer* buffer, Config* config);
 // ADD playlist
 void make_add_plist(TUI* tui, Buffer* buffer, Config* config);
 // MAKE dashboard

@@ -1,4 +1,4 @@
-# shellify v2.4.8
+# shellify v2.7.0
 
 shellify is a terminal based audio player written in god-chosen lang C for Linux.<br>
 Built with sqlite3, [miniaudio](https://github.com/mackron/miniaudio), [yt-dlp](https://github.com/yt-dlp/yt-dlp) under the GPL-3.0 License.<br>
@@ -16,6 +16,8 @@ Built with sqlite3, [miniaudio](https://github.com/mackron/miniaudio), [yt-dlp](
 - download from web using forward link ([yt-dlp](https://github.com/yt-dlp/yt-dlp))
 - by searhing inside shellify using ([yt-dlp](https://github.com/yt-dlp/yt-dlp))
 (if you cant find something using the shellify search, blame yt-dlp because of zero fck results or google because of cookies idk)
+- by importing the csv playlist using ([exportify.net](https://exportify.net)) and exportify_pl.py script
+- by importing playlist using spotify Web API and spotpl.py script
 
 ## Installation (Linux)
 ### Downloading the dependencies

@@ -26,6 +26,7 @@ add_executable(shellify
     src/signal.c
     src/clipboard.c
     src/search.c
+    src/import_pl.c
 )
 
 target_link_libraries(shellify

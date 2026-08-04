@@ -1,6 +1,9 @@
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 
+# exporting spotify playlist into .shellify form for import
+# using spotify web api
+
 def get_client_info() -> dict[str, str]:
     res = {}
     with open("spot.env", "r") as file:
@@ -30,7 +33,7 @@ def main():
     playlist = spotify.playlist(PLAYLIST_URL)
     playlist_name = playlist["name"]
 
-    with open("imported_plist.shellify", "w", encoding="utf-8") as file:
+    with open("import.shellify", "w", encoding="utf-8") as file:
         file.write(f"{playlist_name}:\n")
 
         while True:

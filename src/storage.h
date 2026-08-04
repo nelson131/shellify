@@ -10,6 +10,7 @@
 
 #include "db_handler.h"
 #include "dl_queue.h"
+#include "import_pl.h"
 #include "library.h"
 #include "logger.h"
 #include "search.h"
@@ -23,6 +24,7 @@ typedef struct Storage {
     sqlite3*    db;
     DLQueue*    dlq;
     SearchCore* sr_core;
+    ImportData* import_data;
 } Storage;
 
 // >>> main funcs

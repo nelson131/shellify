@@ -71,6 +71,8 @@ Storage* stg_init() {
 
     storage->sr_core = init_search_core();
 
+    storage->import_data = NULL;
+
     slog(INFO, "storage has been init");
     return storage;
 

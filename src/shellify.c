@@ -183,6 +183,10 @@ void shellify_draw_state() {
         case SHELLIFY_STATE_ADD_PLAYLIST:
             make_add_plist(shellify->tui, shellify->buffer, shellify->config);
             break;
+        case SHELLIFY_STATE_ADD_SONG_IMPORT:
+            make_add_import_sn(shellify->tui, shellify->stg, shellify->buffer,
+                               shellify->config);
+            break;
         case SHELLIFY_STATE_DASHBOARD:
             make_dashboard(shellify->tui, shellify->stg, shellify->buffer,
                            shellify->config);
@@ -207,6 +211,21 @@ void shellify_handle_input() {
         if (shellify->state == SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH) {
             search_run(shellify->stg->sr_core,
                        shellify->tui->search_form->query_line);
+        } else if (shellify->state == SHELLIFY_STATE_ADD_SONG_IMPORT) {
+            if (!shellify->tui->search_form) return;
+            if (shellify->stg->import_data) {
+                clear_import_data(&shellify->stg->import_data);
+            }
+
+            shellify->stg->import_data =
+                get_import_data(shellify->tui->search_form->query_line);
+            if (!shellify->stg->import_data) return;
+
+            char* query = build_query_import(
+                &shellify->stg->import_data
+                     ->entries[shellify->stg->import_data->idx]);
+            search_run(shellify->stg->sr_core, query);
+            free(query);
         }
         return;
     }
@@ -331,6 +350,10 @@ void shellify_handle_input() {
                         shellify->state = SHELLIFY_STATE_ADD_SONG_YTDLP_SEARCH;
                         shellify->input_state = INPUT_STATE_WRITING;
                         break;
+                    case 3:
+                        shellify->state = SHELLIFY_STATE_ADD_SONG_IMPORT;
+                        shellify->input_state = INPUT_STATE_WRITING;
+                        break;
                     default:
                         break;
                 }
@@ -401,6 +424,40 @@ void shellify_handle_input() {
                     add_song_search(shellify->tui, shellify->stg, idx);
                     shellify->state = SHELLIFY_STATE_PLAYER;
                     clear_search_form(shellify->tui);
+                }
+            }
+            break;
+        case SHELLIFY_STATE_ADD_SONG_IMPORT:
+            if (shellify->input_state == INPUT_STATE_WRITING) {
+                handle_search_form_typing(key, shellify->tui->search_form);
+            } else {
+                if (key == KEY_ARROW_LEFT) {
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                    clear_search_form(shellify->tui);
+                    clear_import_data(&shellify->stg->import_data);
+                    break;
+                }
+
+                int idx = handle_choice_form(
+                    key, shellify->tui->search_form->form, shellify->config);
+                if (idx >= 0) {
+                    add_song_import(shellify->tui, shellify->stg, idx,
+                                    shellify->stg->import_data->idx);
+                    if (shellify->stg->import_data->idx >
+                        shellify->stg->import_data->size) {
+                        shellify->state = SHELLIFY_STATE_PLAYER;
+                        clear_search_form(shellify->tui);
+                        clear_import_data(&shellify->stg->import_data);
+                        break;
+                    }
+
+                    size_t* data_idx = &shellify->stg->import_data->idx;
+                    (*data_idx)++;
+
+                    char* query = build_query_import(
+                        &shellify->stg->import_data->entries[*data_idx]);
+                    search_run(shellify->stg->sr_core, query);
+                    free(query);
                 }
             }
             break;

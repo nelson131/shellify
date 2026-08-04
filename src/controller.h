@@ -19,6 +19,7 @@ void add_song_tui(TUI* tui, Storage* stg);
 void add_song(TUI* tui, Storage* stg, const char* path, const char* title,
               const char* artist, const char* album);
 void add_song_search(TUI* tui, Storage* stg, size_t idx);
+void add_song_import(TUI* tui, Storage* stg, size_t sr_idx, size_t import_idx);
 void add_plist(TUI* tui, Storage* stg);
 
 void rem_song(TUI* tui, Storage* stg, Audio* audio);

@@ -385,11 +385,11 @@ void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio) {
 // ADD song
 
 void make_add_sn(TUI* tui, Buffer* buffer, Config* config) {
-    size_t size = 3;
+    size_t size = 4;
     if (!tui->choice_form) {
-        const char* options[3] = {"load from local files",
-                                  "from youtube (yt-dlp, forward link)",
-                                  "from youtube (yt-dlp, search)"};
+        const char* options[4] = {
+            "load from local files", "from youtube (yt-dlp, forward link)",
+            "from youtube (yt-dlp, search)", "import from file"};
 
         set_choice_form(tui, options, size);
     }
@@ -447,6 +447,23 @@ void make_add_ytdlp_sn_search(TUI* tui, Storage* stg, Buffer* buffer,
     rect_center(&rect, buffer->window_cols, buffer->window_rows);
 
     if (stg->sr_core->state == SEARCH_STATE_FREE) {
+        put_srform(tui->search_form, stg);
+    }
+
+    make_search_form(tui, buffer, &rect, stg->sr_core->state);
+}
+
+void make_add_import_sn(TUI* tui, Storage* stg, Buffer* buffer,
+                        Config* config) {
+    size_t cap = 5;
+    if (!tui->search_form) {
+        create_search_form(tui, cap);
+    }
+
+    Rect rect = (Rect){(Vec){0, 0}, 60, 20};
+    rect_center(&rect, buffer->window_cols, buffer->window_rows);
+
+    if (stg->sr_core->state == SEARCH_STATE_FREE && stg->import_data) {
         put_srform(tui->search_form, stg);
     }
 

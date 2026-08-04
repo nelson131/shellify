@@ -87,6 +87,24 @@ void add_song_search(TUI* tui, Storage* stg, size_t idx) {
     free(task);
 }
 
+void add_song_import(TUI* tui, Storage* stg, size_t sr_idx, size_t import_idx) {
+    if (!tui || !stg) {
+        errlog(ERR_NULL_OBJECT, "add_song_import:args");
+        return;
+    }
+
+    SearchResult res = stg->sr_core->results[sr_idx];
+    ImportEntry* entry = &stg->import_data->entries[import_idx];
+
+    char buf[512];
+    snprintf(buf, sizeof(buf), "https://youtube.com/watch?v=%s", res.id);
+
+    DLTask* task =
+        dlq_task(stg->dlq, buf, entry->title, entry->artist, entry->album);
+    dlq_push(stg->dlq, task);
+    free(task);
+}
+
 void add_plist(TUI* tui, Storage* stg) {
     if (!tui || !stg) {
         errlog(ERR_NULL_OBJECT, "controller:add_plist:args");
