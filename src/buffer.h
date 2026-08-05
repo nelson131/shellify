@@ -22,14 +22,15 @@
 #define COLOR_CYAN 6
 #define COLOR_WHITE 7
 
-typedef int32_t i32;
-typedef uint8_t u8;
+typedef int32_t  i32;
+typedef uint8_t  u8;
+typedef uint32_t u32;
 
 typedef struct Cell {
-    char c;
-    i32  tg;
-    i32  bg;
-    u8   fl;
+    u32 c;
+    i32 tg;
+    i32 bg;
+    u8  fl;
 } Cell;
 
 typedef struct Buffer {
@@ -46,6 +47,9 @@ static void   cell_reset(Cell* cell);
 static int    cell_eq(Cell* c1, Cell* c2);
 static void   cell_cmpl(Cell* c, i32* c_tg, i32* c_bg, u8* c_fl);
 
+static u32 utf8_decode(const char** c);
+static int utf8_encode(u32 c, char* out);
+
 int  buffer_init(Buffer** buffer, size_t* window_cols, size_t* window_rows);
 void buffer_clear(Buffer* buffer);
 void buffer_destroy(Buffer* buffer);
@@ -54,8 +58,8 @@ void buffer_render(Buffer* buffer);
 
 int buffer_resize(Buffer* buffer);
 
-void buffer_set_char(Buffer* buffer, Vec v, char line);
-void buffer_set_cell(Buffer* buffer, Vec v, char ch, i32 tg, i32 bg, u8 fl);
+void buffer_set_char(Buffer* buffer, Vec v, u32 ch);
+void buffer_set_cell(Buffer* buffer, Vec v, u32 ch, i32 tg, i32 bg, u8 fl);
 
 void buffer_append_line(Buffer* buffer, Vec v, const char* line);
 void buffer_append_line_styled(Buffer* buffer, Vec v, const char* line, i32 tg,
@@ -65,8 +69,8 @@ void   buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line);
 void buffer_append_vertical_line_styled(Buffer* buffer, Vec v, const char* line,
                                         i32 tg, i32 bg, u8 fl);
 
-void buffer_set_range_char(Buffer* buffer, Vec range, Vec v, char ch);
-void buffer_set_ver_range_char(Buffer* buffer, Vec range, Vec v, char ch);
+void buffer_set_range_char(Buffer* buffer, Vec range, Vec v, u32 ch);
+void buffer_set_ver_range_char(Buffer* buffer, Vec range, Vec v, u32 ch);
 void buffer_append_range(Buffer* buffer, Vec range, Vec v, const char* line);
 void buffer_append_ver_range(Buffer* buffer, Vec range, Vec v,
                              const char* line);

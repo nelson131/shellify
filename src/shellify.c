@@ -1,5 +1,6 @@
 #include "shellify.h"
 
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -18,6 +19,7 @@ Shellify* shellify = NULL;
 void shellify_init() {
     printf("\033[?25l");
     fflush(stdout);
+    setlocale(LC_ALL, "");
 
     shellify = malloc(sizeof(Shellify));
     if (!shellify) {

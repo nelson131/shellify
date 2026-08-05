@@ -46,6 +46,55 @@ void cell_cmpl(Cell* c, i32* c_tg, i32* c_bg, u8* c_fl) {
     }
 }
 
+u32 utf8_decode(const char** c) {
+    const unsigned char* s = (const unsigned char*)*c;
+
+    uint32_t ch = *s;
+    if (ch < 0x80) {
+        *c += 1;
+        return ch;
+    } else if ((ch & 0xE0) == 0xC0) {
+        ch = ((s[0] & 0x1F) << 6) | (s[1] & 0x3F);
+        *c += 2;
+    } else if ((ch & 0xF0) == 0xE0) {
+        ch = ((s[0] & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+        *c += 3;
+    } else if ((ch & 0xF8) == 0xF0) {
+        ch = ((s[0] & 0x07) << 18) | ((s[1] & 0x3F) << 12) |
+             ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
+        *c += 4;
+    } else {
+        *c += 1;
+    }
+
+    return ch;
+}
+
+static int utf8_encode(u32 c, char* out) {
+    if (c <= 0x7F) {
+        out[0] = (char)c;
+        return 1;
+    } else if (c <= 0x7FF) {
+        out[0] = (char)(0xC0 | ((c >> 6) & 0x1F));
+        out[1] = (char)(0x80 | (c & 0x3F));
+        return 2;
+    } else if (c <= 0xFFFF) {
+        out[0] = (char)(0xE0 | ((c >> 12) & 0x0F));
+        out[1] = (char)(0x80 | ((c >> 6) & 0x3F));
+        out[2] = (char)(0x80 | (c & 0x3F));
+        return 3;
+    } else if (c <= 0x10FFFF) {
+        out[0] = (char)(0xF0 | ((c >> 18) & 0x07));
+        out[1] = (char)(0x80 | ((c >> 12) & 0x3F));
+        out[2] = (char)(0x80 | ((c >> 6) & 0x3F));
+        out[3] = (char)(0x80 | (c & 0x3F));
+        return 4;
+    }
+
+    out[0] = '?';
+    return 1;
+}
+
 int buffer_init(Buffer** buffer, size_t* window_cols, size_t* window_rows) {
     if (!window_cols || !window_rows) return 0;
 
@@ -121,7 +170,10 @@ void buffer_render(Buffer* buffer) {
                 printf("\033[%zu;%zuH", y + 1, x + 1);
                 cell_cmpl(&buffer->actual[i], &c_tg, &c_bg, &c_fl);
 
-                putchar(buffer->actual[i].c);
+                char utf8[5] = {0};
+                int  len = utf8_encode(buffer->actual[i].c, utf8);
+                fwrite(utf8, 1, len, stdout);
+
                 buffer->old[i] = buffer->actual[i];
             }
         }
@@ -167,14 +219,15 @@ int buffer_resize(Buffer* buffer) {
     return 0;
 }
 
-void buffer_set_char(Buffer* buffer, Vec v, char ch) {
+void buffer_set_char(Buffer* buffer, Vec v, u32 ch) {
     buffer_set_cell(buffer, v, ch, COLOR_DEFAULT, COLOR_DEFAULT, STYLE_NONE);
 }
 
-void buffer_set_cell(Buffer* buffer, Vec v, char ch, i32 tg, i32 bg, u8 fl) {
+void buffer_set_cell(Buffer* buffer, Vec v, u32 ch, i32 tg, i32 bg, u8 fl) {
     if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
 
     size_t i = to_index(buffer, v);
+
     buffer->actual[i].c = ch;
     buffer->actual[i].tg = tg;
     buffer->actual[i].bg = bg;
@@ -185,13 +238,12 @@ void buffer_append_line(Buffer* buffer, Vec v, const char* line) {
     if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
         return;
 
-    size_t len = strlen(line);
-    if (v.x + len > buffer->window_cols) {
-        len = buffer->window_cols - v.x;
-    }
+    const char* p = line;
 
-    for (size_t i = 0; i < len; i++) {
-        buffer_set_char(buffer, (Vec){i + v.x, v.y}, line[i]);
+    while (*p && v.x < buffer->window_cols) {
+        u32 ch = utf8_decode(&p);
+        buffer_set_char(buffer, v, ch);
+        v.x++;
     }
 }
 
@@ -200,13 +252,12 @@ void buffer_append_line_styled(Buffer* buffer, Vec v, const char* line, i32 tg,
     if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
         return;
 
-    size_t len = strlen(line);
-    if (v.x + len > buffer->window_cols) {
-        len = buffer->window_cols - v.x;
-    }
+    const char* p = line;
 
-    for (size_t i = 0; i < len; i++) {
-        buffer_set_cell(buffer, (Vec){i + v.x, v.y}, line[i], tg, bg, fl);
+    while (*p && v.x < buffer->window_cols) {
+        u32 ch = utf8_decode(&p);
+        buffer_set_cell(buffer, v, ch, tg, bg, fl);
+        v.x++;
     }
 }
 
@@ -214,15 +265,19 @@ size_t buffer_append_line_offset(Buffer* buffer, Vec v, const char* line) {
     if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
         return 0;
 
-    size_t len = strlen(line);
+    const char* p = line;
+
     size_t offset = 0;
-    for (size_t i = 0; i < len; i++) {
+    while (*p) {
         if (v.x >= buffer->window_cols) {
-            v.y++;
             v.x = 0;
+            v.y++;
             offset++;
         }
-        buffer_set_char(buffer, (Vec){v.x++, v.y}, line[i]);
+
+        buffer_set_char(buffer, v, utf8_decode(&p));
+
+        v.x++;
     }
 
     return offset;
@@ -232,11 +287,12 @@ void buffer_append_vertical_line(Buffer* buffer, Vec v, const char* line) {
     if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
         return;
 
-    size_t len = strlen(line);
-    if (v.y + len > buffer->window_rows) return;
+    const char* p = line;
 
-    for (size_t i = 0; i < len; i++) {
-        buffer_set_char(buffer, (Vec){v.x, v.y + i}, line[i]);
+    while (*p && v.y < buffer->window_rows) {
+        u32 ch = utf8_decode(&p);
+        buffer_set_char(buffer, v, ch);
+        v.y++;
     }
 }
 
@@ -245,17 +301,16 @@ void buffer_append_line_vertical_styled(Buffer* buffer, Vec v, const char* line,
     if (!line || v.x >= buffer->window_cols || v.y >= buffer->window_rows)
         return;
 
-    size_t len = strlen(line);
-    if (v.y + len > buffer->window_rows) {
-        len = buffer->window_rows - v.y;
-    }
+    const char* p = line;
 
-    for (size_t i = 0; i < len; i++) {
-        buffer_set_cell(buffer, (Vec){v.x, v.y + i}, line[i], tg, bg, fl);
+    while (*p && v.y < buffer->window_rows) {
+        u32 ch = utf8_decode(&p);
+        buffer_set_cell(buffer, v, tg, bg, fl, ch);
+        v.y++;
     }
 }
 
-void buffer_set_range_char(Buffer* buffer, Vec range, Vec v, char ch) {
+void buffer_set_range_char(Buffer* buffer, Vec range, Vec v, u32 ch) {
     if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
     if (range.y + v.x > buffer->window_cols) return;
 
@@ -264,7 +319,7 @@ void buffer_set_range_char(Buffer* buffer, Vec range, Vec v, char ch) {
     }
 }
 
-void buffer_set_ver_range_char(Buffer* buffer, Vec range, Vec v, char ch) {
+void buffer_set_ver_range_char(Buffer* buffer, Vec range, Vec v, u32 ch) {
     if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
     if (range.y + v.y > buffer->window_rows) return;
 
@@ -276,13 +331,24 @@ void buffer_set_ver_range_char(Buffer* buffer, Vec range, Vec v, char ch) {
 void buffer_append_range(Buffer* buffer, Vec range, Vec v, const char* line) {
     if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
     if (range.y + v.x > buffer->window_cols) return;
-    size_t len = strlen(line);
-    if (len >= buffer->window_cols) return;
+
+    u32    buf[256];
+    size_t count = 0;
+
+    const char* p = line;
+
+    while (*p && count < 256) {
+        buf[count++] = utf8_decode(&p);
+    }
+
+    if (count == 0) return;
 
     size_t idx = 0;
-    for (size_t i = range.x; i < range.y - range.x; i++, idx++) {
-        buffer_set_char(buffer, (Vec){v.x + i, v.y}, line[idx]);
-        if (idx >= len) idx = 0;
+
+    for (size_t i = range.x; i < range.y - range.x; i++) {
+        buffer_set_char(buffer, (Vec){v.x + i, v.y}, buf[idx]);
+        idx++;
+        if (idx >= count) idx = 0;
     }
 }
 
@@ -290,13 +356,24 @@ void buffer_append_ver_range(Buffer* buffer, Vec range, Vec v,
                              const char* line) {
     if (v.x >= buffer->window_cols || v.y >= buffer->window_rows) return;
     if (range.y + v.y > buffer->window_rows) return;
-    size_t len = strlen(line);
-    if (len >= buffer->window_rows) return;
+
+    u32    buf[256];
+    size_t count = 0;
+
+    const char* p = line;
+
+    while (*p && count < 256) {
+        buf[count++] = utf8_decode(&p);
+    }
+
+    if (count == 0) return;
 
     size_t idx = 0;
-    for (size_t i = range.x; i < range.y; i++, idx++) {
-        buffer_set_char(buffer, (Vec){v.x, v.y + i}, line[idx]);
-        if (idx >= len - 1) idx = 0;
+
+    for (size_t i = range.x; i < range.y; i++) {
+        buffer_set_char(buffer, (Vec){v.x, v.y + i}, buf[idx]);
+        idx++;
+        if (idx >= count) idx = 0;
     }
 }
 
@@ -305,7 +382,7 @@ void buffer_clear_line(Buffer* buffer, Vec range, size_t y) {
 
     for (size_t i = range.x; i <= range.y; i++) {
         size_t index = to_index(buffer, (Vec){i, y});
-        if (buffer->actual[index].c != ' ') {
+        if (buffer->actual[index].c != 0x20) {
             cell_reset(&buffer->actual[index]);
         }
     }
