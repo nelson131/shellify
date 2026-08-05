@@ -109,6 +109,10 @@ void stg_close(Storage* stg) {
         close_search_core(stg->sr_core);
     }
 
+    if (stg->import_data) {
+        clear_import_data(&stg->import_data);
+    }
+
     free(stg);
     slog(INFO, "storage has been closed");
 }

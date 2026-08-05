@@ -131,6 +131,7 @@ void tui_clear(TUI* tui) {
 
     if (tui->separator) free(tui->separator);
     if (tui->song_name) free(tui->song_name);
+    if (tui->progess_bar) free(tui->progess_bar);
 
     if (tui->input_form) {
         clear_input_form(tui);
