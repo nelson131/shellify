@@ -17,7 +17,7 @@
 #define CONFIG_LINE_SIZE 128
 
 #define CONFIG_APP_NAME "shellify"
-#define CONFIG_APP_VERSION "v2.8.0"
+#define CONFIG_APP_VERSION "v2.9.1"
 #define CONFIG_APP_DESC "terminal based audio player"
 
 #define CONFIG_DEF_LOGGING 0
@@ -30,6 +30,7 @@
 #define CONFIG_DEF_SUPER 'x'
 #define CONFIG_DEF_SELECT 'e'
 #define CONFIG_DEF_PAUSE 'f'
+#define CONFIG_DEF_EDIT 't'
 #define CONFIG_DEF_INCREASE ']'
 #define CONFIG_DEF_DECREASE '['
 #define CONFIG_DEF_SKIP_FORWARD 'w'
@@ -61,6 +62,7 @@ typedef struct cfg_keys {
     char super;
     char select;
     char pause;
+    char edit;
 
     char inc;
     char dec;

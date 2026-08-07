@@ -276,6 +276,11 @@ void shellify_handle_input() {
                             !shellify->config->player.shuffle;
                     } else if (key == shellify->config->keys.dashboard) {
                         shellify->state = SHELLIFY_STATE_DASHBOARD;
+                    } else if (key == shellify->config->keys.edit) {
+                        if (shellify->focus_state == SHELLIFY_SONGS) {
+                        } else {
+                            // edit playlist name
+                        }
                     } else {
                         handle_volume(key, shellify->audio, shellify->config);
                     }

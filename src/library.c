@@ -168,6 +168,34 @@ char* lib_rem_sng(Library* library, Song* sng) {
     return name;
 }
 
+int lib_update_sng(Library* library, Song* song, const char* title,
+                   const char* artist, const char* album) {
+    if (!library || !song) {
+        errlog(ERR_NULL_OBJECT, "lib:update_sng:args");
+        return -1;
+    }
+
+    size_t count = 0;
+    if (title) {
+        char* buf = strdup(title);
+        free(song->title);
+        song->title = buf;
+        count++;
+    } else if (artist) {
+        char* buf = strdup(artist);
+        free(song->artist);
+        song->artist = buf;
+        count++;
+    } else if (album) {
+        char* buf = strdup(album);
+        free(song->album);
+        song->album = buf;
+        count++;
+    }
+
+    return count;
+}
+
 // >>> PLAYLISTS
 
 // creating the new plist:

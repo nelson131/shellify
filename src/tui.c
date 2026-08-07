@@ -205,13 +205,14 @@ void make_header(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
                               COLOR_DEFAULT, STYLE_BOLD);
 
     snprintf(buf, BUFFER_BASE_SIZE,
-             "help -> super: %c; select: %c; add: %c; remove: %c; song: %c; "
+             "help -> super: %c; select: %c; edit: %c; add: %c; remove: %c; "
+             "song: %c; "
              "playlist: %c; increase vol: %c; decrease vol: %c; shuffle "
              "on/off: %c; dashboard: %c",
-             config->keys.super, config->keys.select, config->keys.add,
-             config->keys.remove, config->keys.song, config->keys.playlist,
-             config->keys.inc, config->keys.dec, config->keys.shuffle,
-             config->keys.dashboard);
+             config->keys.super, config->keys.select, config->keys.edit,
+             config->keys.add, config->keys.remove, config->keys.song,
+             config->keys.playlist, config->keys.inc, config->keys.dec,
+             config->keys.shuffle, config->keys.dashboard);
     tui->offset = buffer_append_line_offset(buffer, (Vec){0, 1}, buf);
     if (!tui->changed) {
         tui->header_top_border += tui->offset;

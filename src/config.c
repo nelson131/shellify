@@ -54,6 +54,7 @@ int config_load(Config** config) {
         if (sscanf(line, "super=%c", &temp->keys.super) == 1) continue;
         if (sscanf(line, "select=%c", &temp->keys.select) == 1) continue;
         if (sscanf(line, "pause=%c", &temp->keys.pause) == 1) continue;
+        if (sscanf(line, "edit=%c", &temp->keys.edit) == 1) continue;
         if (sscanf(line, "inc=%c", &temp->keys.inc) == 1) continue;
         if (sscanf(line, "dec=%c", &temp->keys.dec) == 1) continue;
         if (sscanf(line, "skip_f=%c", &temp->keys.skip_f) == 1) continue;
@@ -116,16 +117,17 @@ int config_save(Config* config) {
     fprintf(file, "[player]\nvolume=%f\nshuffle=%zu\nskip_time=%zu\n\n",
             config->player.volume, config->player.shuffle,
             config->player.skip_time);
-    fprintf(file,
-            "[keys]\nquit=%c\nsuper=%c\nselect=%c\npause=%c\ninc=%c\ndec=%"
-            "c\nskip_f=%c\nskip_b=%c\nadd=%"
-            "c\nremove=%c\nsong=%"
-            "c\nplaylist=%c\nshuffle=%c\ndashboard=%c\n",
-            config->keys.quit, config->keys.super, config->keys.select,
-            config->keys.pause, config->keys.inc, config->keys.dec,
-            config->keys.skip_f, config->keys.skip_b, config->keys.add,
-            config->keys.remove, config->keys.song, config->keys.playlist,
-            config->keys.shuffle, config->keys.dashboard);
+    fprintf(
+        file,
+        "[keys]\nquit=%c\nsuper=%c\nselect=%c\npause=%c\nedit=%c\ninc=%c\ndec=%"
+        "c\nskip_f=%c\nskip_b=%c\nadd=%"
+        "c\nremove=%c\nsong=%"
+        "c\nplaylist=%c\nshuffle=%c\ndashboard=%c\n",
+        config->keys.quit, config->keys.super, config->keys.select,
+        config->keys.pause, config->keys.edit, config->keys.inc,
+        config->keys.dec, config->keys.skip_f, config->keys.skip_b,
+        config->keys.add, config->keys.remove, config->keys.song,
+        config->keys.playlist, config->keys.shuffle, config->keys.dashboard);
 
     fclose(file);
     slog(INFO, "config has been saved successfully");
@@ -150,6 +152,7 @@ void config_default(Config* config) {
     config->keys.super = CONFIG_DEF_SUPER;
     config->keys.select = CONFIG_DEF_SELECT;
     config->keys.pause = CONFIG_DEF_PAUSE;
+    config->keys.edit = CONFIG_DEF_EDIT;
     config->keys.inc = CONFIG_DEF_INCREASE;
     config->keys.dec = CONFIG_DEF_DECREASE;
     config->keys.skip_f = CONFIG_DEF_SKIP_FORWARD;
