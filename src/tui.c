@@ -282,7 +282,8 @@ void make_player(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio,
                  Config* config, int focus) {
     buffer_set_ver_range_char(
         buffer, (Vec){tui->header_top_border, tui->header_bottom_border + 1},
-        (Vec){tui->playlist_wall, tui->header_top_border - 1}, '|');
+        (Vec){tui->playlist_wall, tui->header_top_border - 1},
+        UNICODE_VER_LINE);
 
     view_plists(tui, stg, buffer);
     view_songs(tui, stg, buffer, audio);
@@ -314,7 +315,8 @@ void view_plists(TUI* tui, Storage* stg, Buffer* buffer) {
     size_t x = tui->x_playlists;
     size_t y = tui->y_playlists + tui->offset;
 
-    buffer_append_line(buffer, (Vec){x, y}, "[ PLAYLISTS ]");
+    buffer_append_line_styled(buffer, (Vec){x + 2, y}, "[ PLAYLISTS ]",
+                              COLOR_DEFAULT, COLOR_BLUE, STYLE_BOLD);
 
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) return;
@@ -339,7 +341,8 @@ void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio) {
     size_t x = tui->x_songs;
     size_t y = tui->y_songs + tui->offset;
 
-    buffer_append_line(buffer, (Vec){x, y}, "[ SONGS ]");
+    buffer_append_line_styled(buffer, (Vec){x + 2, y}, "[ SONGS ]",
+                              COLOR_DEFAULT, COLOR_BLUE, STYLE_BOLD);
 
     if (stg->lib->playlist_count == 0) {
         buffer_append_line(buffer, (Vec){x, y + 3}, "(No playlists!!!)");

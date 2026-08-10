@@ -17,7 +17,7 @@
 #define GIT_MSG "github.com/nelson131/shellify"
 #define GIT_MSG_LEN strlen(GIT_MSG)
 
-#define UNICODE_VER_LINE "|"
+#define UNICODE_VER_LINE 0x2502
 
 #define PROGRESS_BAR_WIDTH 20
 
