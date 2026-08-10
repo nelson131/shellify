@@ -37,6 +37,8 @@ int stg_load(Storage* stg);
 int stg_add_sng(Storage* stg, Song* sng);
 int stg_rem_sng_abs(Storage* stg, Song* sng);
 int stg_rem_sng(Storage* stg, Song* sng, Playlist* plist);
+int stg_update_sng(Storage* stg, Song* sng, const char* title,
+                   const char* artist, const char* album);
 
 // >>> playlists
 int stg_add_plist(Storage* stg, Playlist* plist);

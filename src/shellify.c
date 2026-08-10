@@ -10,6 +10,7 @@
 #include "controller.h"
 #include "dl_queue.h"
 #include "input.h"
+#include "library.h"
 #include "logger.h"
 #include "storage.h"
 #include "tui.h"
@@ -193,6 +194,8 @@ void shellify_draw_state() {
             make_dashboard(shellify->tui, shellify->stg, shellify->buffer,
                            shellify->config);
             break;
+        case SHELLIFY_STATE_UPDATE_SONG:
+            make_update_sn(shellify->tui, shellify->stg, shellify->buffer);
         default:
             break;
     }
@@ -274,13 +277,10 @@ void shellify_handle_input() {
                     } else if (key == shellify->config->keys.shuffle) {
                         shellify->config->player.shuffle =
                             !shellify->config->player.shuffle;
+                    } else if (key == shellify->config->keys.edit) {
+                        shellify->input_state = INPUT_STATE_UPDATE;
                     } else if (key == shellify->config->keys.dashboard) {
                         shellify->state = SHELLIFY_STATE_DASHBOARD;
-                    } else if (key == shellify->config->keys.edit) {
-                        if (shellify->focus_state == SHELLIFY_SONGS) {
-                        } else {
-                            // edit playlist name
-                        }
                     } else {
                         handle_volume(key, shellify->audio, shellify->config);
                     }
@@ -288,7 +288,7 @@ void shellify_handle_input() {
                 case INPUT_STATE_ADD:
                     if (key == shellify->config->keys.song) {
                         shellify->state = SHELLIFY_STATE_ADD_SONG;
-                        shellify->input_state = INPUT_STATE_NONE;
+                        shellify->input_state = INPUT_STATE_WRITING;
                         return;
                     } else if (key == shellify->config->keys.playlist) {
                         shellify->state = SHELLIFY_STATE_ADD_PLAYLIST;
@@ -309,6 +309,14 @@ void shellify_handle_input() {
                                      shellify->audio);
                     }
                     break;
+                case INPUT_STATE_UPDATE:
+                    if (key == shellify->config->keys.song) {
+                        shellify->state = SHELLIFY_STATE_UPDATE_SONG;
+                        shellify->input_state = INPUT_STATE_WRITING;
+                        return;
+                    } else if (key == shellify->config->keys.playlist) {
+                        return;
+                    }
                 default:
                     shellify->input_state = INPUT_STATE_NONE;
                     break;
@@ -490,6 +498,34 @@ void shellify_handle_input() {
         case SHELLIFY_STATE_DASHBOARD:
             if (key == KEY_ARROW_LEFT) {
                 shellify->state = SHELLIFY_STATE_PLAYER;
+            }
+            break;
+        case SHELLIFY_STATE_UPDATE_SONG:
+            if (shellify->input_state == INPUT_STATE_WRITING) {
+                if (handle_input_form(key, shellify->tui->input_form,
+                                      shellify->config)) {
+                    Playlist* plist =
+                        shellify->stg->lib
+                            ->playlists[shellify->tui->idx_plists];
+                    Song* song = plist->songs[shellify->tui->idx_songs];
+                    TUI_InputForm* form = shellify->tui->input_form;
+                    lib_update_sng(shellify->stg->lib, song, form->values[0],
+                                   form->values[1], form->values[2]);
+                    stg_update_sng(shellify->stg, song, form->values[0],
+                                   form->values[1], form->values[2]);
+                    clear_input_form(shellify->tui);
+                    shellify->input_state = INPUT_STATE_NONE;
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                }
+            } else {
+                if (key == shellify->config->keys.select) {
+                    shellify->input_state = INPUT_STATE_WRITING;
+                } else if (key == KEY_ARROW_LEFT) {
+                    shellify->state = SHELLIFY_STATE_PLAYER;
+                    clear_input_form(shellify->tui);
+                } else if (key == shellify->config->keys.super) {
+                    handle_form_clipboard(shellify->tui->input_form);
+                }
             }
             break;
         default:

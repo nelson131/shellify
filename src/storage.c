@@ -346,6 +346,78 @@ int stg_rem_sng(Storage* stg, Song* sng, Playlist* plist) {
     return 1;
 }
 
+int stg_update_sng(Storage* stg, Song* sng, const char* title,
+                   const char* artist, const char* album) {
+    if (!stg || !sng) {
+        errlog(ERR_NULL_OBJECT, "stg:update_sng:args");
+        return 0;
+    }
+
+    if (!title && !artist && !album) return 1;
+
+    char* query = malloc(BUF_BASE_SIZE);
+    if (!query) {
+        errlog(ERR_MALLOC_NULL, "stg:update_sng:query");
+        return 0;
+    }
+
+    char   buf[512] = {0};
+    size_t offset = 0;
+    size_t fs = 1;
+
+    if (title) {
+        offset += snprintf(buf + offset, sizeof(buf) - offset, "title = ?");
+    }
+
+    if (artist) {
+        if (offset > 0) {
+            offset += snprintf(buf + offset, sizeof(buf) - offset, ", ");
+        }
+        offset += snprintf(buf + offset, sizeof(buf) - offset, "artist = ?");
+    }
+
+    if (album) {
+        if (offset > 0) {
+            offset += snprintf(buf + offset, sizeof(buf) - offset, ", ");
+        }
+        offset += snprintf(buf + offset, sizeof(buf) - offset, "album = ?");
+    }
+
+    snprintf(query, BUF_BASE_SIZE, "UPDATE songs SET %s WHERE id = ?", buf);
+
+    sqlite3_stmt* stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        free(query);
+        errlog(ERR_SQLITE_FAILED, "stg:update_sng:stmt");
+        return 0;
+    }
+
+    if (title) {
+        bind_str(stmt, fs++, title);
+    }
+
+    if (artist) {
+        bind_str(stmt, fs++, artist);
+    }
+
+    if (album) {
+        bind_str(stmt, fs++, album);
+    }
+
+    bind_int(stmt, fs, sng->id);
+
+    int res = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    free(query);
+
+    if (res != SQLITE_DONE) {
+        errlog(ERR_SQLITE_FAILED, "stg:update_sng:step");
+        return 0;
+    }
+
+    return 1;
+}
+
 // >>> PLAYLISTS
 
 // adding the memory allocated playlist

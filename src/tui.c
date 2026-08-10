@@ -472,6 +472,28 @@ void make_add_import_sn(TUI* tui, Storage* stg, Buffer* buffer,
     make_search_form(tui, buffer, &rect, stg->sr_core->state);
 }
 
+// UPDATE song
+
+void make_update_sn(TUI* tui, Storage* stg, Buffer* buffer) {
+    size_t size = 3;
+    if (!tui->input_form) {
+        const char* options[3] = {"Title: ", "Artist: ", "Album: "};
+        set_input_form(tui, options, size);
+
+        TUI_InputForm* form = tui->input_form;
+        Song*          song =
+            stg->lib->playlists[tui->idx_plists]->songs[tui->idx_songs];
+        snprintf(form->values[0], form->str_len, "%s", song->title);
+        snprintf(form->values[1], form->str_len, "%s", song->artist);
+        snprintf(form->values[2], form->str_len, "%s", song->album);
+    }
+
+    Rect rect = (Rect){(Vec){0, 0}, 60, 20};
+    rect_center(&rect, buffer->window_cols, buffer->window_rows);
+
+    make_input_form(tui, buffer, rect, "RIGHT to apply, LEFT to leave");
+}
+
 // ADD playlist
 
 void make_add_plist(TUI* tui, Buffer* buffer, Config* config) {

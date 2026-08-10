@@ -99,6 +99,8 @@ void make_add_ytdlp_sn_search(TUI* tui, Storage* stg, Buffer* buffer,
                               Config* config);
 
 void make_add_import_sn(TUI* tui, Storage* stg, Buffer* buffer, Config* config);
+// UPDATE song
+void make_update_sn(TUI* tui, Storage* stg, Buffer* buffer);
 // ADD playlist
 void make_add_plist(TUI* tui, Buffer* buffer, Config* config);
 // MAKE dashboard
