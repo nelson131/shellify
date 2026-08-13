@@ -114,7 +114,12 @@ void tui_sync(TUI* tui, Storage* stg) {
     if (!tui || !stg) return;
 
     Playlist* playlist = stg->lib->playlists[tui->idx_plists];
-    size_t    max_songs = tui->header_bottom_border - tui->y_songs - 1;
+    size_t    max_songs = get_visible_songs(tui);
+
+    if (max_songs == 0) {
+        tui->scroll_songs = 0;
+        return;
+    }
 
     if (tui->idx_songs < tui->scroll_songs) {
         tui->scroll_songs = tui->idx_songs;
@@ -359,9 +364,10 @@ void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio) {
     char* buf = malloc(BUFFER_BASE_SIZE);
     if (!buf) return;
 
-    size_t max = tui->header_bottom_border - y - 1;
+    size_t max = get_visible_songs(tui);
     for (size_t i = tui->scroll_songs; i < playlist->song_count; i++) {
-        if (i - tui->scroll_songs >= max) break;
+        size_t row = i - tui->scroll_songs;
+        if (row >= max) break;
 
         const char* format = NULL;
         Song*       song = playlist->songs[i];
@@ -381,8 +387,7 @@ void view_songs(TUI* tui, Storage* stg, Buffer* buffer, Audio* audio) {
         strftime(time, sizeof(time), "%b %d %H:%M", t);
         snprintf(buf, BUFFER_BASE_SIZE, format, i + 1, song->artist,
                  song->title, song->album, time);
-        buffer_append_line(buffer, (Vec){x, y + (i - tui->scroll_songs) + 3},
-                           buf);
+        buffer_append_line(buffer, (Vec){x, y + row + 3}, buf);
     }
     free(buf);
 }
@@ -866,4 +871,13 @@ void updating_cur_song(TUI* tui, Storage* stg, Audio* audio) {
     } else {
         snprintf(tui->song_name, MAX_LEN_SONG, "%s", n);
     }
+}
+
+size_t get_visible_songs(TUI* tui) {
+    if (!tui) return 0;
+
+    size_t y = tui->y_songs + tui->offset + 3;
+    if (y >= tui->header_bottom_border) return 0;
+
+    return tui->header_bottom_border - y;
 }

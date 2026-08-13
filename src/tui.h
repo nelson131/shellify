@@ -132,6 +132,7 @@ void put_srform(TUI_SearchForm* form, Storage* stg);
 void make_search_form(TUI* tui, Buffer* buffer, Rect* rect, size_t state);
 
 // >>> utils
-void updating_cur_song(TUI* tui, Storage* stg, Audio* audio);
+void   updating_cur_song(TUI* tui, Storage* stg, Audio* audio);
+size_t get_visible_songs(TUI* tui);
 
 #endif
