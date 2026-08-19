@@ -59,5 +59,6 @@ void lib_clear_plist(Playlist* plist);
 
 // >>> util funcs
 char* copy_str(const char* str);
+void  copy_song(Song* to, const Song* from);
 
 #endif

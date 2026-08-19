@@ -2,6 +2,7 @@
 
 #include "audio.h"
 #include "clipboard.h"
+#include "controller.h"
 
 int input_pause() {
     char c;
@@ -56,12 +57,19 @@ int handle_player(int key, size_t* idx, size_t max, Config* config) {
     return -1;
 }
 
-void handle_move(int key, TUI* tui) {
-    if (key == KEY_ARROW_UP) {
+void handle_move(int key, TUI* tui, Storage* stg) {
+    Playlist* plist = stg->lib->playlists[tui->idx_plists];
+    int       from = tui->idx_songs;
+
+    if (key == KEY_ARROW_DOWN) {
+        if (from + 1 >= plist->song_count) return;
+        swap_songs(tui, stg, from, from + 1);
         return;
     }
 
-    if (key == KEY_ARROW_DOWN) {
+    if (key == KEY_ARROW_UP) {
+        if (from - 1 < 0) return;
+        swap_songs(tui, stg, from, from - 1);
         return;
     }
 }
@@ -179,6 +187,8 @@ const char* instate_char(InputState input_state) {
             return "writing";
         case INPUT_STATE_UPDATE:
             return "edit";
+        case INPUT_STATE_MOVE:
+            return "move";
         default:
             return "unknown";
     }

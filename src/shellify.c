@@ -320,6 +320,8 @@ void shellify_handle_input() {
                         return;
                     }
                 case INPUT_STATE_MOVE:
+                    handle_move(key, shellify->tui, shellify->stg);
+                    buffer_clear(shellify->buffer);
                     break;
                 default:
                     shellify->input_state = INPUT_STATE_NONE;

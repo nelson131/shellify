@@ -418,6 +418,88 @@ int stg_update_sng(Storage* stg, Song* sng, const char* title,
     return 1;
 }
 
+void stg_move_sng(Storage* stg, Playlist* plist, size_t from, size_t to) {
+    if (!stg || !stg->db || !plist) {
+        errlog(ERR_NULL_OBJECT, "stg:move_sng:args");
+        return;
+    }
+
+    if (from == to || from >= plist->song_count || to >= plist->song_count)
+        return;
+
+    Song* sfrom = plist->songs[from];
+    Song* sto = plist->songs[to];
+    if (!sfrom || !sto) {
+        errlog(ERR_NULL_OBJECT, "stg:move_sng:songs");
+        return;
+    }
+
+    const char* query =
+        "UPDATE playlist_songs SET position = ? WHERE playlist_id = ? AND "
+        "song_id = ?";
+
+    sqlite3_stmt* stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:move_sng:stmt");
+        return;
+    }
+
+    int rc;
+
+    sqlite3_bind_int(stmt, 1, -1);
+    sqlite3_bind_int64(stmt, 2, (sqlite3_int64)plist->id);
+    sqlite3_bind_int64(stmt, 3, (sqlite3_int64)sfrom->id);
+
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        errlog(ERR_SQLITE_FAILED, "stg:move_sng:temp");
+        return;
+    }
+
+    stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:move_sng:prepare");
+        return;
+    }
+
+    sqlite3_bind_int64(stmt, 1, (sqlite3_int64)from);
+    sqlite3_bind_int64(stmt, 2, (sqlite3_int64)plist->id);
+    sqlite3_bind_int64(stmt, 3, (sqlite3_int64)sto->id);
+
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        errlog(ERR_SQLITE_FAILED, "stg:move_sng:from");
+        return;
+    }
+
+    stmt = db_prepare(stg->db, query);
+    if (!stmt) {
+        errlog(ERR_SQLITE_FAILED, "stg:move_sng:prepare");
+        return;
+    }
+
+    sqlite3_bind_int64(stmt, 1, (sqlite3_int64)to);
+    sqlite3_bind_int64(stmt, 2, (sqlite3_int64)plist->id);
+    sqlite3_bind_int64(stmt, 3, (sqlite3_int64)sfrom->id);
+
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        errlog(ERR_SQLITE_FAILED, "stg:move_sng:to");
+        return;
+    }
+
+    plist->songs[from] = sto;
+    plist->songs[to] = sfrom;
+
+    return;
+}
+
 // >>> PLAYLISTS
 
 // adding the memory allocated playlist

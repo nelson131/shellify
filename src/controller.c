@@ -195,6 +195,31 @@ void rem_plist(TUI* tui, Storage* stg) {
     handle_idx(&tui->idx_plists);
 }
 
+void swap_songs(TUI* tui, Storage* stg, size_t from, size_t to) {
+    if (!tui || !stg || from == to) return;
+
+    Playlist* plist = stg->lib->playlists[tui->idx_plists];
+    if (from >= plist->song_count || to >= plist->song_count) return;
+
+    Song* sfrom = plist->songs[from];
+    Song* sto = plist->songs[to];
+    if (!sfrom || !sto) {
+        errlog(ERR_NULL_OBJECT, "controller:swap_songs:songs");
+        return;
+    }
+
+    slog(DEBUG, plist->songs[to]->title);
+    slog(DEBUG, plist->songs[from]->title);
+
+    stg_move_sng(stg, plist, from, to);
+
+    plist->songs[from] = sto;
+    plist->songs[to] = sfrom;
+
+    slog(DEBUG, plist->songs[to]->title);
+    slog(DEBUG, plist->songs[from]->title);
+}
+
 // >>> audio contoller
 
 void handle_audio(int key, TUI* tui, Storage* stg, Audio* audio,

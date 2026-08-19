@@ -26,6 +26,8 @@ void rem_song(TUI* tui, Storage* stg, Audio* audio);
 void rem_song_abs(TUI* tui, Storage* stg, Audio* audio);
 void rem_plist(TUI* tui, Storage* stg);
 
+void swap_songs(TUI* tui, Storage* stg, size_t from, size_t to);
+
 // >>> audio contoller
 void handle_audio(int key, TUI* tui, Storage* stg, Audio* audio,
                   Config* config);

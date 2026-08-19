@@ -33,7 +33,7 @@ int input_pause();
 int input_poll();
 
 int  handle_player(int key, size_t* idx, size_t max, Config* config);
-void handle_move(int key, TUI* tui);
+void handle_move(int key, TUI* tui, Storage* stg);
 void handle_volume(int key, Audio* audio, Config* config);
 int  handle_input_form(int key, TUI_InputForm* form, Config* config);
 void handle_form_clipboard(TUI_InputForm* form);

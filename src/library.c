@@ -371,16 +371,40 @@ void lib_clear_plist(Playlist* plist) {
 // creating the full copy of string in thte heap
 char* copy_str(const char* str) {
     if (!str) {
-        errlog(ERR_NULL_OBJECT, "storage:copy_str:str");
+        errlog(ERR_NULL_OBJECT, "lib:copy_str:str");
         return NULL;
     }
 
     char* s = malloc((strlen(str) + 1) * sizeof(char));
     if (!s) {
-        errlog(ERR_MALLOC_NULL, "storage:copy_str:s");
+        errlog(ERR_MALLOC_NULL, "lib:copy_str:song");
         return NULL;
     }
 
     strcpy(s, str);
     return s;
+}
+
+void copy_song(Song* to, const Song* from) {
+    if (!to || !from) {
+        errlog(ERR_NULL_OBJECT, "lib:copy:song");
+        return;
+    }
+
+    to->id = from->id;
+
+    if (to->title) free(to->title);
+    to->title = strdup(from->title);
+
+    if (to->artist) free(to->artist);
+    to->artist = strdup(from->artist);
+
+    if (to->album) free(to->album);
+    to->album = strdup(from->album);
+
+    if (to->path) free(to->path);
+    to->path = strdup(from->path);
+
+    to->duration = from->duration;
+    to->time = from->time;
 }

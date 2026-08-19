@@ -34,11 +34,12 @@ void     stg_close(Storage* stg);
 int stg_load(Storage* stg);
 
 // >>> songs
-int stg_add_sng(Storage* stg, Song* sng);
-int stg_rem_sng_abs(Storage* stg, Song* sng);
-int stg_rem_sng(Storage* stg, Song* sng, Playlist* plist);
-int stg_update_sng(Storage* stg, Song* sng, const char* title,
-                   const char* artist, const char* album);
+int  stg_add_sng(Storage* stg, Song* sng);
+int  stg_rem_sng_abs(Storage* stg, Song* sng);
+int  stg_rem_sng(Storage* stg, Song* sng, Playlist* plist);
+int  stg_update_sng(Storage* stg, Song* sng, const char* title,
+                    const char* artist, const char* album);
+void stg_move_sng(Storage* stg, Playlist* plist, size_t from, size_t to);
 
 // >>> playlists
 int stg_add_plist(Storage* stg, Playlist* plist);
