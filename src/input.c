@@ -56,6 +56,16 @@ int handle_player(int key, size_t* idx, size_t max, Config* config) {
     return -1;
 }
 
+void handle_move(int key, TUI* tui) {
+    if (key == KEY_ARROW_UP) {
+        return;
+    }
+
+    if (key == KEY_ARROW_DOWN) {
+        return;
+    }
+}
+
 void handle_volume(int key, Audio* audio, Config* config) {
     if (!config) return;
 

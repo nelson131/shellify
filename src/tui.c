@@ -876,7 +876,7 @@ void updating_cur_song(TUI* tui, Storage* stg, Audio* audio) {
 size_t get_visible_songs(TUI* tui) {
     if (!tui) return 0;
 
-    size_t y = tui->y_songs + tui->offset + 3;
+    size_t y = tui->y_songs + tui->offset + 4;
     if (y >= tui->header_bottom_border) return 0;
 
     return tui->header_bottom_border - y;

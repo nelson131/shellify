@@ -281,6 +281,8 @@ void shellify_handle_input() {
                         shellify->input_state = INPUT_STATE_UPDATE;
                     } else if (key == shellify->config->keys.dashboard) {
                         shellify->state = SHELLIFY_STATE_DASHBOARD;
+                    } else if (key == shellify->config->keys.move) {
+                        shellify->input_state = INPUT_STATE_MOVE;
                     } else {
                         handle_volume(key, shellify->audio, shellify->config);
                     }
@@ -317,6 +319,8 @@ void shellify_handle_input() {
                     } else if (key == shellify->config->keys.playlist) {
                         return;
                     }
+                case INPUT_STATE_MOVE:
+                    break;
                 default:
                     shellify->input_state = INPUT_STATE_NONE;
                     break;
