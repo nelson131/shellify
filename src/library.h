@@ -44,8 +44,8 @@ Song* find_sng_by_id(Library* library, size_t id);
 void  lib_rem_sng_plist(Playlist* plist, Song* sng);
 char* lib_rem_sng(Library* library, Song* sng);
 
-int lib_update_sng(Library* library, Song* song, const char* title,
-                   const char* artist, const char* album);
+int lib_update_sng(Song** song, const char* title, const char* artist,
+                   const char* album);
 
 // >>> playlists funcs
 Playlist* lib_new_plist(Library* library, size_t id, const char* name,

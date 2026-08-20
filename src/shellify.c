@@ -513,12 +513,13 @@ void shellify_handle_input() {
                     Playlist* plist =
                         shellify->stg->lib
                             ->playlists[shellify->tui->idx_plists];
-                    Song* song = plist->songs[shellify->tui->idx_songs];
                     TUI_InputForm* form = shellify->tui->input_form;
-                    lib_update_sng(shellify->stg->lib, song, form->values[0],
-                                   form->values[1], form->values[2]);
-                    stg_update_sng(shellify->stg, song, form->values[0],
-                                   form->values[1], form->values[2]);
+                    lib_update_sng(&plist->songs[shellify->tui->idx_songs],
+                                   form->values[0], form->values[1],
+                                   form->values[2]);
+                    stg_update_sng(
+                        shellify->stg, plist->songs[shellify->tui->idx_songs],
+                        form->values[0], form->values[1], form->values[2]);
                     clear_input_form(shellify->tui);
                     shellify->input_state = INPUT_STATE_NONE;
                     shellify->state = SHELLIFY_STATE_PLAYER;
@@ -526,7 +527,7 @@ void shellify_handle_input() {
             } else {
                 if (key == shellify->config->keys.select) {
                     shellify->input_state = INPUT_STATE_WRITING;
-                } else if (key == KEY_ARROW_LEFT) {
+                } else if (key == KEY_ARROW_LEFT || key == KEY_ARROW_RIGHT) {
                     shellify->state = SHELLIFY_STATE_PLAYER;
                     clear_input_form(shellify->tui);
                 } else if (key == shellify->config->keys.super) {

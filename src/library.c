@@ -168,28 +168,25 @@ char* lib_rem_sng(Library* library, Song* sng) {
     return name;
 }
 
-int lib_update_sng(Library* library, Song* song, const char* title,
-                   const char* artist, const char* album) {
-    if (!library || !song) {
+int lib_update_sng(Song** song, const char* title, const char* artist,
+                   const char* album) {
+    if (!song || !*song) {
         errlog(ERR_NULL_OBJECT, "lib:update_sng:args");
         return -1;
     }
 
     size_t count = 0;
     if (title) {
-        char* buf = strdup(title);
-        free(song->title);
-        song->title = buf;
+        free((*song)->title);
+        (*song)->title = strdup(title);
         count++;
     } else if (artist) {
-        char* buf = strdup(artist);
-        free(song->artist);
-        song->artist = buf;
+        free((*song)->artist);
+        (*song)->artist = strdup(artist);
         count++;
     } else if (album) {
-        char* buf = strdup(album);
-        free(song->album);
-        song->album = buf;
+        free((*song)->album);
+        (*song)->album = strdup(album);
         count++;
     }
 
