@@ -73,8 +73,13 @@ void* dlh_exec(void* thr) {
     }
 
     snprintf(cmd, BUF_BASE_SIZE,
-             "yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "
-             "-o \"%s/%%(title)s.%%(ext)s\" \"%s\" 2>&1",
+             "yt-dlp "
+             "--extract-audio "
+             "--audio-format mp3 "
+             "--audio-quality 0 "
+             "--extractor-args \"youtube:player_client=android\" "
+             "-o \"%s/%%(title)s.%%(ext)s\" "
+             "\"%s\" 2>&1",
              dl_thread->audio->music_dir, dl_thread->task.url);
 
     FILE* pipe = popen(cmd, "r");
@@ -87,6 +92,7 @@ void* dlh_exec(void* thr) {
 
     char garbage[128];
     while (fgets(garbage, sizeof(garbage), pipe) != NULL) {
+        slog(DEBUG, garbage);
     }
 
     int status = pclose(pipe);
